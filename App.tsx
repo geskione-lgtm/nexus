@@ -9,34 +9,48 @@ import Landing from './components/Landing';
 import Sidebar from './components/Sidebar';
 import Login from './components/Login';
 import CloudStatus from './components/CloudStatus';
+import Onboarding from './components/Onboarding';
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<'landing' | 'login' | 'dashboard'>('landing');
+  const [currentPage, setCurrentPage] = useState<'landing' | 'login' | 'dashboard' | 'onboarding'>('landing');
   const [activeTab, setActiveTab] = useState('dashboard');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   
   const [doctors, setDoctors] = useState<User[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [scanHistory, setScanHistory] = useState<ScanResult[]>([]);
 
-  // Supabase Auth Listener
-  useEffect(() => {
-    const checkUser = async () => {
+  const checkUserStatus = async () => {
+    setIsSyncing(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
       const profile = await DatabaseService.getCurrentProfile();
       if (profile) {
         setCurrentUser(profile);
         setCurrentPage('dashboard');
+      } else {
+        // Auth var ama profil yok -> Onboarding'e gönder
+        setCurrentPage('onboarding');
       }
-    };
+    } else {
+      setCurrentUser(null);
+      if (currentPage === 'dashboard' || currentPage === 'onboarding') {
+        setCurrentPage('landing');
+      }
+    }
+    setAuthChecked(true);
+    setIsSyncing(false);
+  };
 
-    checkUser();
+  useEffect(() => {
+    checkUserStatus();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        const profile = await DatabaseService.getCurrentProfile();
-        setCurrentUser(profile);
-        setCurrentPage('dashboard');
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        checkUserStatus();
       } else if (event === 'SIGNED_OUT') {
         setCurrentUser(null);
         setCurrentPage('landing');
@@ -48,7 +62,7 @@ const App: React.FC = () => {
 
   // Data Loading
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && currentPage === 'dashboard') {
       const fetchData = async () => {
         setIsSyncing(true);
         try {
@@ -70,7 +84,7 @@ const App: React.FC = () => {
       };
       fetchData();
     }
-  }, [currentUser]);
+  }, [currentUser, currentPage]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -103,12 +117,24 @@ const App: React.FC = () => {
     setIsSyncing(false);
   };
 
+  if (!authChecked && currentPage !== 'landing') {
+    return (
+      <div className="h-screen flex items-center justify-center bg-white">
+        <div className="w-12 h-12 border-4 border-nexus-green border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   if (currentPage === 'landing') {
     return <Landing onAccessPortal={() => setCurrentPage('login')} />;
   }
 
   if (currentPage === 'login' && !currentUser) {
     return <Login onBack={() => setCurrentPage('landing')} />;
+  }
+
+  if (currentPage === 'onboarding') {
+    return <Onboarding onComplete={checkUserStatus} />;
   }
 
   return (
@@ -123,7 +149,7 @@ const App: React.FC = () => {
                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Bulut Erişimi: {currentUser?.clinicName || 'Merkez Yönetim'}</span>
             </div>
             <h1 className="text-4xl font-black tracking-tighter text-black uppercase">
-              {activeTab === 'dashboard' ? `${currentUser?.name.split(' ')[0]} Terminali` : activeTab.toUpperCase().replace('_', ' ')}
+              {activeTab === 'dashboard' ? `${currentUser?.name?.split(' ')[0] || 'Admin'} Terminali` : activeTab.toUpperCase().replace('_', ' ')}
             </h1>
           </div>
           <CloudStatus isSyncing={isSyncing} />

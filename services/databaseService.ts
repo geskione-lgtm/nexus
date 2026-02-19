@@ -2,7 +2,6 @@
 import { supabase } from './supabaseClient';
 import { User, Patient, ScanResult, UserRole } from '../types';
 
-// Supabase'in gerçek bir URL ile yapılandırılıp yapılandırılmadığını kontrol eder.
 const isConfigured = () => {
   const { supabaseUrl } = (supabase as any);
   return supabaseUrl && !supabaseUrl.includes('placeholder');
@@ -37,6 +36,39 @@ export const DatabaseService = {
       console.error("NEXUS: Profil kontrol hatası:", e);
       return null;
     }
+  },
+
+  async isSystemEmpty(): Promise<boolean> {
+    if (!isConfigured()) return true;
+    const { count, error } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true });
+    if (error) return true;
+    return count === 0;
+  },
+
+  async createInitialProfile(userData: { id: string, name: string, email: string, role: UserRole }): Promise<User> {
+    const { data, error } = await supabase
+      .from('profiles')
+      .insert([{
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        clinic_name: userData.role === UserRole.SUPER_ADMIN ? 'Merkez Yönetim' : 'Yeni Klinik'
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      role: data.role as UserRole,
+      clinicName: data.clinic_name,
+      packageId: data.package_id
+    };
   },
 
   async getDoctors(): Promise<User[]> {
@@ -108,7 +140,7 @@ export const DatabaseService = {
         name: p.name,
         weeksPregnant: p.weeks_pregnant,
         doctorId: p.doctor_id,
-        lastScanDate: p.last_scan_date
+        last_scan_date: p.last_scan_date
       }));
     } catch (e) {
       console.error("NEXUS: Hastalar çekilemedi:", e);
@@ -195,7 +227,6 @@ export const DatabaseService = {
   async saveScan(scan: Omit<ScanResult, 'id' | 'createdAt'>): Promise<ScanResult> {
     if (!isConfigured()) throw new Error("Supabase yapılandırması eksik.");
     
-    // Fix: Access scan.babyFaceUrl instead of scan.baby_face_url to match the ScanResult interface.
     const { data, error } = await supabase
       .from('scans')
       .insert([{
