@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, UserRole, Patient, ScanResult } from './types';
 import { DatabaseService } from './services/databaseService';
-import { supabase, isSupabaseConfigured } from './services/supabaseClient';
+import { supabase } from './services/supabaseClient';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import DoctorDashboard from './components/DoctorDashboard';
 import Landing from './components/Landing';
@@ -89,7 +89,7 @@ const App: React.FC = () => {
 
   if (!authChecked && currentPage !== 'landing') {
     return (
-      <div className="h-screen flex items-center justify-center bg-white">
+      <div className="h-screen flex items-center justify-center bg-[#f4f7f6]">
         <div className="w-12 h-12 border-4 border-nexus-green border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -108,23 +108,36 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen bg-white overflow-hidden">
-      {currentUser && <Sidebar user={currentUser} activeTab={activeTab} onTabChange={setActiveTab} onLogout={() => supabase.auth.signOut()} />}
+    <div className="flex h-screen bg-[#f4f7f6] overflow-hidden">
+      {/* Sidebar */}
+      {currentUser && (
+        <Sidebar 
+          user={currentUser} 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+          onLogout={() => supabase.auth.signOut()} 
+        />
+      )}
       
-      <main className="flex-1 overflow-y-auto bg-[#F9F9F9] p-8 md:p-12">
-        <header className="mb-12 flex justify-between items-start">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-               <span className="w-2 h-2 rounded-full bg-nexus-green animate-pulse"></span>
-               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Erişim: {currentUser?.clinicName || 'Yönetim'}</span>
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-              {activeTab === 'dashboard' ? `${currentUser?.name?.split(' ')[0] || 'Kullanıcı'} Paneli` : activeTab.toUpperCase().replace('_', ' ')}
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto px-10 py-8 relative">
+        {/* Header Bar */}
+        <header className="flex justify-between items-center mb-10">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 capitalize">
+              {activeTab === 'dashboard' ? 'Admin Dashboard' : activeTab.replace('_', ' ')}
             </h1>
+            <div className="hidden md:flex items-center bg-white border border-slate-100 rounded-2xl px-4 py-2 card-shadow">
+              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <input type="text" placeholder="Burada ara..." className="bg-transparent border-none outline-none px-3 text-xs font-medium w-48" />
+            </div>
           </div>
-          <CloudStatus isSyncing={isSyncing} />
+          <div className="flex items-center gap-4">
+             <CloudStatus isSyncing={isSyncing} />
+          </div>
         </header>
 
+        {/* Dashboard Content */}
         {currentUser?.role === UserRole.SUPER_ADMIN ? (
           <SuperAdminDashboard 
             activeTab={activeTab}

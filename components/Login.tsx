@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 
 interface LoginProps {
   onBack: () => void;
@@ -14,10 +15,8 @@ const Login: React.FC<LoginProps> = ({ onBack }) => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Konfigürasyon kontrolü
-    const { supabaseUrl } = (supabase as any);
-    if (!supabaseUrl || supabaseUrl.includes('placeholder')) {
-      alert("Sistem Yapılandırması Tamamlanmadı: Lütfen yönetici ile iletişime geçin (Supabase URL eksik).");
+    if (!isSupabaseConfigured()) {
+      alert("Sistem Yapılandırması Eksik: SUPABASE_URL veya SUPABASE_ANON_KEY tanımlanmamış. Lütfen çevre değişkenlerini kontrol edin.");
       return;
     }
 
@@ -26,26 +25,25 @@ const Login: React.FC<LoginProps> = ({ onBack }) => {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({ 
           email, 
-          password,
-          options: {
-            data: {
-              email_confirm: true // Bazı Supabase ayarları için gerekebilir
-            }
-          }
+          password
         });
         if (error) throw error;
-        alert("Kayıt başarılı! Lütfen e-postanızı onaylayın (veya doğrudan giriş yapmayı deneyin).");
+        alert("Kayıt başarılı! Lütfen giriş yapın.");
+        setIsSignUp(false);
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
     } catch (err: any) {
       console.error("Auth Hatası:", err);
-      if (err.message === "Failed to fetch") {
-        alert("Bağlantı Hatası: Supabase sunucusuna erişilemiyor. Lütfen Vercel Environment Variables ayarlarınızı kontrol edin.");
-      } else {
-        alert("Hata: " + err.message);
+      let errorMessage = err.message || "Giriş başarısız.";
+      
+      // "Failed to fetch" hatasını kullanıcıya daha net açıkla
+      if (errorMessage.includes("Failed to fetch")) {
+        errorMessage = "Ağ Hatası: Supabase sunucusuna bağlanılamadı. İnternet bağlantınızı veya Supabase URL yapılandırmanızı kontrol edin.";
       }
+      
+      alert("Hata: " + errorMessage);
     } finally {
       setLoading(false);
     }
@@ -56,58 +54,58 @@ const Login: React.FC<LoginProps> = ({ onBack }) => {
       <div className="max-w-md w-full">
         <button 
           onClick={onBack}
-          className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-black transition-colors"
+          className="mb-8 flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-slate-900 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          Giriş Sayfasına Dön
+          Geri Dön
         </button>
 
         <div className="mb-10 text-center">
-          <div className="inline-flex w-14 h-14 bg-black rounded-2xl items-center justify-center mb-6">
-             <div className="w-6 h-6 bg-nexus-green rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
+          <div className="inline-flex w-14 h-14 bg-slate-950 rounded-2xl items-center justify-center mb-6 shadow-xl">
+             <div className="w-6 h-6 bg-nexus-green rounded-full shadow-[0_0_15px_rgba(16,185,129,0.6)]"></div>
           </div>
-          <h2 className="text-3xl font-black tracking-tighter uppercase text-black"><span className="text-nexus-green">Nexus</span> Portalı</h2>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2">Bulut Tabanlı Tıbbi Kimlik Doğrulama</p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">NEXUS<span className="text-nexus-green font-semibold">PORTALI</span></h2>
+          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mt-2">Medikal Kimlik Doğrulama Sistemi</p>
         </div>
 
-        <div className="bg-[#F9F9F9] border border-slate-100 rounded-[32px] p-10 shadow-sm">
-          <form onSubmit={handleAuth}>
-            <div className="mb-6">
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">E-posta</label>
+        <div className="bg-slate-50 border border-slate-100 rounded-[32px] p-10 shadow-sm">
+          <form onSubmit={handleAuth} className="space-y-6">
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 px-1">E-posta Adresi</label>
               <input 
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="isminiz@kurum.com"
-                className="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-black font-medium focus:outline-none focus:ring-2 focus:ring-nexus-green transition-all"
+                placeholder="doktor@kurum.com"
+                className="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-nexus-green/20 focus:border-nexus-green transition-all"
               />
             </div>
-            <div className="mb-8">
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Şifre</label>
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 px-1">Şifre</label>
               <input 
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-black font-medium focus:outline-none focus:ring-2 focus:ring-nexus-green transition-all"
+                className="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-nexus-green/20 focus:border-nexus-green transition-all"
               />
             </div>
             <button 
               disabled={loading}
-              className="w-full py-5 bg-black text-white font-black uppercase tracking-widest rounded-2xl hover:bg-slate-800 transform hover:-translate-y-0.5 transition-all shadow-xl shadow-black/10 disabled:opacity-50"
+              className="w-full py-4.5 bg-slate-950 text-white font-bold uppercase tracking-widest text-xs rounded-2xl hover:bg-slate-800 transform active:scale-[0.98] transition-all shadow-lg shadow-slate-200 disabled:opacity-50"
             >
-              {loading ? 'İşleniyor...' : (isSignUp ? 'Kayıt Ol' : 'Sisteme Giriş Yap')}
+              {loading ? 'İşleniyor...' : (isSignUp ? 'Hesap Oluştur' : 'Sisteme Giriş Yap')}
             </button>
           </form>
 
           <div className="mt-8 pt-6 border-t border-slate-200 text-center">
              <button 
                onClick={() => setIsSignUp(!isSignUp)}
-               className="text-[10px] font-bold text-slate-500 hover:text-nexus-green uppercase tracking-widest transition-colors"
+               className="text-[11px] font-bold text-slate-500 hover:text-nexus-green uppercase tracking-widest transition-colors"
              >
-                {isSignUp ? 'Zaten hesabım var? Giriş Yap' : 'Yeni Klinik mi? Kayıt Talebi'}
+                {isSignUp ? 'Zaten hesabım var? Giriş Yap' : 'Yeni Kayıt? Klinik Talebi Oluştur'}
              </button>
           </div>
         </div>
