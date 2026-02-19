@@ -1,0 +1,219 @@
+
+import { supabase } from './supabaseClient';
+import { User, Patient, ScanResult, UserRole } from '../types';
+
+// Supabase'in gerçek bir URL ile yapılandırılıp yapılandırılmadığını kontrol eder.
+const isConfigured = () => {
+  const { supabaseUrl } = (supabase as any);
+  return supabaseUrl && !supabaseUrl.includes('placeholder');
+};
+
+export const DatabaseService = {
+  // --- AUTH & PROFILES ---
+  async getCurrentProfile(): Promise<User | null> {
+    if (!isConfigured()) return null;
+    
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) return null;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error || !data) return null;
+      
+      return {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        role: data.role as UserRole,
+        clinicName: data.clinic_name,
+        packageId: data.package_id
+      };
+    } catch (e) {
+      console.error("NEXUS: Profil kontrol hatası:", e);
+      return null;
+    }
+  },
+
+  async getDoctors(): Promise<User[]> {
+    if (!isConfigured()) return [];
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('role', UserRole.DOCTOR);
+      
+      if (error) throw error;
+      
+      return (data || []).map(d => ({
+        id: d.id,
+        name: d.name,
+        email: d.email,
+        role: d.role as UserRole,
+        clinicName: d.clinic_name,
+        packageId: d.package_id
+      }));
+    } catch (e) {
+      console.error("NEXUS: Doktorlar çekilemedi:", e);
+      return [];
+    }
+  },
+
+  async saveDoctor(doctor: User): Promise<User> {
+    if (!isConfigured()) throw new Error("Supabase yapılandırması eksik.");
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .insert([{
+        name: doctor.name,
+        email: doctor.email,
+        role: doctor.role,
+        clinic_name: doctor.clinicName,
+        package_id: doctor.packageId
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    
+    return {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      role: data.role as UserRole,
+      clinicName: data.clinic_name,
+      packageId: data.package_id
+    };
+  },
+
+  // --- PATIENTS ---
+  async getPatients(doctorId: string): Promise<Patient[]> {
+    if (!isConfigured()) return [];
+    
+    try {
+      const { data, error } = await supabase
+        .from('patients')
+        .select('*')
+        .eq('doctor_id', doctorId);
+
+      if (error) throw error;
+      
+      return (data || []).map(p => ({
+        id: p.id,
+        name: p.name,
+        weeksPregnant: p.weeks_pregnant,
+        doctorId: p.doctor_id,
+        lastScanDate: p.last_scan_date
+      }));
+    } catch (e) {
+      console.error("NEXUS: Hastalar çekilemedi:", e);
+      return [];
+    }
+  },
+
+  async savePatient(patient: Omit<Patient, 'id'>): Promise<Patient> {
+    if (!isConfigured()) throw new Error("Supabase yapılandırması eksik.");
+    
+    const { data, error } = await supabase
+      .from('patients')
+      .insert([{
+        name: patient.name,
+        weeks_pregnant: patient.weeksPregnant,
+        doctor_id: patient.doctorId,
+        last_scan_date: patient.lastScanDate
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    
+    return {
+      id: data.id,
+      name: data.name,
+      weeksPregnant: data.weeks_pregnant,
+      doctorId: data.doctor_id,
+      lastScanDate: data.last_scan_date
+    };
+  },
+
+  // --- SCANS & STORAGE ---
+  async uploadImage(file: Blob, path: string): Promise<string> {
+    if (!isConfigured()) throw new Error("Supabase yapılandırması eksik.");
+    
+    const fileName = `${path}/${Date.now()}.png`;
+    try {
+      const { data, error } = await supabase.storage
+        .from('ultrasounds')
+        .upload(fileName, file);
+
+      if (error) {
+        if (error.message.includes('bucket not found')) {
+          throw new Error("Supabase Storage Hatası: 'ultrasounds' adında bir PUBLIC bucket oluşturmanız gerekiyor.");
+        }
+        throw error;
+      }
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from('ultrasounds')
+        .getPublicUrl(data.path);
+        
+      return publicUrl;
+    } catch (e: any) {
+      console.error("NEXUS: Görsel yükleme hatası:", e);
+      throw e;
+    }
+  },
+
+  async getScans(patientId?: string): Promise<ScanResult[]> {
+    if (!isConfigured()) return [];
+    
+    try {
+      let query = supabase.from('scans').select('*').order('created_at', { ascending: false });
+      if (patientId) query = query.eq('patient_id', patientId);
+
+      const { data, error } = await query;
+      if (error) throw error;
+      
+      return (data || []).map(s => ({
+        id: s.id,
+        patientId: s.patient_id,
+        ultrasoundUrl: s.ultrasound_url,
+        babyFaceUrl: s.baby_face_url,
+        createdAt: new Date(s.created_at).toLocaleDateString('tr-TR')
+      }));
+    } catch (e) {
+      console.error("NEXUS: Taramalar çekilemedi:", e);
+      return [];
+    }
+  },
+
+  async saveScan(scan: Omit<ScanResult, 'id' | 'createdAt'>): Promise<ScanResult> {
+    if (!isConfigured()) throw new Error("Supabase yapılandırması eksik.");
+    
+    // Fix: Access scan.babyFaceUrl instead of scan.baby_face_url to match the ScanResult interface.
+    const { data, error } = await supabase
+      .from('scans')
+      .insert([{
+        patient_id: scan.patientId,
+        ultrasound_url: scan.ultrasoundUrl,
+        baby_face_url: scan.babyFaceUrl
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    
+    return {
+      id: data.id,
+      patientId: data.patient_id,
+      ultrasoundUrl: data.ultrasound_url,
+      babyFaceUrl: data.baby_face_url,
+      createdAt: new Date(data.created_at).toLocaleDateString('tr-TR')
+    };
+  }
+};

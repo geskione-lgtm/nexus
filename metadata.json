@@ -1,0 +1,8 @@
+{
+  "name": "Nexus Medical AI SaaS",
+  "description": "Enterprise-grade fetal imaging SaaS with Gemini 3 Pro integration and Google Cloud storage simulation.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
