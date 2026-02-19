@@ -1,24 +1,14 @@
-
 import { createClient } from '@supabase/supabase-js';
 
-const getEnv = (key: string): string | undefined => {
-  try {
-    // Vite'in define ile enjekte ettiği process.env'yi kontrol et
-    return (window as any).process?.env?.[key] || (window as any)[key] || undefined;
-  } catch {
-    return undefined;
-  }
-};
+// Vite'in define ile enjekte ettiği değişkenleri doğrudan kullanıyoruz
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
 
-const supabaseUrl = getEnv('SUPABASE_URL');
-const supabaseAnonKey = getEnv('SUPABASE_ANON_KEY');
-
-// Varsayılan değerler sadece yapılandırma hatasında uyarı vermek içindir
-const finalUrl = supabaseUrl || 'https://placeholder-project.supabase.co';
-const finalKey = supabaseAnonKey || 'placeholder-key';
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn("NEXUS: Supabase yapılandırması eksik! Lütfen Vercel panelinde SUPABASE_URL ve SUPABASE_ANON_KEY değişkenlerini tanımlayın.");
+if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('placeholder')) {
+  console.error("NEXUS: Supabase yapılandırması eksik! Lütfen Vercel panelinde SUPABASE_URL ve SUPABASE_ANON_KEY değişkenlerini tanımlayın.");
 }
 
-export const supabase = createClient(finalUrl, finalKey);
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co', 
+  supabaseAnonKey || 'placeholder'
+);

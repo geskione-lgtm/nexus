@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 
@@ -14,18 +13,39 @@ const Login: React.FC<LoginProps> = ({ onBack }) => {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Konfigürasyon kontrolü
+    const { supabaseUrl } = (supabase as any);
+    if (!supabaseUrl || supabaseUrl.includes('placeholder')) {
+      alert("Sistem Yapılandırması Tamamlanmadı: Lütfen yönetici ile iletişime geçin (Supabase URL eksik).");
+      return;
+    }
+
     setLoading(true);
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            data: {
+              email_confirm: true // Bazı Supabase ayarları için gerekebilir
+            }
+          }
+        });
         if (error) throw error;
-        alert("Kayıt başarılı! Lütfen e-postanızı onaylayın.");
+        alert("Kayıt başarılı! Lütfen e-postanızı onaylayın (veya doğrudan giriş yapmayı deneyin).");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
     } catch (err: any) {
-      alert(err.message);
+      console.error("Auth Hatası:", err);
+      if (err.message === "Failed to fetch") {
+        alert("Bağlantı Hatası: Supabase sunucusuna erişilemiyor. Lütfen Vercel Environment Variables ayarlarınızı kontrol edin.");
+      } else {
+        alert("Hata: " + err.message);
+      }
     } finally {
       setLoading(false);
     }
