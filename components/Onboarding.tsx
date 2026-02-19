@@ -3,15 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { DatabaseService } from '../services/databaseService';
 import { UserRole } from '../types';
+import { PACKAGES } from '../constants';
 
-interface Props {
-  onComplete: () => void;
-}
+interface Props { onComplete: () => void; }
 
 const Onboarding: React.FC<Props> = ({ onComplete }) => {
+  const [step, setStep] = useState(1); // 1: Profil, 2: Paket, 3: Ödeme
   const [loading, setLoading] = useState(false);
   const [isSystemEmpty, setIsSystemEmpty] = useState<boolean | null>(null);
-  const [name, setName] = useState('');
+  const [formData, setFormData] = useState({ name: '', clinicName: '', packageId: 'pro' });
 
   useEffect(() => {
     const check = async () => {
@@ -21,90 +21,112 @@ const Onboarding: React.FC<Props> = ({ onComplete }) => {
     check();
   }, []);
 
-  const handleInitialize = async () => {
-    if (!name.trim()) return;
+  const handleFinalize = async () => {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Kullanıcı oturumu bulunamadı.");
+      if (!user) throw new Error("Oturum bulunamadı.");
 
-      // Eğer sistem boşsa Süper Admin, değilse varsayılan olarak Doktor olarak ata
       const role = isSystemEmpty ? UserRole.SUPER_ADMIN : UserRole.DOCTOR;
       
       await DatabaseService.createInitialProfile({
         id: user.id,
-        name: name,
+        name: formData.name,
         email: user.email!,
-        role: role
+        role: role,
+        clinicName: formData.clinicName || (isSystemEmpty ? 'Merkez Yönetim' : 'Yeni Klinik'),
+        packageId: formData.packageId
       });
 
       onComplete();
-    } catch (err: any) {
-      alert("Hata: " + err.message);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err: any) { alert(err.message); }
+    finally { setLoading(false); }
   };
 
-  if (isSystemEmpty === null) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-white">
-        <div className="w-12 h-12 border-4 border-nexus-green border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
+  if (isSystemEmpty === null) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F9F9F9] px-4">
-      <div className="max-w-xl w-full">
-        <div className="bg-white rounded-[48px] p-12 shadow-2xl border border-slate-100 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
-             <div className="w-32 h-32 bg-nexus-green rounded-full blur-3xl"></div>
-          </div>
-
-          <div className="mb-10">
-            <div className="inline-flex w-16 h-16 bg-black rounded-2xl items-center justify-center mb-8">
-               <div className="w-6 h-1 bg-nexus-green rounded-full"></div>
-            </div>
-            <h2 className="text-4xl font-black tracking-tighter uppercase text-black mb-4">
-              {isSystemEmpty ? 'Sistem Başlatılıyor' : 'Profil Oluşturma'}
-            </h2>
-            <p className="text-slate-400 font-bold uppercase tracking-widest text-xs leading-relaxed">
-              {isSystemEmpty 
-                ? 'Nexus ağındaki ilk yönetici sizsiniz. Bu hesap tüm sistem üzerinde tam kontrol yetkisine (Süper Admin) sahip olacaktır.' 
-                : 'Nexus portalına hoş geldiniz. Devam etmek için tıbbi kimlik bilgilerinizi doğrulayın.'}
-            </p>
-          </div>
-
-          <div className="space-y-8">
-            <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Tam Adınız & Ünvanınız</label>
-              <input 
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Örn: Dr. Arda Yılmaz"
-                className="w-full px-8 py-5 bg-[#F9F9F9] border border-slate-200 rounded-3xl text-black font-bold focus:outline-none focus:ring-2 focus:ring-nexus-green transition-all"
-              />
-            </div>
-
-            <div className="pt-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#FBFBFD] py-20 px-4">
+      <div className="max-w-4xl w-full">
+        {step === 1 && (
+          <div className="max-w-md mx-auto text-center animate-in fade-in zoom-in duration-500">
+            <h2 className="text-3xl font-bold text-black mb-10 tracking-tight">Klinik Profilini Oluştur</h2>
+            <div className="space-y-4">
+              <input required placeholder="Adınız ve Ünvanınız" className="w-full px-6 py-4 bg-white border border-black/5 rounded-2xl text-sm font-medium focus:border-black/20 outline-none" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+              {!isSystemEmpty && <input required placeholder="Klinik İsmi" className="w-full px-6 py-4 bg-white border border-black/5 rounded-2xl text-sm font-medium focus:border-black/20 outline-none" value={formData.clinicName} onChange={e => setFormData({...formData, clinicName: e.target.value})} />}
               <button 
-                disabled={loading || !name.trim()}
-                onClick={handleInitialize}
-                className="w-full py-6 bg-black text-white font-black uppercase tracking-widest rounded-3xl hover:bg-slate-800 transform hover:-translate-y-1 transition-all shadow-2xl shadow-black/20 disabled:opacity-50"
+                disabled={!formData.name}
+                onClick={() => isSystemEmpty ? handleFinalize() : setStep(2)}
+                className="w-full py-4.5 bg-black text-white rounded-2xl font-bold text-sm uppercase tracking-widest mt-6 hover:scale-[1.02] transition-all shadow-xl shadow-black/10"
               >
-                {loading ? 'Sentezleniyor...' : (isSystemEmpty ? 'Süper Admin Olarak Tanımla' : 'Profilimi Kaydet')}
+                {isSystemEmpty ? 'Sistemi Başlat' : 'Paket Seçimine Geç'}
               </button>
             </div>
           </div>
+        )}
 
-          <div className="mt-12 flex items-center justify-center gap-2">
-             <span className="w-1.5 h-1.5 rounded-full bg-nexus-green animate-pulse"></span>
-             <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Nexus Secure Initialization Protokolü v2.0</p>
+        {step === 2 && (
+          <div className="animate-in fade-in slide-in-from-bottom-10 duration-700">
+            <h2 className="text-4xl font-bold text-black text-center mb-16 tracking-tight">Size Uygun Lisansı Seçin</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {PACKAGES.map(pkg => (
+                <div key={pkg.id} 
+                  onClick={() => setFormData({...formData, packageId: pkg.id})}
+                  className={`apple-card p-10 rounded-[40px] cursor-pointer relative group transition-all ${formData.packageId === pkg.id ? 'border-black ring-1 ring-black' : 'hover:border-black/10'}`}
+                >
+                  <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest mb-2">{pkg.name}</p>
+                  <p className="text-3xl font-bold text-black tracking-tighter mb-8">₺{pkg.price.toLocaleString()}<span className="text-xs text-apple-gray font-medium">/ay</span></p>
+                  <ul className="space-y-4 mb-12">
+                    {pkg.features.map((f, i) => (
+                      <li key={i} className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                        <div className="w-1 h-1 bg-nexus-mint rounded-full"></div> {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className={`w-full py-3 rounded-full text-[10px] font-bold uppercase tracking-widest text-center transition-all ${formData.packageId === pkg.id ? 'bg-black text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100'}`}>Seçili</div>
+                </div>
+              ))}
+            </div>
+            <div className="text-center mt-12">
+              <button onClick={() => setStep(3)} className="px-12 py-4.5 bg-black text-white rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-2xl">Ödeme Adımına Geç</button>
+            </div>
           </div>
-        </div>
+        )}
+
+        {step === 3 && (
+          <div className="max-w-md mx-auto animate-in fade-in zoom-in duration-500">
+            <h2 className="text-3xl font-bold text-black text-center mb-10 tracking-tight">Güvenli Ödeme</h2>
+            <div className="apple-card p-10 rounded-[40px] bg-slate-900 text-white relative overflow-hidden mb-8">
+               <div className="absolute top-0 right-0 p-8 opacity-20"><div className="w-16 h-10 border border-white rounded-md"></div></div>
+               <p className="text-[10px] font-bold uppercase tracking-[0.3em] mb-12">Nexus Pay</p>
+               <p className="text-xl font-medium tracking-[0.2em] mb-8">•••• •••• •••• ••••</p>
+               <div className="flex justify-between items-end">
+                  <div>
+                    <p className="text-[8px] font-bold uppercase text-white/40 mb-1">Kart Sahibi</p>
+                    <p className="text-sm font-bold uppercase tracking-widest">{formData.name}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[8px] font-bold uppercase text-white/40 mb-1">Tutar</p>
+                    <p className="text-lg font-bold">₺{PACKAGES.find(p => p.id === formData.packageId)?.price.toLocaleString()}</p>
+                  </div>
+               </div>
+            </div>
+            <div className="space-y-4 mb-10">
+               <input placeholder="Kart Numarası" className="w-full px-6 py-4 bg-white border border-black/5 rounded-2xl text-sm font-medium focus:border-black/20 outline-none" />
+               <div className="flex gap-4">
+                  <input placeholder="AA/YY" className="flex-1 px-6 py-4 bg-white border border-black/5 rounded-2xl text-sm font-medium focus:border-black/20 outline-none" />
+                  <input placeholder="CVV" className="flex-1 px-6 py-4 bg-white border border-black/5 rounded-2xl text-sm font-medium focus:border-black/20 outline-none" />
+               </div>
+            </div>
+            <button 
+              disabled={loading}
+              onClick={handleFinalize}
+              className="w-full py-5 bg-black text-white rounded-full font-bold text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-black/10"
+            >
+              {loading ? 'İşlem Onaylanıyor...' : 'Aboneliği Başlat'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

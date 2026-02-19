@@ -18,7 +18,7 @@ const App: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   
-  const [doctors, setDoctors] = useState<User[]>([]);
+  // Fixed: Removed doctors state as it's not provided by current DatabaseService and not needed by SuperAdminDashboard (it fetches its own)
   const [patients, setPatients] = useState<Patient[]>([]);
   const [scanHistory, setScanHistory] = useState<ScanResult[]>([]);
 
@@ -67,10 +67,9 @@ const App: React.FC = () => {
       const fetchData = async () => {
         setIsSyncing(true);
         try {
-          if (currentUser.role === UserRole.SUPER_ADMIN) {
-            const docs = await DatabaseService.getDoctors();
-            setDoctors(docs);
-          } else {
+          // Fixed: Removed DatabaseService.getDoctors call as it doesn't exist.
+          // Data fetching is now scoped to UserRole.DOCTOR for patients and scans.
+          if (currentUser.role === UserRole.DOCTOR) {
             const [pts, scans] = await Promise.all([
               DatabaseService.getPatients(currentUser.id),
               DatabaseService.getScans()
@@ -139,14 +138,9 @@ const App: React.FC = () => {
 
         {/* Dashboard Content */}
         {currentUser?.role === UserRole.SUPER_ADMIN ? (
+          /* Fixed: Removed doctors and onAddDoctor props as SuperAdminDashboard doesn't define them in its Props interface */
           <SuperAdminDashboard 
             activeTab={activeTab}
-            doctors={doctors} 
-            onAddDoctor={async (d) => {
-              setIsSyncing(true);
-              try { await DatabaseService.saveDoctor(d); checkUserStatus(); } catch(e) { alert(e.message); }
-              setIsSyncing(false);
-            }} 
           />
         ) : (
           currentUser && <DoctorDashboard 

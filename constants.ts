@@ -4,27 +4,26 @@ import { Package, User } from './types';
 export const PACKAGES: Package[] = [
   {
     id: 'basic',
-    name: 'Başlangıç Kliniği',
-    price: 99,
+    name: 'Temel Klinik',
+    price: 1990,
     limit: 50,
-    features: ['50 Bebek Yüzü Üretimi', 'Hasta Yönetimi', 'Temel Destek']
+    features: ['50 AI Analiz / Ay', 'Hasta Kayıt Sistemi', 'Standart Bulut Depolama', 'E-posta Desteği']
   },
   {
     id: 'pro',
     name: 'Profesyonel',
-    price: 299,
-    limit: 200,
-    features: ['200 Bebek Yüzü Üretimi', 'Yüksek Çözünürlüklü Çıktı', 'Öncelikli Destek', 'PDF Dışa Aktarma']
+    price: 4990,
+    limit: 250,
+    features: ['250 AI Analiz / Ay', '2K Yüksek Çözünürlük', 'Öncelikli İşleme', 'WhatsApp Destek Hattı']
   },
   {
     id: 'enterprise',
-    name: 'Hastane Ağı',
-    price: 999,
+    name: 'Hastane Grubu',
+    price: 12490,
     limit: 1000,
-    features: ['1000 Bebek Yüzü Üretimi', 'Özel Markalama', 'API Erişimi', '7/24 Destek']
+    features: ['Sınırsız AI Analiz', 'Özel Markalama', 'API Entegrasyonu', '7/24 Teknik Destek']
   }
 ];
 
-// Demo verileri kaldırıldı, uygulama boş veritabanı ile başlar.
 export const INITIAL_DOCTORS: User[] = [];
 export const INITIAL_PATIENTS = [];
