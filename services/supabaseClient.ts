@@ -5,11 +5,14 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
 export const isSupabaseConfigured = () => {
-  return !!supabaseUrl && !!supabaseAnonKey && !supabaseUrl.includes('placeholder');
+  // Eğer değişkenler undefined ise veya hala 'placeholder' içeriyorsa false döner
+  if (!supabaseUrl || !supabaseAnonKey) return false;
+  if (supabaseUrl.includes('placeholder')) return false;
+  return true;
 };
 
 if (!isSupabaseConfigured()) {
-  console.warn("NEXUS: Supabase yapılandırması eksik! Vercel panelinde SUPABASE_URL ve SUPABASE_ANON_KEY tanımlanmalıdır.");
+  console.error("NEXUS ERROR: Supabase URL veya Key bulunamadı. Vercel panelinden değişkenleri ekleyin ve RE-DEPLOY yapın.");
 }
 
 export const supabase = createClient(

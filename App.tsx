@@ -94,6 +94,7 @@ const App: React.FC = () => {
     }
   }, [currentUser, currentPage]);
 
+  // EĞER AYARLAR YOKSA KIRMIZI UYARI EKRANINI GÖSTERİR
   if (!isSupabaseConfigured()) {
     return (
       <div className="h-screen flex items-center justify-center bg-[#F9F9F9] p-8 text-center">
@@ -101,13 +102,17 @@ const App: React.FC = () => {
           <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-8">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
           </div>
-          <h2 className="text-2xl font-black uppercase tracking-tighter mb-4">Yapılandırma Eksik</h2>
+          <h2 className="text-2xl font-black uppercase tracking-tighter mb-4">Sistem Bağlantısı Yok</h2>
           <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">
-            Nexus bulut servisine bağlanılamadı. Lütfen Vercel panelinden <b>SUPABASE_URL</b> ve <b>SUPABASE_ANON_KEY</b> değişkenlerini tanımlayın.
+            Nexus hala <b>placeholder-project</b> adresine bağlanmaya çalışıyor. Vercel Environment Variables ayarlarını yaptıktan sonra uygulamayı yeniden <b>Deploy</b> etmelisiniz.
           </p>
-          <div className="flex flex-col gap-3">
-             <code className="bg-slate-50 p-3 rounded-xl text-[10px] text-slate-400 break-all font-mono">ERR_SUPABASE_NOT_DEFINED</code>
-             <button onClick={() => window.location.reload()} className="mt-4 px-8 py-4 bg-black text-white rounded-full font-black uppercase tracking-widest text-xs">Tekrar Dene</button>
+          <div className="flex flex-col gap-3 text-left">
+             <p className="text-[10px] font-bold text-slate-400 uppercase ml-2">Beklenen Değişkenler:</p>
+             <code className="bg-slate-50 p-4 rounded-xl text-[11px] text-slate-500 break-all font-mono">
+               SUPABASE_URL<br/>
+               SUPABASE_ANON_KEY
+             </code>
+             <button onClick={() => window.location.reload()} className="mt-6 px-8 py-4 bg-black text-white rounded-full font-black uppercase tracking-widest text-xs">Ayarları Kontrol Ettim, Yeniden Yükle</button>
           </div>
         </div>
       </div>
