@@ -1,14 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Vite'in define ile enjekte ettiği değişkenleri doğrudan kullanıyoruz
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
+// Vite defines process.env via vite.config.ts
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('placeholder')) {
-  console.error("NEXUS: Supabase yapılandırması eksik! Lütfen Vercel panelinde SUPABASE_URL ve SUPABASE_ANON_KEY değişkenlerini tanımlayın.");
+export const isSupabaseConfigured = () => {
+  return !!supabaseUrl && !!supabaseAnonKey && !supabaseUrl.includes('placeholder');
+};
+
+if (!isSupabaseConfigured()) {
+  console.warn("NEXUS: Supabase yapılandırması eksik! Vercel panelinde SUPABASE_URL ve SUPABASE_ANON_KEY tanımlanmalıdır.");
 }
 
 export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co', 
-  supabaseAnonKey || 'placeholder'
+  supabaseUrl || 'https://placeholder-project.supabase.co', 
+  supabaseAnonKey || 'placeholder-key'
 );

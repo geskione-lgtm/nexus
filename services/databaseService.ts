@@ -1,4 +1,3 @@
-
 import { supabase } from './supabaseClient';
 import { User, Patient, ScanResult, UserRole } from '../types';
 
@@ -20,7 +19,7 @@ export const DatabaseService = {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error || !data) return null;
       
@@ -40,11 +39,19 @@ export const DatabaseService = {
 
   async isSystemEmpty(): Promise<boolean> {
     if (!isConfigured()) return true;
-    const { count, error } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true });
-    if (error) return true;
-    return count === 0;
+    try {
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+      
+      if (error) {
+        console.warn("NEXUS: Tablo henüz oluşturulmamış olabilir veya erişim hatası:", error);
+        return true; 
+      }
+      return count === 0;
+    } catch (e) {
+      return true;
+    }
   },
 
   async createInitialProfile(userData: { id: string, name: string, email: string, role: UserRole }): Promise<User> {
@@ -55,7 +62,8 @@ export const DatabaseService = {
         name: userData.name,
         email: userData.email,
         role: userData.role,
-        clinic_name: userData.role === UserRole.SUPER_ADMIN ? 'Merkez Yönetim' : 'Yeni Klinik'
+        clinic_name: userData.role === UserRole.SUPER_ADMIN ? 'Merkez Yönetim' : 'Yeni Klinik',
+        package_id: 'pro'
       }])
       .select()
       .single();
@@ -91,14 +99,13 @@ export const DatabaseService = {
         packageId: d.package_id
       }));
     } catch (e) {
-      console.error("NEXUS: Doktorlar çekilemedi:", e);
       return [];
     }
   },
 
   async saveDoctor(doctor: User): Promise<User> {
-    if (!isConfigured()) throw new Error("Supabase yapılandırması eksik.");
-    
+    // Not: Süper admin yeni doktor eklediğinde auth.users'a eklenmesi gerekir.
+    // Bu demo sürümünde sadece profil tablosuna ekliyoruz.
     const { data, error } = await supabase
       .from('profiles')
       .insert([{
@@ -140,17 +147,14 @@ export const DatabaseService = {
         name: p.name,
         weeksPregnant: p.weeks_pregnant,
         doctorId: p.doctor_id,
-        last_scan_date: p.last_scan_date
+        lastScanDate: p.last_scan_date
       }));
     } catch (e) {
-      console.error("NEXUS: Hastalar çekilemedi:", e);
       return [];
     }
   },
 
   async savePatient(patient: Omit<Patient, 'id'>): Promise<Patient> {
-    if (!isConfigured()) throw new Error("Supabase yapılandırması eksik.");
-    
     const { data, error } = await supabase
       .from('patients')
       .insert([{
@@ -173,34 +177,7 @@ export const DatabaseService = {
     };
   },
 
-  // --- SCANS & STORAGE ---
-  async uploadImage(file: Blob, path: string): Promise<string> {
-    if (!isConfigured()) throw new Error("Supabase yapılandırması eksik.");
-    
-    const fileName = `${path}/${Date.now()}.png`;
-    try {
-      const { data, error } = await supabase.storage
-        .from('ultrasounds')
-        .upload(fileName, file);
-
-      if (error) {
-        if (error.message.includes('bucket not found')) {
-          throw new Error("Supabase Storage Hatası: 'ultrasounds' adında bir PUBLIC bucket oluşturmanız gerekiyor.");
-        }
-        throw error;
-      }
-      
-      const { data: { publicUrl } } = supabase.storage
-        .from('ultrasounds')
-        .getPublicUrl(data.path);
-        
-      return publicUrl;
-    } catch (e: any) {
-      console.error("NEXUS: Görsel yükleme hatası:", e);
-      throw e;
-    }
-  },
-
+  // --- SCANS ---
   async getScans(patientId?: string): Promise<ScanResult[]> {
     if (!isConfigured()) return [];
     
@@ -219,14 +196,11 @@ export const DatabaseService = {
         createdAt: new Date(s.created_at).toLocaleDateString('tr-TR')
       }));
     } catch (e) {
-      console.error("NEXUS: Taramalar çekilemedi:", e);
       return [];
     }
   },
 
   async saveScan(scan: Omit<ScanResult, 'id' | 'createdAt'>): Promise<ScanResult> {
-    if (!isConfigured()) throw new Error("Supabase yapılandırması eksik.");
-    
     const { data, error } = await supabase
       .from('scans')
       .insert([{
