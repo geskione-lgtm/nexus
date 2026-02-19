@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Vite defines process.env via vite.config.ts mappings
+// process.env values are replaced by Vite's define plugin during build
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
@@ -10,7 +10,7 @@ export const isSupabaseConfigured = () => {
   const urlStr = String(supabaseUrl);
   const keyStr = String(supabaseAnonKey);
   
-  // Hem undefined (literal string) hem de gerçek undefined kontrolü
+  // Literal string "undefined" check (common in failed Vite defines)
   if (urlStr === 'undefined' || keyStr === 'undefined' || urlStr === '' || keyStr === '') return false;
   if (urlStr.includes('placeholder')) return false;
   
@@ -18,7 +18,7 @@ export const isSupabaseConfigured = () => {
 };
 
 if (!isSupabaseConfigured()) {
-  console.error("NEXUS CONFIG ERROR: Değişkenler build sırasında koda gömülemedi.");
+  console.error("NEXUS CONFIG ERROR: Supabase bağlantı bilgileri bulunamadı. Lütfen Vercel panelinde VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY tanımladığınızdan emin olun.");
 }
 
 export const supabase = createClient(

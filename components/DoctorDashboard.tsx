@@ -42,14 +42,14 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, doctor, pat
         <div className="mb-8 flex justify-between items-center">
            <button 
               onClick={() => { setActiveTab('dashboard'); setSelectedPatient(null); }}
-              className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-black transition-colors"
+              className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors"
            >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-              Stüdyo Oturumunu Kapat
+              Stüdyodan Çık
            </button>
            {selectedPatient && (
-             <div className="px-6 py-2 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest">
-                Hasta: {selectedPatient.name}
+             <div className="px-5 py-2 bg-slate-900 text-white rounded-full text-[10px] font-bold uppercase tracking-widest">
+                Aktif Hasta: {selectedPatient.name}
              </div>
            )}
         </div>
@@ -61,142 +61,99 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, doctor, pat
             history={scanHistory.filter(s => s.patientId === selectedPatient.id)}
           />
         ) : (
-          <div className="bg-white rounded-[40px] p-20 text-center border border-slate-100">
-             <h3 className="text-xl font-black uppercase mb-4">Önce Bir Hasta Seçin</h3>
-             <p className="text-slate-400 text-sm mb-8">Görüntüleme stüdyosuna erişmek için aktif bir hasta profili gereklidir.</p>
-             <button onClick={() => setActiveTab('patients')} className="px-10 py-4 bg-black text-white rounded-full text-xs font-black uppercase tracking-widest">Hasta Listesine Git</button>
+          <div className="bg-white rounded-[32px] p-16 text-center border border-slate-100">
+             <h3 className="text-lg font-bold text-slate-900 mb-2">Hasta Seçimi Gerekli</h3>
+             <p className="text-slate-400 text-sm mb-8 font-medium">Görüntüleme için lütfen hasta listesinden bir seçim yapın.</p>
+             <button onClick={() => setActiveTab('patients')} className="px-8 py-3 bg-slate-900 text-white rounded-full text-[11px] font-bold uppercase tracking-widest hover:bg-black transition-colors">Hastaları Listele</button>
           </div>
         )}
       </div>
     );
   }
 
-  if (activeTab === 'analytics') {
-    return (
-      <div className="space-y-8 animate-in fade-in duration-500">
-         <h2 className="text-2xl font-black uppercase tracking-tighter">İşlem Günlükleri</h2>
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-[40px] border border-slate-100">
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Başarı Oranı</p>
-               <p className="text-4xl font-black">%99.4</p>
-            </div>
-            <div className="bg-white p-8 rounded-[40px] border border-slate-100">
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Ortalama İşlem</p>
-               <p className="text-4xl font-black">12.4s</p>
-            </div>
-            <div className="bg-white p-8 rounded-[40px] border border-slate-100">
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Data Safe</p>
-               <p className="text-4xl font-black">AKTİF</p>
-            </div>
-         </div>
-         <div className="bg-white rounded-[40px] p-10 border border-slate-100">
-            <div className="space-y-4">
-               {scanHistory.map((s, i) => (
-                 <div key={i} className="flex items-center justify-between text-xs py-4 border-b border-slate-50 last:border-0">
-                    <span className="font-bold uppercase tracking-tight">TARAMA ID: {s.id}</span>
-                    <span className="text-slate-400 font-medium">{s.createdAt}</span>
-                    <span className="text-nexus-green font-black uppercase tracking-widest">TAMAMLANDI</span>
-                 </div>
-               ))}
-               {scanHistory.length === 0 && <p className="text-center py-10 text-slate-400 font-bold uppercase tracking-widest text-xs">Henüz işlem kaydı bulunmuyor.</p>}
-            </div>
-         </div>
-      </div>
-    );
-  }
-
-  // Dashboard & Patient List Tabs
   return (
-    <div className="space-y-12 animate-in fade-in duration-500">
-      {(activeTab === 'dashboard' || activeTab === 'patients') && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <NexusStatMini title="Kayıtlı Hastalar" value={patients.length} icon="👤" />
-            <NexusStatMini title="İşlenen Taramalar" value={scanHistory.length} icon="💾" />
-            <NexusStatMini title="Lisans Kredisi" value="Sınırsız" icon="🔋" />
-            <NexusStatMini title="Sistem Sağlığı" value="100%" icon="🟢" />
+    <div className="space-y-10 animate-in fade-in duration-500">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <NexusStatMini title="Kayıtlı Hastalar" value={patients.length} icon="👤" />
+        <NexusStatMini title="Toplam İşlem" value={scanHistory.length} icon="💾" />
+        <NexusStatMini title="Lisans Kredisi" value="Sınırsız" icon="🔋" />
+        <NexusStatMini title="Sistem Durumu" value="Aktif" icon="🟢" />
+      </div>
+
+      <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-8 border-b border-slate-50 flex justify-between items-center">
+          <div>
+             <h2 className="text-lg font-bold tracking-tight text-slate-900 uppercase">Hasta Veritabanı</h2>
+             <p className="text-xs font-medium text-slate-400 mt-1">Takip altındaki hasta profilleri</p>
           </div>
+          <button 
+            onClick={() => setShowPatientForm(!showPatientForm)}
+            className="px-6 py-2.5 bg-slate-900 text-white rounded-full text-[11px] font-bold uppercase tracking-widest hover:bg-black transition-colors"
+          >
+            {showPatientForm ? 'Kapat' : '+ Yeni Hasta Kaydı'}
+          </button>
+        </div>
 
-          <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
-            <div className="p-10 border-b border-slate-50 flex justify-between items-center">
-              <div>
-                 <h2 className="text-2xl font-black tracking-tighter uppercase text-black">Hasta Veritabanı</h2>
-                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Yetkili Bakım Profilleri</p>
-              </div>
-              <button 
-                onClick={() => setShowPatientForm(!showPatientForm)}
-                className="px-8 py-3 bg-black text-white rounded-full text-xs font-black uppercase tracking-widest hover:scale-105 transition-transform"
-              >
-                {showPatientForm ? 'Formu Kapat' : '+ Yeni Hasta Profili'}
-              </button>
+        {showPatientForm && (
+          <form onSubmit={handlePatientSubmit} className="p-8 bg-[#f9f9f9] border-b border-slate-100 flex flex-wrap gap-4 items-end animate-in slide-in-from-top duration-300">
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Ad Soyad</label>
+              <input required placeholder="Hasta Adı" className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-nexus-green outline-none text-sm" value={newPatient.name} onChange={e => setNewPatient({...newPatient, name: e.target.value})} />
             </div>
-
-            {showPatientForm && (
-              <form onSubmit={handlePatientSubmit} className="p-10 bg-[#f9f9f9] border-b border-slate-100 flex flex-wrap gap-6 items-end animate-in slide-in-from-top duration-300">
-                <div className="flex-1 min-w-[250px]">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Hasta Ad Soyad</label>
-                  <input required placeholder="Resmi Kimlik Adı" className="w-full px-6 py-4 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-nexus-green outline-none" value={newPatient.name} onChange={e => setNewPatient({...newPatient, name: e.target.value})} />
-                </div>
-                <div className="w-40">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Gebelik Haftası</label>
-                  <input required type="number" min="1" max="42" className="w-full px-6 py-4 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-nexus-green outline-none" value={newPatient.weeksPregnant} onChange={e => setNewPatient({...newPatient, weeksPregnant: parseInt(e.target.value)})} />
-                </div>
-                <button type="submit" className="px-10 py-4 bg-nexus-green text-white rounded-2xl font-black uppercase tracking-widest text-xs">Oluştur</button>
-              </form>
-            )}
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-[#fafafa] text-slate-400 text-[10px] font-black uppercase tracking-[0.15em]">
-                  <tr>
-                    <th className="px-10 py-6">Hasta Kimliği</th>
-                    <th className="px-10 py-6">Gebelik Süreci</th>
-                    <th className="px-10 py-6">Son İşlem</th>
-                    <th className="px-10 py-6">Durum</th>
-                    <th className="px-10 py-6">Aksiyon</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {patients.map(p => (
-                    <tr key={p.id} className="hover:bg-[#fcfcfc] transition-colors group">
-                      <td className="px-10 py-8 font-bold text-black uppercase text-sm tracking-tight">{p.name}</td>
-                      <td className="px-10 py-8 text-slate-600 font-bold text-sm">{p.weeksPregnant} HAFTA</td>
-                      <td className="px-10 py-8 text-slate-400 text-xs font-medium">{p.lastScanDate}</td>
-                      <td className="px-10 py-8">
-                        <span className="px-3 py-1 bg-black text-white rounded-full text-[9px] font-black uppercase tracking-widest">Aktif Takip</span>
-                      </td>
-                      <td className="px-10 py-8">
-                        <button 
-                          onClick={() => startStudio(p)}
-                          className="px-8 py-3 bg-white border border-slate-200 text-black rounded-full text-xs font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
-                        >
-                          Stüdyoyu Başlat
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {patients.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-10 py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Henüz kayıtlı hasta profili bulunmuyor.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+            <div className="w-32">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Hafta</label>
+              <input required type="number" min="1" max="42" className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-nexus-green outline-none text-sm" value={newPatient.weeksPregnant} onChange={e => setNewPatient({...newPatient, weeksPregnant: parseInt(e.target.value)})} />
             </div>
-          </div>
-        </>
-      )}
+            <button type="submit" className="px-8 py-3 bg-nexus-green text-white rounded-xl font-bold uppercase tracking-widest text-[11px]">Kaydet</button>
+          </form>
+        )}
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-[#fafafa] text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+              <tr>
+                <th className="px-8 py-5">Hasta Adı</th>
+                <th className="px-8 py-5">Gebelik Haftası</th>
+                <th className="px-8 py-5">Son Tarama</th>
+                <th className="px-8 py-5 text-right">İşlem</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {patients.map(p => (
+                <tr key={p.id} className="hover:bg-[#fcfcfc] transition-colors group">
+                  <td className="px-8 py-6 font-semibold text-slate-900 text-sm tracking-tight">{p.name}</td>
+                  <td className="px-8 py-6 text-slate-600 font-bold text-xs">{p.weeksPregnant}. HAFTA</td>
+                  <td className="px-8 py-6 text-slate-400 text-xs font-medium">{p.lastScanDate}</td>
+                  <td className="px-8 py-6 text-right">
+                    <button 
+                      onClick={() => startStudio(p)}
+                      className="px-5 py-2 bg-white border border-slate-200 text-slate-900 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all"
+                    >
+                      Sentezleyiciyi Aç
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {patients.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-8 py-16 text-center text-slate-400 font-semibold uppercase tracking-widest text-[11px]">Kayıtlı hasta bulunmuyor.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
 
 const NexusStatMini: React.FC<{ title: string; value: string | number; icon: string }> = ({ title, value, icon }) => (
-  <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm flex justify-between items-center group hover:border-nexus-green transition-colors">
+  <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex justify-between items-center group hover:border-nexus-green transition-colors">
     <div>
-      <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-2">{title}</p>
-      <p className="text-2xl font-black text-black tracking-tight">{value}</p>
+      <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1.5">{title}</p>
+      <p className="text-xl font-bold text-slate-900 tracking-tight">{value}</p>
     </div>
-    <div className="text-xl bg-[#f9f9f9] w-10 h-10 flex items-center justify-center rounded-full group-hover:bg-nexus-green group-hover:text-white transition-colors">{icon}</div>
+    <div className="text-lg bg-slate-50 w-10 h-10 flex items-center justify-center rounded-full group-hover:bg-nexus-green group-hover:text-white transition-colors">{icon}</div>
   </div>
 );
 
