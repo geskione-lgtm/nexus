@@ -1,15 +1,10 @@
-import { supabase } from './supabaseClient';
+import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { User, Patient, ScanResult, UserRole } from '../types';
-
-const isConfigured = () => {
-  const { supabaseUrl } = (supabase as any);
-  return supabaseUrl && !supabaseUrl.includes('placeholder');
-};
 
 export const DatabaseService = {
   // --- AUTH & PROFILES ---
   async getCurrentProfile(): Promise<User | null> {
-    if (!isConfigured()) return null;
+    if (!isSupabaseConfigured()) return null;
     
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -32,20 +27,20 @@ export const DatabaseService = {
         packageId: data.package_id
       };
     } catch (e) {
-      console.error("NEXUS: Profil kontrol hatası:", e);
+      console.error("NEXUS: Profil çekme hatası:", e);
       return null;
     }
   },
 
   async isSystemEmpty(): Promise<boolean> {
-    if (!isConfigured()) return true;
+    if (!isSupabaseConfigured()) return true;
     try {
       const { count, error } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true });
       
       if (error) {
-        console.warn("NEXUS: Tablo henüz oluşturulmamış olabilir veya erişim hatası:", error);
+        console.warn("NEXUS: Tablo kontrol hatası (tablolar henüz oluşturulmamış olabilir):", error);
         return true; 
       }
       return count === 0;
@@ -80,7 +75,7 @@ export const DatabaseService = {
   },
 
   async getDoctors(): Promise<User[]> {
-    if (!isConfigured()) return [];
+    if (!isSupabaseConfigured()) return [];
     
     try {
       const { data, error } = await supabase
@@ -104,8 +99,6 @@ export const DatabaseService = {
   },
 
   async saveDoctor(doctor: User): Promise<User> {
-    // Not: Süper admin yeni doktor eklediğinde auth.users'a eklenmesi gerekir.
-    // Bu demo sürümünde sadece profil tablosuna ekliyoruz.
     const { data, error } = await supabase
       .from('profiles')
       .insert([{
@@ -132,7 +125,7 @@ export const DatabaseService = {
 
   // --- PATIENTS ---
   async getPatients(doctorId: string): Promise<Patient[]> {
-    if (!isConfigured()) return [];
+    if (!isSupabaseConfigured()) return [];
     
     try {
       const { data, error } = await supabase
@@ -179,7 +172,7 @@ export const DatabaseService = {
 
   // --- SCANS ---
   async getScans(patientId?: string): Promise<ScanResult[]> {
-    if (!isConfigured()) return [];
+    if (!isSupabaseConfigured()) return [];
     
     try {
       let query = supabase.from('scans').select('*').order('created_at', { ascending: false });
