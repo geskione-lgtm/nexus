@@ -72,7 +72,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, doctor, pat
       </div>
 
       {showPatientForm && (
-        <form onSubmit={(e) => { e.preventDefault(); onAddPatient({...newPatient, id: '', doctorId: doctor.id, lastScanDate: new Date().toLocaleDateString('tr-TR')}); setShowPatientForm(false); }} className="p-10 apple-card rounded-[32px] flex flex-wrap gap-8 items-end animate-in slide-in-from-top-4 duration-500">
+        <form onSubmit={(e) => { e.preventDefault(); onAddPatient({...newPatient, id: '', doctorId: doctor.id, lastScanDate: new Date().toISOString().split('T')[0]}); setShowPatientForm(false); }} className="p-10 apple-card rounded-[32px] flex flex-wrap gap-8 items-end animate-in slide-in-from-top-4 duration-500">
           <div className="flex-1 min-w-[300px] space-y-2">
             <label className="text-[10px] font-bold text-apple-gray uppercase px-1">Hasta Adı Soyadı</label>
             <input required className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white transition-all shadow-inner" value={newPatient.name} onChange={e => setNewPatient({...newPatient, name: e.target.value})} />
