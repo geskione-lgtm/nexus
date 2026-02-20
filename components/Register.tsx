@@ -2,12 +2,12 @@
 import React, { useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 
-interface LoginProps {
+interface RegisterProps {
   onBack: () => void;
-  onSwitchToRegister: () => void;
+  onSwitchToLogin: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onBack, onSwitchToRegister }) => {
+const Register: React.FC<RegisterProps> = ({ onBack, onSwitchToLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,8 +17,9 @@ const Login: React.FC<LoginProps> = ({ onBack, onSwitchToRegister }) => {
     if (!isSupabaseConfigured()) return;
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
+      alert("Hesap oluşturuldu! Şimdi profilinizi tamamlayın.");
     } catch (err: any) {
       alert("Hata: " + err.message);
     } finally {
@@ -34,7 +35,7 @@ const Login: React.FC<LoginProps> = ({ onBack, onSwitchToRegister }) => {
             <div className="w-7 h-7 bg-white rounded-sm"></div>
           </div>
           <h2 className="text-3xl font-bold text-black tracking-tight mb-3">
-            Nexus'a Giriş Yap
+            Klinik Kaydı Oluştur
           </h2>
           <p className="text-apple-gray text-xs font-semibold uppercase tracking-widest leading-loose">
             Yapay Zeka Destekli Fetal Görüntüleme
@@ -56,16 +57,16 @@ const Login: React.FC<LoginProps> = ({ onBack, onSwitchToRegister }) => {
             disabled={loading}
             className="w-full py-4.5 bg-black text-white rounded-2xl font-bold text-sm uppercase tracking-widest mt-6 hover:scale-[1.01] active:scale-[0.98] transition-all shadow-xl shadow-black/10"
           >
-            {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+            {loading ? 'İşlem Yapılıyor...' : 'Devam Et'}
           </button>
         </form>
 
         <div className="mt-10">
           <button 
-            onClick={onSwitchToRegister}
+            onClick={onSwitchToLogin}
             className="text-apple-gray text-[10px] font-bold uppercase tracking-widest hover:text-black transition-colors"
           >
-            Yeni bir hesap oluştur
+            Zaten bir hesabın mı var? Giriş yap
           </button>
         </div>
 
@@ -77,4 +78,4 @@ const Login: React.FC<LoginProps> = ({ onBack, onSwitchToRegister }) => {
   );
 };
 
-export default Login;
+export default Register;

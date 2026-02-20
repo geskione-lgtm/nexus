@@ -104,7 +104,10 @@ export const DatabaseService = {
   },
 
   async getDoctorsWithStats(): Promise<any[]> {
-    if (!isSupabaseConfigured()) return []
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured. Skipping getDoctorsWithStats.');
+      return [];
+    }
 
     try {
       // Fetch all doctors, patients, and scans separately for reliable mapping
@@ -114,7 +117,16 @@ export const DatabaseService = {
         supabase.from('scans').select('id, patient_id')
       ])
 
-      if (doctorsRes.error) throw doctorsRes.error
+      if (doctorsRes.error) {
+        console.error('Error fetching doctors:', doctorsRes.error);
+        throw doctorsRes.error;
+      }
+      if (patientsRes.error) {
+        console.error('Error fetching patients for stats:', patientsRes.error);
+      }
+      if (scansRes.error) {
+        console.error('Error fetching scans for stats:', scansRes.error);
+      }
 
       const doctors = doctorsRes.data || []
       const patients = patientsRes.data || []
@@ -136,20 +148,29 @@ export const DatabaseService = {
         }
       })
     } catch (e) {
-      console.error('Error in getDoctorsWithStats:', e)
+      console.error('Critical error in getDoctorsWithStats:', e)
       return []
     }
   },
 
   async getAllPatientsWithDoctorInfo(): Promise<any[]> {
-    if (!isSupabaseConfigured()) return []
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured. Skipping getAllPatientsWithDoctorInfo.');
+      return [];
+    }
     try {
       const [patientsRes, doctorsRes] = await Promise.all([
         supabase.from('patients').select('*'),
         supabase.from('profiles').select('id, clinic_name, name').eq('role', UserRole.DOCTOR)
       ])
 
-      if (patientsRes.error) throw patientsRes.error
+      if (patientsRes.error) {
+        console.error('Error fetching all patients:', patientsRes.error);
+        throw patientsRes.error;
+      }
+      if (doctorsRes.error) {
+        console.error('Error fetching doctors for patient info:', doctorsRes.error);
+      }
 
       const patients = patientsRes.data || []
       const doctors = doctorsRes.data || []
@@ -159,7 +180,7 @@ export const DatabaseService = {
         profiles: doctors.find(d => d.id === p.doctor_id)
       }))
     } catch (e) {
-      console.error('Error in getAllPatientsWithDoctorInfo:', e)
+      console.error('Critical error in getAllPatientsWithDoctorInfo:', e)
       return []
     }
   },
@@ -168,7 +189,11 @@ export const DatabaseService = {
     if (!isSupabaseConfigured()) return []
 
     const { data, error } = await supabase.from('patients').select('*').eq('doctor_id', doctorId)
-    if (error || !data) return []
+    if (error) {
+      console.error('Error fetching patients for doctor:', error);
+      return [];
+    }
+    if (!data) return []
 
     return data.map((p: any) => ({
       id: p.id,
@@ -209,7 +234,11 @@ export const DatabaseService = {
     if (!isSupabaseConfigured()) return []
 
     const { data, error } = await supabase.from('scans').select('*').order('created_at', { ascending: false })
-    if (error || !data) return []
+    if (error) {
+      console.error('Error fetching scans:', error);
+      return [];
+    }
+    if (!data) return []
 
     return data.map((s: any) => ({
       id: s.id,

@@ -8,11 +8,12 @@ import DoctorDashboard from './components/DoctorDashboard';
 import Landing from './components/Landing';
 import Sidebar from './components/Sidebar';
 import Login from './components/Login';
+import Register from './components/Register';
 import CloudStatus from './components/CloudStatus';
 import Onboarding from './components/Onboarding';
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<'landing' | 'login' | 'dashboard' | 'onboarding'>('landing');
+  const [currentPage, setCurrentPage] = useState<'landing' | 'login' | 'register' | 'dashboard' | 'onboarding'>('landing');
   const [activeTab, setActiveTab] = useState('dashboard');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -95,11 +96,15 @@ const App: React.FC = () => {
   }
 
   if (currentPage === 'landing') {
-    return <Landing onAccessPortal={() => setCurrentPage('login')} />;
+    return <Landing onLogin={() => setCurrentPage('login')} onRegister={() => setCurrentPage('register')} />;
   }
 
   if (currentPage === 'login' && !currentUser) {
-    return <Login onBack={() => setCurrentPage('landing')} />;
+    return <Login onBack={() => setCurrentPage('landing')} onSwitchToRegister={() => setCurrentPage('register')} />;
+  }
+
+  if (currentPage === 'register' && !currentUser) {
+    return <Register onBack={() => setCurrentPage('landing')} onSwitchToLogin={() => setCurrentPage('login')} />;
   }
 
   if (currentPage === 'onboarding') {

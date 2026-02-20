@@ -3,10 +3,11 @@ import React from 'react';
 import { PACKAGES } from '../constants';
 
 interface Props {
-  onAccessPortal: () => void;
+  onLogin: () => void;
+  onRegister: () => void;
 }
 
-const Landing: React.FC<Props> = ({ onAccessPortal }) => {
+const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -32,8 +33,8 @@ const Landing: React.FC<Props> = ({ onAccessPortal }) => {
           </div>
 
           <div className="flex items-center gap-6">
-            <button onClick={onAccessPortal} className="text-sm font-bold text-slate-700 hover:text-black">Giriş Yap</button>
-            <button onClick={onAccessPortal} className="bg-black text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all">
+            <button onClick={onLogin} className="text-sm font-bold text-slate-700 hover:text-black">Giriş Yap</button>
+            <button onClick={onRegister} className="bg-black text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all">
               Hemen Başla
             </button>
           </div>
@@ -58,11 +59,17 @@ const Landing: React.FC<Props> = ({ onAccessPortal }) => {
             </p>
             <div className="flex flex-wrap gap-4">
               <button 
-                onClick={onAccessPortal}
+                onClick={onRegister}
                 className="bg-black text-white px-10 py-5 rounded-full font-bold flex items-center gap-3 hover:scale-105 transition-transform shadow-xl shadow-black/10"
               >
-                Sisteme Eriş
+                Hemen Başla
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              </button>
+              <button 
+                onClick={onLogin}
+                className="px-10 py-5 rounded-full font-bold flex items-center gap-3 border border-black/10 hover:bg-black/5 transition-all"
+              >
+                Giriş Yap
               </button>
             </div>
           </div>
@@ -168,7 +175,7 @@ const Landing: React.FC<Props> = ({ onAccessPortal }) => {
                       ))}
                    </ul>
                    <button 
-                     onClick={onAccessPortal}
+                     onClick={onRegister}
                      className="w-full py-5 rounded-3xl bg-black text-white font-black uppercase tracking-widest text-xs group-hover:bg-nexus-green transition-colors"
                    >
                      Hemen Başlat
