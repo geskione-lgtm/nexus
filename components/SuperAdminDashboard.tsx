@@ -10,6 +10,7 @@ interface Props {
 
 const SuperAdminDashboard: React.FC<Props> = ({ activeTab }) => {
   const [doctors, setDoctors] = useState<any[]>([]);
+  const [allPatients, setAllPatients] = useState<any[]>([]);
   const [packages, setPackages] = useState<Package[]>(INITIAL_PACKAGES);
   const [loading, setLoading] = useState(true);
   const [editingPackage, setEditingPackage] = useState<Package | null>(null);
@@ -17,12 +18,26 @@ const SuperAdminDashboard: React.FC<Props> = ({ activeTab }) => {
 
   useEffect(() => {
     const fetch = async () => {
-      const data = await DatabaseService.getDoctorsWithStats();
-      setDoctors(data);
+      setLoading(true);
+      if (activeTab === 'dashboard') {
+        const data = await DatabaseService.getDoctorsWithStats();
+        setDoctors(data);
+      } else if (activeTab === 'patients') {
+        const data = await DatabaseService.getAllPatientsWithDoctorInfo();
+        setAllPatients(data);
+      }
       setLoading(false);
     };
     fetch();
   }, [activeTab]);
+
+  const maskName = (name: string) => {
+    return name.split(' ').map(part => {
+      if (!part) return '';
+      if (part.length <= 1) return part;
+      return part[0] + '.'.repeat(part.length - 1);
+    }).join(' ');
+  };
 
   const handleSavePackage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,6 +170,54 @@ const SuperAdminDashboard: React.FC<Props> = ({ activeTab }) => {
     );
   }
 
+  if (activeTab === 'patients') {
+    return (
+      <div className="space-y-12 animate-in fade-in duration-700">
+        <div>
+          <p className="text-apple-gray text-xs font-semibold mb-1 uppercase tracking-widest">Veri Güvenliği</p>
+          <h2 className="text-4xl font-bold text-black tracking-tight">Hasta Havuzu (Maskelenmiş)</h2>
+        </div>
+
+        <div className="apple-card rounded-[40px] overflow-hidden">
+          <table className="w-full text-left">
+            <thead className="bg-[#FAFAFB] text-apple-gray text-[10px] font-bold uppercase tracking-widest border-b border-black/5">
+              <tr>
+                <th className="px-10 py-6">Hasta Kimliği (Maskeli)</th>
+                <th className="px-10 py-6">Bağlı Klinik</th>
+                <th className="px-10 py-6">Kayıt Tarihi</th>
+                <th className="px-10 py-6 text-right">Durum</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/[0.03]">
+              {allPatients.map(patient => (
+                <tr key={patient.id} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="px-10 py-8 font-bold text-black text-base">
+                    {maskName(patient.name)}
+                  </td>
+                  <td className="px-10 py-8">
+                    <div className="text-black font-semibold text-xs">{patient.profiles?.clinic_name || 'Bilinmiyor'}</div>
+                    <div className="text-[9px] text-apple-gray font-bold uppercase tracking-widest">{patient.profiles?.name}</div>
+                  </td>
+                  <td className="px-10 py-8 text-apple-gray text-xs font-medium">
+                    {patient.last_scan_date}
+                  </td>
+                  <td className="px-10 py-8 text-right">
+                    <span className="text-[9px] font-bold text-nexus-mint uppercase tracking-widest bg-nexus-mint/5 px-3 py-1 rounded-full">Anonim Veri</span>
+                  </td>
+                </tr>
+              ))}
+              {allPatients.length === 0 && !loading && (
+                <tr>
+                  <td colSpan={4} className="px-10 py-24 text-center text-apple-gray font-medium uppercase tracking-[0.2em] text-xs">Sistemde henüz hasta kaydı bulunmamaktadır.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
   if (activeTab === 'revenue') {
     return (
       <div className="space-y-12 animate-in fade-in duration-700">
@@ -211,6 +274,7 @@ const SuperAdminDashboard: React.FC<Props> = ({ activeTab }) => {
                 <th className="px-10 py-6">Klinik & Doktor ID</th>
                 <th className="px-10 py-6">Lisans Tipi</th>
                 <th className="px-10 py-6">Hasta Sayısı</th>
+                <th className="px-10 py-6">Üretilen Resim</th>
                 <th className="px-10 py-6 text-right">Durum</th>
               </tr>
             </thead>
@@ -228,6 +292,9 @@ const SuperAdminDashboard: React.FC<Props> = ({ activeTab }) => {
                   </td>
                   <td className="px-10 py-8 font-bold text-black text-sm">
                     {doctor.patientCount} <span className="text-[10px] text-apple-gray font-medium uppercase ml-1">Profil</span>
+                  </td>
+                  <td className="px-10 py-8 font-bold text-nexus-mint text-sm">
+                    {doctor.scanCount} <span className="text-[10px] text-apple-gray font-medium uppercase ml-1">Render</span>
                   </td>
                   <td className="px-10 py-8 text-right">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-bold uppercase tracking-widest">

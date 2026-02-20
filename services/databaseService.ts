@@ -51,21 +51,51 @@ export const DatabaseService = {
 
   async getDoctorsWithStats(): Promise<any[]> {
     if (!isSupabaseConfigured()) return [];
-    // Her doktorun profilini ve ona bağlı hasta sayısını getiriyoruz
+    
+    // Fetch doctors, their patients count, and their patients' scans count
     const { data, error } = await supabase
       .from('profiles')
-      .select('*, patients(count)')
+      .select(`
+        *,
+        patients (
+          id,
+          scans (count)
+        )
+      `)
       .eq('role', UserRole.DOCTOR);
     
+    if (error) {
+      console.error("Error fetching doctor stats:", error);
+      return [];
+    }
+
+    return data.map(d => {
+      const patientCount = d.patients ? d.patients.length : 0;
+      const scanCount = d.patients ? d.patients.reduce((acc: number, p: any) => acc + (p.scans ? p.scans[0].count : 0), 0) : 0;
+      
+      return {
+        id: d.id,
+        name: d.name,
+        email: d.email,
+        clinicName: d.clinic_name,
+        packageId: d.package_id,
+        patientCount,
+        scanCount
+      };
+    });
+  },
+
+  async getAllPatientsWithDoctorInfo(): Promise<any[]> {
+    if (!isSupabaseConfigured()) return [];
+    const { data, error } = await supabase
+      .from('patients')
+      .select(`
+        *,
+        profiles:doctor_id (clinic_name, name)
+      `);
+    
     if (error) return [];
-    return data.map(d => ({
-      id: d.id,
-      name: d.name,
-      email: d.email,
-      clinicName: d.clinic_name,
-      packageId: d.package_id,
-      patientCount: d.patients ? d.patients[0].count : 0
-    }));
+    return data;
   },
 
   async getPatients(doctorId: string): Promise<Patient[]> {
