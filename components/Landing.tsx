@@ -339,7 +339,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
             <img
               src={logo}
               alt="NeoBreed"
-              className="h-12 w-auto opacity-90"
+              className="h-24 w-auto opacity-90"
               draggable={false}
             />
 
