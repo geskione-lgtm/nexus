@@ -2,6 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Patient, ScanResult } from '../types';
 import { generateBabyFace } from '../services/geminiService';
+import { StorageService } from '../services/storageService';
 import { QRCodeSVG } from 'qrcode.react';
 
 interface Props { patient: Patient; onScanGenerated: (result: ScanResult) => void; history: ScanResult[]; }
@@ -12,6 +13,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sharingScan, setSharingScan] = useState<ScanResult | null>(null);
+  const [showQRCode, setShowQRCode] = useState(false);
   const [options, setOptions] = useState({
     gender: 'unknown',
     expression: 'neutral',
@@ -35,24 +37,36 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
     setError(null);
 
     try {
-      const resultUrl = await generateBabyFace(previewUrl, highRes, options);
+      // 1. Generate baby face (returns base64)
+      const resultBase64 = await generateBabyFace(previewUrl, highRes, options);
+      
+      // 2. Upload both to Supabase Storage
+      const timestamp = Date.now();
+      const ultrasoundPath = `patients/${patient.id}/source_${timestamp}.png`;
+      const babyFacePath = `patients/${patient.id}/synthesis_${timestamp}.png`;
+
+      const [ultrasoundUrl, babyFaceUrl] = await Promise.all([
+        StorageService.uploadImage(previewUrl, ultrasoundPath),
+        StorageService.uploadImage(resultBase64, babyFacePath)
+      ]);
+
       const newScan: ScanResult = {
-        id: `scan_${Date.now()}`,
+        id: `scan_${timestamp}`,
         patientId: patient.id,
-        ultrasoundUrl: previewUrl,
-        babyFaceUrl: resultUrl,
+        ultrasoundUrl: ultrasoundUrl,
+        babyFaceUrl: babyFaceUrl,
         createdAt: new Date().toLocaleDateString()
       };
+
       onScanGenerated(newScan);
       setPreviewUrl(null);
     } catch (err: any) {
-      setError(err.message || 'Processing failed.');
+      console.error('Generation/Upload error:', err);
+      setError(err.message || 'İşlem başarısız oldu.');
     } finally {
       setIsGenerating(false);
     }
   };
-
-  const [showQRCode, setShowQRCode] = useState(false);
 
   const downloadImage = (url: string, filename: string) => {
     const link = document.createElement('a');
@@ -64,14 +78,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
   };
 
   const shareWhatsApp = (url: string) => {
-    // Note: Base64 images cannot be shared directly via URL. 
-    // This works best with public URLs.
-    const isBase64 = url.startsWith('data:');
-    const message = isBase64 
-      ? `Nexus Medical AI: Bebeğinizin ilk portresi hazır! 👶✨ (Görseli indirmek için doktorunuzun ekranındaki QR kodu okutabilirsiniz)`
-      : `Nexus Medical AI: Bebeğinizin ilk portresi hazır! 👶✨ Görseli buradan inceleyebilirsiniz: ${url}`;
-    
-    const text = encodeURIComponent(message);
+    const text = encodeURIComponent(`Nexus Medical AI: Bebeğinizin ilk portresi hazır! 👶✨ Görseli buradan inceleyebilirsiniz: ${url}`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
@@ -95,16 +102,16 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
               <div className="bg-slate-50 p-6 rounded-[32px] flex flex-col items-center justify-center space-y-4 min-h-[240px]">
                 {showQRCode ? (
                   <div className="animate-in zoom-in duration-300 flex flex-col items-center">
-                    <QRCodeSVG value={sharingScan.babyFaceUrl} size={180} level="L" includeMargin={true} />
-                    <p className="text-[9px] font-bold text-red-500 uppercase tracking-widest text-center mt-4">
-                      Dikkat: Görsel boyutu büyük olduğu için<br/>bazı telefonlar bu QR kodu okuyamayabilir.
+                    <QRCodeSVG value={sharingScan.babyFaceUrl} size={200} level="H" includeMargin={true} />
+                    <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest text-center mt-4">
+                      Telefonunuzla okutarak<br/>görseli anında indirebilirsiniz.
                     </p>
                   </div>
                 ) : (
                   <>
                     <img src={sharingScan.babyFaceUrl} className="w-40 h-40 object-cover rounded-2xl shadow-lg" alt="Preview" />
                     <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest text-center">
-                      Görsel şu an yerel bellektedir.<br/>
+                      Görsel buluta yüklendi.<br/>
                       WhatsApp veya QR Kod ile paylaşabilirsiniz.
                     </p>
                   </>

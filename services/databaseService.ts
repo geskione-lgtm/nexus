@@ -296,9 +296,8 @@ export const DatabaseService = {
         }
       ])
       .select()
-      .single()
 
     if (error) throw error
-    return data
+    return data ? data[0] : null
   }
 }
