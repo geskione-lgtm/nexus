@@ -5,7 +5,6 @@ import { PACKAGES } from '../constants';
 
 // ✅ Only your uploaded logo (NO box, NO text)
 // If your file is PNG use .png, if SVG use .svg
-import logo from '../assets/neobreed-logo.png';
 
 interface Props {
   onLogin: () => void;
@@ -37,7 +36,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             <img
-              src={logo}
+              src="/neobreed-logo.png"
               alt="NeoBreed"
               className="h-36 w-auto"
               draggable={false}
@@ -337,7 +336,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-10">
             {/* ✅ ONLY LOGO (no text, no box) */}
             <img
-              src={logo}
+              src="/neobreed-logo.png"
               alt="NeoBreed"
               className="h-24 w-auto opacity-90"
               draggable={false}
