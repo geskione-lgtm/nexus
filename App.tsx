@@ -158,6 +158,11 @@ const App: React.FC = () => {
               try { await DatabaseService.savePatient(p); checkUserStatus(); } catch(e) { alert(e.message); }
               setIsSyncing(false);
             }}
+            onUpdatePatient={async (id, p) => {
+              setIsSyncing(true);
+              try { await DatabaseService.updatePatient(id, p); checkUserStatus(); } catch(e) { alert(e.message); }
+              setIsSyncing(false);
+            }}
             onAddScan={async (s) => {
               setIsSyncing(true);
               try { await DatabaseService.saveScan(s); checkUserStatus(); } catch(e) { alert(e.message); }

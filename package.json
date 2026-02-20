@@ -1,4 +1,3 @@
-
 {
   "name": "nexus-medical-ai",
   "private": true,
@@ -11,11 +10,12 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
     "@google/genai": "1.42.0",
     "@supabase/supabase-js": "2.39.7",
-    "lucide-react": "0.475.0"
+    "lucide-react": "0.475.0",
+    "qrcode.react": "^4.2.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
     "@types/react": "18.2.0",

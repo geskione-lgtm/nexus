@@ -200,6 +200,8 @@ export const DatabaseService = {
       name: p.name,
       weeksPregnant: p.weeks_pregnant,
       doctorId: p.doctor_id,
+      phone: p.phone || '',
+      email: p.email || '',
 
       // Keep a UI-friendly TR date if your Patient type expects string for display.
       // If your UI prefers raw ISO, change to: p.last_scan_date
@@ -220,9 +222,36 @@ export const DatabaseService = {
           name: patient.name,
           weeks_pregnant: patient.weeksPregnant,
           doctor_id: patient.doctorId,
-          last_scan_date: isoLastScanDate
+          last_scan_date: isoLastScanDate,
+          phone: patient.phone,
+          email: patient.email
         }
       ])
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  async updatePatient(id: string, patient: Partial<Patient>): Promise<any> {
+    if (!isSupabaseConfigured()) throw new Error('Supabase yapılandırılmamış.')
+
+    const updateData: any = {
+      name: patient.name,
+      weeks_pregnant: patient.weeksPregnant,
+      phone: patient.phone,
+      email: patient.email
+    }
+
+    if (patient.lastScanDate) {
+      updateData.last_scan_date = toISODateString(patient.lastScanDate)
+    }
+
+    const { data, error } = await supabase
+      .from('patients')
+      .update(updateData)
+      .eq('id', id)
       .select()
       .single()
 

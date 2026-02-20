@@ -2,6 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Patient, ScanResult } from '../types';
 import { generateBabyFace } from '../services/geminiService';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface Props { patient: Patient; onScanGenerated: (result: ScanResult) => void; history: ScanResult[]; }
 
@@ -10,6 +11,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
   const [highRes, setHighRes] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sharingScan, setSharingScan] = useState<ScanResult | null>(null);
   const [options, setOptions] = useState({
     gender: 'unknown',
     expression: 'neutral',
@@ -50,8 +52,74 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
     }
   };
 
+  const downloadImage = (url: string, filename: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const shareWhatsApp = (url: string) => {
+    const text = encodeURIComponent(`Nexus Medical AI: Bebeğinizin ilk portresi hazır! 👶✨ Görseli buradan inceleyebilirsiniz: ${url}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
+
+  const shareEmail = (url: string) => {
+    const subject = encodeURIComponent('Nexus Medical AI: Bebeğinizin İlk Portresi');
+    const body = encodeURIComponent(`Merhaba,\n\nNexus Medical AI ile oluşturulan bebeğinizin ilk portresi hazır!\n\nGörseli buradan inceleyebilirsiniz: ${url}\n\nSağlıklı günler dileriz.`);
+    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+  };
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 relative">
+      {/* Share Modal */}
+      {sharingScan && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-[48px] p-10 max-w-md w-full shadow-2xl animate-in zoom-in duration-300">
+            <div className="flex justify-between items-start mb-8">
+              <div>
+                <h3 className="text-2xl font-bold text-black tracking-tight">Görseli Paylaş</h3>
+                <p className="text-apple-gray text-xs font-semibold uppercase tracking-widest mt-1">Hasta: {patient.name}</p>
+              </div>
+              <button onClick={() => setSharingScan(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="space-y-8">
+              <div className="bg-slate-50 p-8 rounded-[32px] flex flex-col items-center justify-center space-y-4">
+                <QRCodeSVG value={sharingScan.babyFaceUrl} size={180} level="H" includeMargin={true} />
+                <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest text-center">Telefonunuzla okutarak<br/>görseli indirebilirsiniz</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <button 
+                  onClick={() => shareWhatsApp(sharingScan.babyFaceUrl)}
+                  className="flex items-center justify-center gap-3 py-4 bg-[#25D366] text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:scale-[1.02] transition-all"
+                >
+                  WhatsApp
+                </button>
+                <button 
+                  onClick={() => shareEmail(sharingScan.babyFaceUrl)}
+                  className="flex items-center justify-center gap-3 py-4 bg-black text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:scale-[1.02] transition-all"
+                >
+                  E-posta
+                </button>
+              </div>
+
+              <button 
+                onClick={() => downloadImage(sharingScan.babyFaceUrl, `nexus-baby-${patient.name}.png`)}
+                className="w-full py-4 border border-black/10 text-black rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-all"
+              >
+                Cihaza İndir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Studio Viewport */}
       <div className="space-y-8">
         <div className="aspect-[4/5] bg-black rounded-[48px] overflow-hidden relative flex flex-col items-center justify-center p-10 group shadow-2xl">
@@ -190,8 +258,18 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                 <div className="flex justify-between items-center px-2">
                   <span className="text-[10px] font-semibold text-apple-gray">{result.createdAt}</span>
                   <div className="flex gap-4">
-                    <button className="text-[9px] font-bold uppercase tracking-widest text-black/40 hover:text-black">Share</button>
-                    <button className="text-[9px] font-bold uppercase tracking-widest text-black/40 hover:text-black">Download</button>
+                    <button 
+                      onClick={() => setSharingScan(result)}
+                      className="text-[9px] font-bold uppercase tracking-widest text-black/40 hover:text-black"
+                    >
+                      Share
+                    </button>
+                    <button 
+                      onClick={() => downloadImage(result.babyFaceUrl, `nexus-baby-${patient.name}.png`)}
+                      className="text-[9px] font-bold uppercase tracking-widest text-black/40 hover:text-black"
+                    >
+                      Download
+                    </button>
                   </div>
                 </div>
                 <div className="h-px bg-black/[0.03] w-full"></div>

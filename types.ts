@@ -27,6 +27,8 @@ export interface Patient {
   weeksPregnant: number;
   doctorId: string;
   lastScanDate: string;
+  phone: string;
+  email?: string;
 }
 
 export interface ScanResult {
