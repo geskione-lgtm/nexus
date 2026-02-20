@@ -10,6 +10,12 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
   const [highRes, setHighRes] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [options, setOptions] = useState({
+    gender: 'unknown',
+    expression: 'neutral',
+    style: 'hyper-realistic',
+    notes: ''
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,7 +33,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
     setError(null);
 
     try {
-      const resultUrl = await generateBabyFace(previewUrl, highRes);
+      const resultUrl = await generateBabyFace(previewUrl, highRes, options);
       const newScan: ScanResult = {
         id: `scan_${Date.now()}`,
         patientId: patient.id,
@@ -50,9 +56,72 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
       <div className="space-y-8">
         <div className="aspect-[4/5] bg-black rounded-[48px] overflow-hidden relative flex flex-col items-center justify-center p-10 group shadow-2xl">
           {previewUrl ? (
-            <div className="w-full h-full flex flex-col items-center justify-center space-y-10 animate-in zoom-in duration-500">
-              <img src={previewUrl} className="max-w-full max-h-[80%] object-contain rounded-[32px] border border-white/10" />
-              <button onClick={() => setPreviewUrl(null)} className="text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest transition-colors">Replace Scan Data</button>
+            <div className="w-full h-full flex flex-col items-center justify-center space-y-6 animate-in zoom-in duration-500">
+              <img src={previewUrl} className="max-w-full max-h-[60%] object-contain rounded-[32px] border border-white/10" />
+              
+              {/* Parameter Inputs */}
+              <div className="w-full max-w-md space-y-4 apple-blur bg-white/5 p-6 rounded-[32px] border border-white/10">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest px-1">Cinsiyet</label>
+                    <select 
+                      value={options.gender} 
+                      onChange={e => setOptions({...options, gender: e.target.value})}
+                      className="w-full bg-white/5 border-none rounded-xl text-[11px] text-white font-medium focus:ring-1 focus:ring-nexus-mint transition-all"
+                    >
+                      <option value="unknown" className="bg-slate-900">Belirsiz</option>
+                      <option value="boy" className="bg-slate-900">Erkek</option>
+                      <option value="girl" className="bg-slate-900">Kız</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest px-1">İfade</label>
+                    <select 
+                      value={options.expression} 
+                      onChange={e => setOptions({...options, expression: e.target.value})}
+                      className="w-full bg-white/5 border-none rounded-xl text-[11px] text-white font-medium focus:ring-1 focus:ring-nexus-mint transition-all"
+                    >
+                      <option value="neutral" className="bg-slate-900">Doğal</option>
+                      <option value="smiling" className="bg-slate-900">Gülümseyen</option>
+                      <option value="sleeping" className="bg-slate-900">Uykuda</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest px-1">Görsel Stil</label>
+                  <select 
+                    value={options.style} 
+                    onChange={e => setOptions({...options, style: e.target.value})}
+                    className="w-full bg-white/5 border-none rounded-xl text-[11px] text-white font-medium focus:ring-1 focus:ring-nexus-mint transition-all"
+                  >
+                    <option value="hyper-realistic" className="bg-slate-900">Hiper-Gerçekçi</option>
+                    <option value="artistic" className="bg-slate-900">Sanatsal Portre</option>
+                    <option value="3d-render" className="bg-slate-900">3D Medikal Render</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest px-1">Medikal Notlar (Opsiyonel)</label>
+                  <textarea 
+                    value={options.notes} 
+                    onChange={e => setOptions({...options, notes: e.target.value})}
+                    placeholder="Örn: Burun yapısına odaklan..."
+                    className="w-full bg-white/5 border-none rounded-xl text-[11px] text-white font-medium focus:ring-1 focus:ring-nexus-mint transition-all h-16 resize-none p-3"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 px-4 py-2 bg-nexus-mint/10 rounded-full border border-nexus-mint/20">
+                <div className="w-1.5 h-1.5 bg-nexus-mint rounded-full animate-pulse"></div>
+                <span className="text-[9px] font-bold text-nexus-mint uppercase tracking-widest">Live Gemini Cloud Synthesis</span>
+              </div>
+
+              {error && (
+                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-[10px] text-red-400 font-bold uppercase tracking-widest animate-in fade-in slide-in-from-top-2">
+                  Hata: {error}
+                </div>
+              )}
+
+              <button onClick={() => setPreviewUrl(null)} className="text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest transition-colors">Dosyayı Değiştir</button>
             </div>
           ) : (
             <div className="text-center space-y-8">
