@@ -98,7 +98,7 @@ const Onboarding: React.FC<Props> = ({ onComplete }) => {
             <h2 className="text-3xl font-bold text-black text-center mb-10 tracking-tight">Güvenli Ödeme</h2>
             <div className="apple-card p-10 rounded-[40px] bg-slate-900 text-white relative overflow-hidden mb-8">
                <div className="absolute top-0 right-0 p-8 opacity-20"><div className="w-16 h-10 border border-white rounded-md"></div></div>
-               <p className="text-[10px] font-bold uppercase tracking-[0.3em] mb-12">Nexus Pay</p>
+               <p className="text-[10px] font-bold uppercase tracking-[0.3em] mb-12">NeoBreed Pay</p>
                <p className="text-xl font-medium tracking-[0.2em] mb-8">•••• •••• •••• ••••</p>
                <div className="flex justify-between items-end">
                   <div>

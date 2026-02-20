@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { HeartPulse, Sparkles, Shield, Zap, Baby } from 'lucide-react';
 import { PACKAGES } from '../constants';
 
 interface Props {
@@ -28,12 +29,10 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
       <nav className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md z-50 border-b border-slate-100">
         <div className="flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
-            <div className="w-8 h-8 bg-black rounded flex flex-col items-center justify-center gap-0.5">
-              <div className="w-5 h-1 bg-white rounded-full"></div>
-              <div className="w-5 h-1 bg-white rounded-full"></div>
-              <div className="w-5 h-1 bg-white rounded-full"></div>
+            <div className="w-11 h-11 bg-gradient-to-br from-black to-slate-800 rounded-2xl flex items-center justify-center shadow-xl shadow-black/20 group transition-all hover:scale-105 active:scale-95">
+              <HeartPulse className="w-6 h-6 text-nexus-green animate-pulse" />
             </div>
-            <span className="text-xl font-black tracking-tighter uppercase text-black">Nexus Medical</span>
+            <span className="text-2xl font-black tracking-tighter uppercase text-black">NeoBreed</span>
           </div>
           
           <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
@@ -59,13 +58,13 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h1 className="text-[70px] md:text-[90px] leading-[0.9] font-black tracking-tighter-xl text-black mb-10">
-              YAŞAM İÇİN<br />
-              <span className="text-nexus-green">HASSAS</span><br />
-              BAKIM.
+            <h1 className="text-[60px] md:text-[80px] leading-[0.85] font-black tracking-tighter-xl text-black mb-10 uppercase">
+              Geleceği<br />
+              <span className="text-nexus-green">İlk Nefesten</span><br />
+              Önce Görün.
             </h1>
             <p className="max-w-xl text-lg text-slate-500 font-medium leading-relaxed mb-12">
-              Nexus Medical AI, kadın doğum uzmanlarını gerçek zamanlı 3D fetal görselleştirme ve akıllı tanı desteği ile güçlendirir. <span className="text-black font-bold">Nexus Intelligence Core</span> teknolojisiyle her piksel, bebeğinizin sağlığına dair derin bir anlam taşır.
+              NeoBreed AI, kadın doğum uzmanlarını gerçek zamanlı 3D fetal görselleştirme ve akıllı tanı desteği ile güçlendirir. <span className="text-black font-bold">NeoBreed Intelligence Core</span> teknolojisiyle her piksel, bebeğinizin sağlığına dair derin bir anlam taşır.
             </p>
             <div className="flex flex-wrap gap-4">
               <button 
@@ -84,43 +83,79 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
             </div>
           </div>
           <div className="hidden lg:block relative">
-             <div className="absolute inset-0 bg-nexus-green/10 blur-[100px] rounded-full"></div>
-             <div className="relative bg-white p-2 rounded-[48px] shadow-2xl overflow-hidden aspect-square">
+             <div className="absolute inset-0 bg-nexus-green/10 blur-[120px] rounded-full animate-pulse"></div>
+             <div className="relative bg-white p-3 rounded-[56px] shadow-2xl overflow-hidden aspect-square border border-slate-100">
                 <AnimatePresence mode="wait">
                   {!isRealistic ? (
                     <motion.div
                       key="ultrasound"
-                      initial={{ opacity: 0, scale: 1.1 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 1.5, ease: "easeInOut" }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 1 }}
                       className="absolute inset-0"
                     >
                       <img 
                         src="https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80&w=800" 
-                        alt="Ultrasound" 
-                        className="w-full h-full object-cover grayscale contrast-125" 
+                        alt="Ultrasound Raw" 
+                        className="w-full h-full object-cover grayscale contrast-150 brightness-75" 
                       />
-                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                        <span className="text-white text-xs font-black uppercase tracking-[0.5em] apple-blur px-6 py-2 rounded-full">Ham Veri Analizi</span>
+                      <div className="absolute inset-0 bg-black/40"></div>
+                      
+                      {/* Scanning Line Effect */}
+                      <motion.div 
+                        initial={{ top: "-10%" }}
+                        animate={{ top: "110%" }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                        className="absolute left-0 right-0 h-1 bg-nexus-green shadow-[0_0_20px_rgba(16,185,129,0.8)] z-10"
+                      />
+
+                      <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-black text-nexus-green uppercase tracking-widest">Signal Status</p>
+                          <p className="text-white text-xs font-bold uppercase tracking-tight">Raw Fetal Data Stream</p>
+                        </div>
+                        <span className="text-white/40 text-[10px] font-mono">0x442_RECON</span>
                       </div>
                     </motion.div>
                   ) : (
                     <motion.div
                       key="realistic"
-                      initial={{ opacity: 0, scale: 1.1 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 1.5, ease: "easeInOut" }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 1 }}
                       className="absolute inset-0"
                     >
                       <img 
-                        src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=800" 
-                        alt="Realistic Baby" 
+                        src="https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&q=80&w=800" 
+                        alt="AI Synthesis" 
                         className="w-full h-full object-cover" 
                       />
-                      <div className="absolute inset-0 bg-nexus-green/10 flex items-center justify-center">
-                        <span className="text-white text-xs font-black uppercase tracking-[0.5em] apple-blur px-6 py-2 rounded-full">Nexus AI Sentezi</span>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                      
+                      {/* Data Points Overlay */}
+                      <div className="absolute inset-0 opacity-30">
+                        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-nexus-green rounded-full animate-ping"></div>
+                        <div className="absolute top-1/2 right-1/3 w-2 h-2 bg-nexus-green rounded-full animate-ping delay-700"></div>
+                        <div className="absolute bottom-1/4 left-1/2 w-2 h-2 bg-nexus-green rounded-full animate-ping delay-1000"></div>
+                      </div>
+
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="px-8 py-3 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
+                          <div className="flex items-center gap-3">
+                            <Sparkles className="w-4 h-4 text-nexus-green" />
+                            <span className="text-white text-[11px] font-black uppercase tracking-[0.4em]">NeoBreed AI Sentezi</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-black text-nexus-green uppercase tracking-widest">Synthesis Complete</p>
+                          <p className="text-white text-xs font-bold uppercase tracking-tight">4K Anatomik Rekonstrüksiyon</p>
+                        </div>
+                        <span className="text-nexus-green text-[10px] font-mono">CONFIDENCE: 99.8%</span>
                       </div>
                     </motion.div>
                   )}
@@ -134,10 +169,10 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
       <section id="tech" className="bg-black py-32 text-white">
         <div className="max-w-7xl mx-auto px-8">
            <div className="text-center mb-24">
-              <p className="text-nexus-green text-[10px] font-black uppercase tracking-[0.4em] mb-4">NEXUS INTELLIGENCE CORE V4</p>
+              <p className="text-nexus-green text-[10px] font-black uppercase tracking-[0.4em] mb-4">NEOBREED INTELLIGENCE CORE V4</p>
               <h2 className="text-5xl md:text-7xl font-black tracking-tighter">GÖREMEDİĞİNİZİ GÖRÜN.</h2>
               <p className="text-slate-400 mt-6 max-w-2xl mx-auto font-medium">
-                Geleneksel ultrasonun ötesine geçiyoruz. Nexus AI, milyonlarca fetal veri noktasını işleyerek bebeğinizin anatomik yapısını en ince ayrıntısına kadar dijital olarak yeniden inşa eder.
+                Geleneksel ultrasonun ötesine geçiyoruz. NeoBreed AI, milyonlarca fetal veri noktasını işleyerek bebeğinizin anatomik yapısını en ince ayrıntısına kadar dijital olarak yeniden inşa eder.
               </p>
            </div>
            
@@ -148,7 +183,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
                 icon="M13 10V3L4 14h7v7l9-11h-7z"
               />
               <TechCard 
-                title="Nexus AI Engine" 
+                title="NeoBreed AI Engine" 
                 desc="Kendi kapalı devre sunucu ağımızda çalışan, saniyeler içinde 4K çözünürlükte hiper-gerçekçi rekonstrüksiyon sağlayan özel üretim modelimiz." 
                 icon="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"
               />
@@ -167,7 +202,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
            <div className="flex-1 space-y-8">
               <h2 className="text-6xl font-black tracking-tighter text-black">Modern Klinikler İçin<br/>Teknoloji.</h2>
               <p className="text-slate-500 text-lg leading-relaxed">
-                 Nexus, klinik yönetiminizi hastalarınız için unutulmaz bir deneyime dönüştürür. Bekleme odasından muayene koltuğuna kadar her aşamada dijital dönüşüm ve duygusal bağ kuran teknolojiler.
+                 NeoBreed, klinik yönetiminizi hastalarınız için unutulmaz bir deneyime dönüştürür. Bekleme odasından muayene koltuğuna kadar her aşamada dijital dönüşüm ve duygusal bağ kuran teknolojiler.
               </p>
               <div className="grid grid-cols-2 gap-8 pt-8">
                  <div>
@@ -186,7 +221,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
                     <img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=400" className="object-cover h-full w-full" alt="Baby" />
                  </div>
                  <div className="h-48 bg-nexus-green rounded-[40px] flex items-center justify-center p-8">
-                    <span className="text-white text-3xl font-black tracking-tighter leading-none italic">#NEXUS</span>
+                    <span className="text-white text-3xl font-black tracking-tighter leading-none italic">#NEOBREED</span>
                  </div>
               </div>
               <div className="flex flex-col gap-4">
@@ -206,7 +241,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
         <div className="max-w-7xl mx-auto px-8">
            <div className="text-center mb-24">
               <h2 className="text-6xl font-black tracking-tighter text-black mb-6 uppercase">Lisans Paketleri</h2>
-              <p className="text-slate-500 max-w-xl mx-auto">İster butik bir klinik, ister büyük bir hastane zinciri olun; Nexus her ölçek için esnek çözümler sunar.</p>
+              <p className="text-slate-500 max-w-xl mx-auto">İster butik bir klinik, ister büyük bir hastane zinciri olun; NeoBreed her ölçek için esnek çözümler sunar.</p>
            </div>
            
            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -248,13 +283,12 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
             </div>
             <div className="flex flex-col md:flex-row justify-between items-center gap-10">
                <div className="flex items-center gap-3">
-                 <div className="w-6 h-6 bg-black rounded flex flex-col items-center justify-center gap-0.5">
-                   <div className="w-4 h-0.5 bg-white rounded-full"></div>
-                   <div className="w-4 h-0.5 bg-white rounded-full"></div>
+                 <div className="w-8 h-8 bg-gradient-to-br from-black to-slate-800 rounded-lg flex items-center justify-center">
+                   <HeartPulse className="w-5 h-5 text-nexus-green" />
                  </div>
-                 <span className="text-sm font-black tracking-tighter uppercase">Nexus Medical</span>
+                 <span className="text-sm font-black tracking-tighter uppercase">NeoBreed AI</span>
                </div>
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">© 2024 Nexus Medical Systems. Tüm hakları saklıdır.</p>
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">© 2024 NeoBreed Systems. Tüm hakları saklıdır.</p>
             </div>
          </div>
       </footer>

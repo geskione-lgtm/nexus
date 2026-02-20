@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { HeartPulse, LayoutDashboard, Users, Package, TrendingUp, UserCircle, Microscope } from 'lucide-react';
 import { User, UserRole } from '../types';
 
 interface SidebarProps { 
@@ -16,10 +17,10 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogou
     <aside className="w-[280px] sidebar-dark flex flex-col p-8 z-50">
       {/* Brand */}
       <div className="flex items-center gap-3 mb-16">
-        <div className="w-10 h-10 bg-white rounded-[14px] flex items-center justify-center shadow-lg shadow-white/10">
-          <div className="w-5 h-5 bg-black rounded-sm"></div>
+        <div className="w-11 h-11 bg-gradient-to-br from-white to-slate-200 rounded-2xl flex items-center justify-center shadow-xl shadow-white/10 group transition-all">
+          <HeartPulse className="w-6 h-6 text-black animate-pulse" />
         </div>
-        <span className="text-lg font-bold tracking-tight text-white uppercase tracking-widest">Nexus</span>
+        <span className="text-xl font-black tracking-tighter text-white uppercase tracking-widest">NeoBreed</span>
       </div>
 
       {/* Nav Groups */}

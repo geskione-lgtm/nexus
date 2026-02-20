@@ -1,6 +1,6 @@
 {
-  "name": "Nexus Medical AI SaaS",
-  "description": "Enterprise-grade fetal imaging SaaS with Gemini 3 Pro integration and Google Cloud storage simulation.",
+  "name": "NeoBreed AI",
+  "description": "Gelecek nesil fetal görüntüleme ve yapay zeka destekli doğum öncesi analiz platformu.",
   "requestFramePermissions": [
     "camera",
     "microphone"

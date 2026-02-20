@@ -38,9 +38,11 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
     try {
       // 1. Generate baby face (returns base64)
+      console.log('Starting AI Synthesis...');
       const resultBase64 = await generateBabyFace(previewUrl, highRes, options);
       
       // 2. Upload both to Supabase Storage
+      console.log('Uploading results to cloud storage...');
       const timestamp = Date.now();
       const ultrasoundPath = `patients/${patient.id}/source_${timestamp}.png`;
       const babyFacePath = `patients/${patient.id}/synthesis_${timestamp}.png`;
@@ -50,6 +52,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
         StorageService.uploadImage(resultBase64, babyFacePath)
       ]);
 
+      console.log('Upload successful. Saving scan record...');
       const newScan: ScanResult = {
         id: `scan_${timestamp}`,
         patientId: patient.id,
@@ -60,9 +63,22 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
       onScanGenerated(newScan);
       setPreviewUrl(null);
+      console.log('Process complete.');
     } catch (err: any) {
       console.error('Generation/Upload error:', err);
-      setError(err.message || 'İşlem başarısız oldu.');
+      let message = 'İşlem başarısız oldu.';
+      
+      if (err.message === 'API_KEY_EXPIRED') {
+        message = 'Gemini API anahtarı geçersiz veya süresi dolmuş.';
+      } else if (err.message?.includes('Failed to fetch')) {
+        message = 'Sunucuya bağlanılamadı. Lütfen internet bağlantınızı ve API ayarlarınızı kontrol edin.';
+      } else if (err.message?.includes('Upload failed')) {
+        message = `Bulut yükleme hatası: ${err.message}`;
+      } else {
+        message = err.message || message;
+      }
+      
+      setError(message);
     } finally {
       setIsGenerating(false);
     }
@@ -78,7 +94,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
   };
 
   const shareWhatsApp = (url: string) => {
-    const text = encodeURIComponent(`Nexus Medical AI: Bebeğinizin ilk portresi hazır! 👶✨ Görseli buradan inceleyebilirsiniz: ${url}`);
+    const text = encodeURIComponent(`NeoBreed AI: Bebeğinizin ilk portresi hazır! 👶✨ Görseli buradan inceleyebilirsiniz: ${url}`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
@@ -222,7 +238,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
               <div className="flex items-center gap-2 px-4 py-2 bg-nexus-mint/10 rounded-full border border-nexus-mint/20">
                 <div className="w-1.5 h-1.5 bg-nexus-mint rounded-full animate-pulse"></div>
-                <span className="text-[9px] font-bold text-nexus-mint uppercase tracking-widest">Nexus Intelligence Core Synthesis</span>
+                <span className="text-[9px] font-bold text-nexus-mint uppercase tracking-widest">NeoBreed Intelligence Core Synthesis</span>
               </div>
 
               {error && (

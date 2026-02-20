@@ -34,7 +34,7 @@ const Login: React.FC<LoginProps> = ({ onBack, onSwitchToRegister }) => {
             <div className="w-7 h-7 bg-white rounded-sm"></div>
           </div>
           <h2 className="text-3xl font-bold text-black tracking-tight mb-3">
-            Nexus'a Giriş Yap
+            NeoBreed'e Giriş Yap
           </h2>
           <p className="text-apple-gray text-xs font-semibold uppercase tracking-widest leading-loose">
             Yapay Zeka Destekli Fetal Görüntüleme
