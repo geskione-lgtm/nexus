@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HeartPulse, Sparkles, Shield, Zap, Baby } from 'lucide-react';
@@ -58,11 +57,13 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h1 className="text-[60px] md:text-[80px] leading-[0.85] font-black tracking-tighter-xl text-black mb-10 uppercase">
+            {/* ✅ UPDATED SLOGAN: more modern + thinner */}
+            <h1 className="text-[56px] md:text-[76px] leading-[0.95] font-medium tracking-[-0.02em] text-black mb-10">
               Geleceği<br />
-              <span className="text-nexus-green">İlk Nefesten</span><br />
+              <span className="text-nexus-green font-semibold">İlk Nefesten</span><br />
               Önce Görün.
             </h1>
+
             <p className="max-w-xl text-lg text-slate-500 font-medium leading-relaxed mb-12">
               NeoBreed AI, kadın doğum uzmanlarını gerçek zamanlı 3D fetal görselleştirme ve akıllı tanı desteği ile güçlendirir. <span className="text-black font-bold">NeoBreed Intelligence Core</span> teknolojisiyle her piksel, bebeğinizin sağlığına dair derin bir anlam taşır.
             </p>
