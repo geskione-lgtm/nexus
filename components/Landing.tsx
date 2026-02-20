@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { PACKAGES } from '../constants';
 
 interface Props {
@@ -8,6 +9,15 @@ interface Props {
 }
 
 const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
+  const [isRealistic, setIsRealistic] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsRealistic(prev => !prev);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -44,7 +54,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-8 pt-40 pb-32">
         <div className="inline-block px-4 py-1.5 bg-[#E8F5F1] text-[#10b981] rounded-full text-[11px] font-black uppercase tracking-widest mb-8">
-          Gelişmiş Fetal Görüntüleme v2.0
+          Gelişmiş Fetal Görüntüleme v3.0
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -55,7 +65,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
               BAKIM.
             </h1>
             <p className="max-w-xl text-lg text-slate-500 font-medium leading-relaxed mb-12">
-              Nexus Medical AI, kadın doğum uzmanlarını gerçek zamanlı 3D fetal görselleştirme ve akıllı tanı desteği ile güçlendirir. Gemini Cloud teknolojisiyle her piksel bir anlam taşır.
+              Nexus Medical AI, kadın doğum uzmanlarını gerçek zamanlı 3D fetal görselleştirme ve akıllı tanı desteği ile güçlendirir. <span className="text-black font-bold">Nexus Intelligence Core</span> teknolojisiyle her piksel, bebeğinizin sağlığına dair derin bir anlam taşır.
             </p>
             <div className="flex flex-wrap gap-4">
               <button 
@@ -75,8 +85,46 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
           </div>
           <div className="hidden lg:block relative">
              <div className="absolute inset-0 bg-nexus-green/10 blur-[100px] rounded-full"></div>
-             <div className="relative bg-white p-1 rounded-[40px] shadow-2xl rotate-3">
-                <img src="https://images.unsplash.com/photo-1555212697-194d092e3b8f?auto=format&fit=crop&q=80&w=800" alt="Medikal Cihaz" className="rounded-[38px]" />
+             <div className="relative bg-white p-2 rounded-[48px] shadow-2xl overflow-hidden aspect-square">
+                <AnimatePresence mode="wait">
+                  {!isRealistic ? (
+                    <motion.div
+                      key="ultrasound"
+                      initial={{ opacity: 0, scale: 1.1 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 1.5, ease: "easeInOut" }}
+                      className="absolute inset-0"
+                    >
+                      <img 
+                        src="https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80&w=800" 
+                        alt="Ultrasound" 
+                        className="w-full h-full object-cover grayscale contrast-125" 
+                      />
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                        <span className="text-white text-xs font-black uppercase tracking-[0.5em] apple-blur px-6 py-2 rounded-full">Ham Veri Analizi</span>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="realistic"
+                      initial={{ opacity: 0, scale: 1.1 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 1.5, ease: "easeInOut" }}
+                      className="absolute inset-0"
+                    >
+                      <img 
+                        src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=800" 
+                        alt="Realistic Baby" 
+                        className="w-full h-full object-cover" 
+                      />
+                      <div className="absolute inset-0 bg-nexus-green/10 flex items-center justify-center">
+                        <span className="text-white text-xs font-black uppercase tracking-[0.5em] apple-blur px-6 py-2 rounded-full">Nexus AI Sentezi</span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
              </div>
           </div>
         </div>
@@ -86,24 +134,27 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
       <section id="tech" className="bg-black py-32 text-white">
         <div className="max-w-7xl mx-auto px-8">
            <div className="text-center mb-24">
-              <p className="text-nexus-green text-[10px] font-black uppercase tracking-[0.4em] mb-4">NEXUS CORE V3</p>
+              <p className="text-nexus-green text-[10px] font-black uppercase tracking-[0.4em] mb-4">NEXUS INTELLIGENCE CORE V4</p>
               <h2 className="text-5xl md:text-7xl font-black tracking-tighter">GÖREMEDİĞİNİZİ GÖRÜN.</h2>
+              <p className="text-slate-400 mt-6 max-w-2xl mx-auto font-medium">
+                Geleneksel ultrasonun ötesine geçiyoruz. Nexus AI, milyonlarca fetal veri noktasını işleyerek bebeğinizin anatomik yapısını en ince ayrıntısına kadar dijital olarak yeniden inşa eder.
+              </p>
            </div>
            
            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               <TechCard 
                 title="Biyometrik Sentez" 
-                desc="Ultrason verilerinden kemik ve doku yapısını %99 doğrulukla ayrıştıran yapay zeka." 
+                desc="Ultrason dalgalarından gelen ham verileri, kemik yoğunluğu ve yumuşak doku haritalandırması ile %99.4 doğrulukla ayrıştıran patentli algoritmamız." 
                 icon="M13 10V3L4 14h7v7l9-11h-7z"
               />
               <TechCard 
-                title="Gemini 3 Pro" 
-                desc="En gelişmiş görüntü işleme modelleriyle saniyeler içinde 2K çözünürlükte rekonstrüksiyon." 
+                title="Nexus AI Engine" 
+                desc="Kendi kapalı devre sunucu ağımızda çalışan, saniyeler içinde 4K çözünürlükte hiper-gerçekçi rekonstrüksiyon sağlayan özel üretim modelimiz." 
                 icon="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"
               />
               <TechCard 
-                title="Güvenli Veri" 
-                desc="Tüm hastalarınızın verileri uçtan uca şifreli olarak Google Cloud altyapısında saklanır." 
+                title="Etik Yapay Zeka" 
+                desc="Tüm analizler tıbbi etik kurallara uygun olarak, doktor denetiminde ve hasta gizliliği en üst düzeyde tutularak gerçekleştirilir." 
                 icon="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
               />
            </div>
@@ -116,7 +167,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
            <div className="flex-1 space-y-8">
               <h2 className="text-6xl font-black tracking-tighter text-black">Modern Klinikler İçin<br/>Teknoloji.</h2>
               <p className="text-slate-500 text-lg leading-relaxed">
-                 Nexus, klinik yönetiminizi hastalarınız için unutulmaz bir deneyime dönüştürür. Bekleme odasından muayene koltuğuna kadar her aşamada dijital dönüşüm.
+                 Nexus, klinik yönetiminizi hastalarınız için unutulmaz bir deneyime dönüştürür. Bekleme odasından muayene koltuğuna kadar her aşamada dijital dönüşüm ve duygusal bağ kuran teknolojiler.
               </p>
               <div className="grid grid-cols-2 gap-8 pt-8">
                  <div>
@@ -132,18 +183,18 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
            <div className="flex-1 w-full grid grid-cols-2 gap-4">
               <div className="space-y-4 pt-12">
                  <div className="h-64 bg-slate-50 rounded-[40px] flex items-center justify-center border border-slate-100 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=400" className="object-cover h-full w-full grayscale" alt="Hospital" />
+                    <img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=400" className="object-cover h-full w-full" alt="Baby" />
                  </div>
                  <div className="h-48 bg-nexus-green rounded-[40px] flex items-center justify-center p-8">
-                    <span className="text-white text-3xl font-black tracking-tighter leading-none italic">#LIFE</span>
+                    <span className="text-white text-3xl font-black tracking-tighter leading-none italic">#NEXUS</span>
                  </div>
               </div>
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                  <div className="h-48 bg-black rounded-[40px] flex items-center justify-center p-8">
-                    <span className="text-white text-xs font-black tracking-[0.3em] uppercase">Trusted Tech</span>
+                    <span className="text-white text-xs font-black tracking-[0.3em] uppercase">Trusted AI</span>
                  </div>
                  <div className="h-64 bg-slate-50 rounded-[40px] flex items-center justify-center border border-slate-100 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=400" className="object-cover h-full w-full" alt="Scan" />
+                    <img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&q=80&w=400" className="object-cover h-full w-full" alt="Baby Care" />
                  </div>
               </div>
            </div>

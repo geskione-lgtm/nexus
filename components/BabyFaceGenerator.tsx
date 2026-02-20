@@ -222,7 +222,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
               <div className="flex items-center gap-2 px-4 py-2 bg-nexus-mint/10 rounded-full border border-nexus-mint/20">
                 <div className="w-1.5 h-1.5 bg-nexus-mint rounded-full animate-pulse"></div>
-                <span className="text-[9px] font-bold text-nexus-mint uppercase tracking-widest">Live Gemini Cloud Synthesis</span>
+                <span className="text-[9px] font-bold text-nexus-mint uppercase tracking-widest">Nexus Intelligence Core Synthesis</span>
               </div>
 
               {error && (

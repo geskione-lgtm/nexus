@@ -59,7 +59,7 @@ export async function generateBabyFace(ultrasoundBase64: string, highRes: boolea
     
     throw new Error("Görüntü verisi alınamadı.");
   } catch (error: any) {
-    console.error("Gemini Cloud Error:", error);
+    console.error("Nexus Cloud Error:", error);
     // Eğer yetki hatası alınırsa (Entity not found), anahtar seçimini tetiklemek için hata fırlat.
     if (error.message?.includes("Requested entity was not found")) {
       throw new Error("API_KEY_EXPIRED");
