@@ -3,21 +3,35 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles } from 'lucide-react';
 import { PACKAGES } from '../constants';
 
-// ✅ Only your uploaded logo (NO box, NO text)
-// If your file is PNG use .png, if SVG use .svg
-
 interface Props {
   onLogin: () => void;
   onRegister: () => void;
 }
 
+const BrandWordmark: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
+  const sizeClass =
+    size === 'lg' ? 'text-3xl' : size === 'sm' ? 'text-sm' : 'text-2xl';
+
+  return (
+    <span className={`${sizeClass} tracking-tight select-none`}>
+      {/* NEO (bold) */}
+      <span className="font-black text-black">
+        <span className="text-[#0B7A4A]">N</span>eo
+      </span>
+
+      {/* BREED (lighter) */}
+      <span className="font-semibold text-black">
+        <span className="text-[#0B7A4A]">B</span>reed
+      </span>
+    </span>
+  );
+};
+
 const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
   const [isRealistic, setIsRealistic] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsRealistic((prev) => !prev);
-    }, 4000);
+    const interval = setInterval(() => setIsRealistic(prev => !prev), 4000);
     return () => clearInterval(interval);
   }, []);
 
@@ -29,30 +43,20 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
     <div className="min-h-screen bg-[#F9F9F9] scroll-smooth">
       {/* Header */}
       <nav className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md z-50 border-b border-slate-100">
-        <div className="flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
-          {/* ✅ ONLY LOGO (no box, no text) */}
-          <div
-            className="cursor-pointer select-none"
+        <div className="flex items-center justify-between px-8 py-3 max-w-7xl mx-auto">
+          {/* ✅ TEXT ONLY BRAND */}
+          <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="cursor-pointer"
+            aria-label="Ana sayfaya dön"
           >
-            <img
-              src="/public/neobreed-logo.png"
-              alt="NeoBreed"
-              className="h-36 w-auto"
-              draggable={false}
-            />
-          </div>
+            <BrandWordmark size="md" />
+          </button>
 
           <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
-            <button onClick={() => scrollTo('tech')} className="hover:text-black transition-colors">
-              Teknoloji
-            </button>
-            <button onClick={() => scrollTo('clinics')} className="hover:text-black transition-colors">
-              Klinikler
-            </button>
-            <button onClick={() => scrollTo('pricing')} className="hover:text-black transition-colors">
-              Fiyatlandırma
-            </button>
+            <button onClick={() => scrollTo('tech')} className="hover:text-black transition-colors">Teknoloji</button>
+            <button onClick={() => scrollTo('clinics')} className="hover:text-black transition-colors">Klinikler</button>
+            <button onClick={() => scrollTo('pricing')} className="hover:text-black transition-colors">Fiyatlandırma</button>
           </div>
 
           <div className="flex items-center gap-6">
@@ -70,14 +74,13 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
       </nav>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-8 pt-56 pb-32">
+      <section className="max-w-7xl mx-auto px-8 pt-52 pb-32">
         <div className="inline-block px-4 py-1.5 bg-[#E8F5F1] text-[#10b981] rounded-full text-[11px] font-black uppercase tracking-widest mb-8">
           Gelişmiş Fetal Görüntüleme v3.0
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            {/* Modern / thinner slogan */}
             <h1 className="text-[56px] md:text-[76px] leading-[0.95] font-medium tracking-[-0.02em] text-black mb-10">
               Geleceği<br />
               <span className="text-nexus-green font-semibold">İlk Nefesten</span><br />
@@ -130,11 +133,10 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
                     />
                     <div className="absolute inset-0 bg-black/40"></div>
 
-                    {/* Scanning Line Effect */}
                     <motion.div
-                      initial={{ top: '-10%' }}
-                      animate={{ top: '110%' }}
-                      transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                      initial={{ top: "-10%" }}
+                      animate={{ top: "110%" }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                       className="absolute left-0 right-0 h-1 bg-nexus-green shadow-[0_0_20px_rgba(16,185,129,0.8)] z-10"
                     />
 
@@ -161,13 +163,6 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-
-                    {/* Data Points Overlay */}
-                    <div className="absolute inset-0 opacity-30">
-                      <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-nexus-green rounded-full animate-ping"></div>
-                      <div className="absolute top-1/2 right-1/3 w-2 h-2 bg-nexus-green rounded-full animate-ping delay-700"></div>
-                      <div className="absolute bottom-1/4 left-1/2 w-2 h-2 bg-nexus-green rounded-full animate-ping delay-1000"></div>
-                    </div>
 
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="px-8 py-3 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
@@ -232,9 +227,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
       <section id="clinics" className="py-32 bg-white">
         <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center gap-20">
           <div className="flex-1 space-y-8">
-            <h2 className="text-6xl font-black tracking-tighter text-black">
-              Modern Klinikler İçin<br />Teknoloji.
-            </h2>
+            <h2 className="text-6xl font-black tracking-tighter text-black">Modern Klinikler İçin<br />Teknoloji.</h2>
             <p className="text-slate-500 text-lg leading-relaxed">
               NeoBreed, klinik yönetiminizi hastalarınız için unutulmaz bir deneyime dönüştürür. Bekleme odasından muayene koltuğuna kadar her aşamada dijital dönüşüm ve duygusal bağ kuran teknolojiler.
             </p>
@@ -253,11 +246,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
           <div className="flex-1 w-full grid grid-cols-2 gap-4">
             <div className="space-y-4 pt-12">
               <div className="h-64 bg-slate-50 rounded-[40px] flex items-center justify-center border border-slate-100 overflow-hidden">
-                <img
-                  src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=400"
-                  className="object-cover h-full w-full"
-                  alt="Baby"
-                />
+                <img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=400" className="object-cover h-full w-full" alt="Baby" />
               </div>
               <div className="h-48 bg-nexus-green rounded-[40px] flex items-center justify-center p-8">
                 <span className="text-white text-3xl font-black tracking-tighter leading-none italic">#NEOBREED</span>
@@ -269,11 +258,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
                 <span className="text-white text-xs font-black tracking-[0.3em] uppercase">Trusted AI</span>
               </div>
               <div className="h-64 bg-slate-50 rounded-[40px] flex items-center justify-center border border-slate-100 overflow-hidden">
-                <img
-                  src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&q=80&w=400"
-                  className="object-cover h-full w-full"
-                  alt="Baby Care"
-                />
+                <img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&q=80&w=400" className="object-cover h-full w-full" alt="Baby Care" />
               </div>
             </div>
           </div>
@@ -292,10 +277,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {PACKAGES.map((pkg) => (
-              <div
-                key={pkg.id}
-                className="bg-white p-12 rounded-[48px] border border-slate-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-2 group"
-              >
+              <div key={pkg.id} className="bg-white p-12 rounded-[48px] border border-slate-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-2 group">
                 <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 mb-2">{pkg.name}</p>
                 <div className="flex items-baseline gap-1 mb-8">
                   <span className="text-5xl font-black text-black tracking-tighter">${pkg.price}</span>
@@ -311,10 +293,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
                     </li>
                   ))}
                 </ul>
-                <button
-                  onClick={onRegister}
-                  className="w-full py-5 rounded-3xl bg-black text-white font-black uppercase tracking-widest text-xs group-hover:bg-nexus-green transition-colors"
-                >
+                <button onClick={onRegister} className="w-full py-5 rounded-3xl bg-black text-white font-black uppercase tracking-widest text-xs group-hover:bg-nexus-green transition-colors">
                   Hemen Başlat
                 </button>
               </div>
@@ -334,13 +313,8 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
           </div>
 
           <div className="flex flex-col md:flex-row justify-between items-center gap-10">
-            {/* ✅ ONLY LOGO (no text, no box) */}
-            <img
-              src="/assets/neobreed-logo.png"
-              alt="NeoBreed"
-              className="h-24 w-auto opacity-90"
-              draggable={false}
-            />
+            {/* ✅ TEXT ONLY BRAND */}
+            <BrandWordmark size="sm" />
 
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
               © 2024 NeoBreed Systems. Tüm hakları saklıdır.
