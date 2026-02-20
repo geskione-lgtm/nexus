@@ -52,50 +52,62 @@ export const DatabaseService = {
   async getDoctorsWithStats(): Promise<any[]> {
     if (!isSupabaseConfigured()) return [];
     
-    // Fetch doctors, their patients count, and their patients' scans count
-    const { data, error } = await supabase
-      .from('profiles')
-      .select(`
-        *,
-        patients (
-          id,
-          scans (count)
-        )
-      `)
-      .eq('role', UserRole.DOCTOR);
-    
-    if (error) {
-      console.error("Error fetching doctor stats:", error);
+    try {
+      // Fetch all doctors, patients, and scans separately for reliable mapping
+      const [doctorsRes, patientsRes, scansRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('role', UserRole.DOCTOR),
+        supabase.from('patients').select('id, doctor_id'),
+        supabase.from('scans').select('id, patient_id')
+      ]);
+
+      if (doctorsRes.error) throw doctorsRes.error;
+
+      const doctors = doctorsRes.data || [];
+      const patients = patientsRes.data || [];
+      const scans = scansRes.data || [];
+
+      return doctors.map(d => {
+        const doctorPatients = patients.filter(p => p.doctor_id === d.id);
+        const patientIds = doctorPatients.map(p => p.id);
+        const doctorScans = scans.filter(s => patientIds.includes(s.patient_id));
+
+        return {
+          id: d.id,
+          name: d.name,
+          email: d.email,
+          clinicName: d.clinic_name,
+          packageId: d.package_id,
+          patientCount: doctorPatients.length,
+          scanCount: doctorScans.length
+        };
+      });
+    } catch (e) {
+      console.error("Error in getDoctorsWithStats:", e);
       return [];
     }
-
-    return data.map(d => {
-      const patientCount = d.patients ? d.patients.length : 0;
-      const scanCount = d.patients ? d.patients.reduce((acc: number, p: any) => acc + (p.scans ? p.scans[0].count : 0), 0) : 0;
-      
-      return {
-        id: d.id,
-        name: d.name,
-        email: d.email,
-        clinicName: d.clinic_name,
-        packageId: d.package_id,
-        patientCount,
-        scanCount
-      };
-    });
   },
 
   async getAllPatientsWithDoctorInfo(): Promise<any[]> {
     if (!isSupabaseConfigured()) return [];
-    const { data, error } = await supabase
-      .from('patients')
-      .select(`
-        *,
-        profiles:doctor_id (clinic_name, name)
-      `);
-    
-    if (error) return [];
-    return data;
+    try {
+      const [patientsRes, doctorsRes] = await Promise.all([
+        supabase.from('patients').select('*'),
+        supabase.from('profiles').select('id, clinic_name, name').eq('role', UserRole.DOCTOR)
+      ]);
+
+      if (patientsRes.error) throw patientsRes.error;
+
+      const patients = patientsRes.data || [];
+      const doctors = doctorsRes.data || [];
+
+      return patients.map(p => ({
+        ...p,
+        profiles: doctors.find(d => d.id === p.doctor_id)
+      }));
+    } catch (e) {
+      console.error("Error in getAllPatientsWithDoctorInfo:", e);
+      return [];
+    }
   },
 
   async getPatients(doctorId: string): Promise<Patient[]> {
