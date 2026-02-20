@@ -52,6 +52,8 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
     }
   };
 
+  const [showQRCode, setShowQRCode] = useState(false);
+
   const downloadImage = (url: string, filename: string) => {
     const link = document.createElement('a');
     link.href = url;
@@ -66,18 +68,11 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
     // This works best with public URLs.
     const isBase64 = url.startsWith('data:');
     const message = isBase64 
-      ? `Nexus Medical AI: Bebeğinizin ilk portresi hazır! 👶✨ (Görsel cihazınıza indirildiğinde paylaşabilirsiniz)`
+      ? `Nexus Medical AI: Bebeğinizin ilk portresi hazır! 👶✨ (Görseli indirmek için doktorunuzun ekranındaki QR kodu okutabilirsiniz)`
       : `Nexus Medical AI: Bebeğinizin ilk portresi hazır! 👶✨ Görseli buradan inceleyebilirsiniz: ${url}`;
     
     const text = encodeURIComponent(message);
     window.open(`https://wa.me/?text=${text}`, '_blank');
-  };
-
-  const shareEmail = (url: string) => {
-    const isBase64 = url.startsWith('data:');
-    const subject = encodeURIComponent('Nexus Medical AI: Bebeğinizin İlk Portresi');
-    const body = encodeURIComponent(`Merhaba,\n\nNexus Medical AI ile oluşturulan bebeğinizin ilk portresi hazır!\n\n${isBase64 ? 'Görsel ektedir.' : `Görseli buradan inceleyebilirsiniz: ${url}`}\n\nSağlıklı günler dileriz.`);
-    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
   };
 
   return (
@@ -91,18 +86,29 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                 <h3 className="text-2xl font-bold text-black tracking-tight">Görseli Paylaş</h3>
                 <p className="text-apple-gray text-xs font-semibold uppercase tracking-widest mt-1">Hasta: {patient.name}</p>
               </div>
-              <button onClick={() => setSharingScan(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+              <button onClick={() => { setSharingScan(null); setShowQRCode(false); }} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
             <div className="space-y-8">
-              <div className="bg-slate-50 p-6 rounded-[32px] flex flex-col items-center justify-center space-y-4">
-                <img src={sharingScan.babyFaceUrl} className="w-32 h-32 object-cover rounded-2xl shadow-lg" alt="Preview" />
-                <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest text-center">
-                  Görsel şu an base64 formatındadır.<br/>
-                  QR kod ve direkt link için bulut depolama gereklidir.
-                </p>
+              <div className="bg-slate-50 p-6 rounded-[32px] flex flex-col items-center justify-center space-y-4 min-h-[240px]">
+                {showQRCode ? (
+                  <div className="animate-in zoom-in duration-300 flex flex-col items-center">
+                    <QRCodeSVG value={sharingScan.babyFaceUrl} size={180} level="L" includeMargin={true} />
+                    <p className="text-[9px] font-bold text-red-500 uppercase tracking-widest text-center mt-4">
+                      Dikkat: Görsel boyutu büyük olduğu için<br/>bazı telefonlar bu QR kodu okuyamayabilir.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <img src={sharingScan.babyFaceUrl} className="w-40 h-40 object-cover rounded-2xl shadow-lg" alt="Preview" />
+                    <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest text-center">
+                      Görsel şu an yerel bellektedir.<br/>
+                      WhatsApp veya QR Kod ile paylaşabilirsiniz.
+                    </p>
+                  </>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -113,10 +119,10 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                   WhatsApp
                 </button>
                 <button 
-                  onClick={() => shareEmail(sharingScan.babyFaceUrl)}
-                  className="flex items-center justify-center gap-3 py-4 bg-black text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:scale-[1.02] transition-all"
+                  onClick={() => setShowQRCode(!showQRCode)}
+                  className={`flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest hover:scale-[1.02] transition-all ${showQRCode ? 'bg-slate-100 text-black' : 'bg-black text-white'}`}
                 >
-                  E-posta
+                  {showQRCode ? 'Görsele Dön' : 'QR Kod Göster'}
                 </button>
               </div>
 
