@@ -212,7 +212,6 @@ export const DatabaseService = {
   async savePatient(patient: Omit<Patient, 'id'>): Promise<any> {
     if (!isSupabaseConfigured()) throw new Error('Supabase yapılandırılmamış.')
 
-    // IMPORTANT: Store ISO in DB (DATE/TIMESTAMP safe), not "DD.MM.YYYY"
     const isoLastScanDate = toISODateString(patient.lastScanDate as any)
 
     const { data, error } = await supabase
@@ -228,23 +227,20 @@ export const DatabaseService = {
         }
       ])
       .select()
-      .single()
 
     if (error) throw error
-    return data
+    return data ? data[0] : null
   },
 
   async updatePatient(id: string, patient: Partial<Patient>): Promise<any> {
     if (!isSupabaseConfigured()) throw new Error('Supabase yapılandırılmamış.')
 
-    const updateData: any = {
-      name: patient.name,
-      weeks_pregnant: patient.weeksPregnant,
-      phone: patient.phone,
-      email: patient.email
-    }
-
-    if (patient.lastScanDate) {
+    const updateData: any = {}
+    if (patient.name !== undefined) updateData.name = patient.name
+    if (patient.weeksPregnant !== undefined) updateData.weeks_pregnant = patient.weeksPregnant
+    if (patient.phone !== undefined) updateData.phone = patient.phone
+    if (patient.email !== undefined) updateData.email = patient.email
+    if (patient.lastScanDate !== undefined) {
       updateData.last_scan_date = toISODateString(patient.lastScanDate)
     }
 
@@ -253,10 +249,17 @@ export const DatabaseService = {
       .update(updateData)
       .eq('id', id)
       .select()
-      .single()
 
-    if (error) throw error
-    return data
+    if (error) {
+      console.error('Update error:', error)
+      throw error
+    }
+    
+    if (!data || data.length === 0) {
+      throw new Error('Güncelleme başarısız: Kayıt bulunamadı veya yetkiniz yok.')
+    }
+
+    return data[0]
   },
 
   async getScans(): Promise<ScanResult[]> {

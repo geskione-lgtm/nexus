@@ -62,13 +62,21 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
   };
 
   const shareWhatsApp = (url: string) => {
-    const text = encodeURIComponent(`Nexus Medical AI: Bebeğinizin ilk portresi hazır! 👶✨ Görseli buradan inceleyebilirsiniz: ${url}`);
+    // Note: Base64 images cannot be shared directly via URL. 
+    // This works best with public URLs.
+    const isBase64 = url.startsWith('data:');
+    const message = isBase64 
+      ? `Nexus Medical AI: Bebeğinizin ilk portresi hazır! 👶✨ (Görsel cihazınıza indirildiğinde paylaşabilirsiniz)`
+      : `Nexus Medical AI: Bebeğinizin ilk portresi hazır! 👶✨ Görseli buradan inceleyebilirsiniz: ${url}`;
+    
+    const text = encodeURIComponent(message);
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
   const shareEmail = (url: string) => {
+    const isBase64 = url.startsWith('data:');
     const subject = encodeURIComponent('Nexus Medical AI: Bebeğinizin İlk Portresi');
-    const body = encodeURIComponent(`Merhaba,\n\nNexus Medical AI ile oluşturulan bebeğinizin ilk portresi hazır!\n\nGörseli buradan inceleyebilirsiniz: ${url}\n\nSağlıklı günler dileriz.`);
+    const body = encodeURIComponent(`Merhaba,\n\nNexus Medical AI ile oluşturulan bebeğinizin ilk portresi hazır!\n\n${isBase64 ? 'Görsel ektedir.' : `Görseli buradan inceleyebilirsiniz: ${url}`}\n\nSağlıklı günler dileriz.`);
     window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
   };
 
@@ -89,9 +97,12 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
             </div>
 
             <div className="space-y-8">
-              <div className="bg-slate-50 p-8 rounded-[32px] flex flex-col items-center justify-center space-y-4">
-                <QRCodeSVG value={sharingScan.babyFaceUrl} size={180} level="H" includeMargin={true} />
-                <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest text-center">Telefonunuzla okutarak<br/>görseli indirebilirsiniz</p>
+              <div className="bg-slate-50 p-6 rounded-[32px] flex flex-col items-center justify-center space-y-4">
+                <img src={sharingScan.babyFaceUrl} className="w-32 h-32 object-cover rounded-2xl shadow-lg" alt="Preview" />
+                <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest text-center">
+                  Görsel şu an base64 formatındadır.<br/>
+                  QR kod ve direkt link için bulut depolama gereklidir.
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
