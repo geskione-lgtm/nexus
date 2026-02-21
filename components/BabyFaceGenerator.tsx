@@ -1,9 +1,22 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Patient, ScanResult } from '../types';
 import { generateBabyFace } from '../services/geminiService';
 import { StorageService } from '../services/storageService';
 import { QRCodeSVG } from 'qrcode.react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  Cpu, 
+  Dna, 
+  Activity, 
+  Maximize2, 
+  Download, 
+  Share2, 
+  CheckCircle2, 
+  AlertCircle,
+  Scan,
+  Zap
+} from 'lucide-react';
 
 interface Props { patient: Patient; onScanGenerated: (result: ScanResult) => void; history: ScanResult[]; }
 
@@ -180,10 +193,62 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
       {/* Studio Viewport */}
       <div className="space-y-8">
-        <div className="aspect-[4/5] bg-black rounded-[48px] overflow-hidden relative flex flex-col items-center justify-center p-10 group shadow-2xl">
+        <div className="aspect-[4/5] bg-black rounded-[48px] overflow-hidden relative flex flex-col items-center justify-center p-10 group shadow-2xl border border-white/5">
           {previewUrl ? (
-            <div className="w-full h-full flex flex-col items-center justify-center space-y-6 animate-in zoom-in duration-500">
-              <img src={previewUrl} className="max-w-full max-h-[60%] object-contain rounded-[32px] border border-white/10" />
+            <div className="w-full h-full flex flex-col items-center justify-center space-y-6 animate-in zoom-in duration-500 relative">
+              <div className="relative w-full max-h-[60%] flex items-center justify-center">
+                <img src={previewUrl} className="max-w-full max-h-full object-contain rounded-[32px] border border-white/10" />
+                
+                {/* Analysis Overlay */}
+                <AnimatePresence>
+                  {isGenerating && (
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 overflow-hidden rounded-[32px]"
+                    >
+                      {/* Scanning Line */}
+                      <motion.div 
+                        animate={{ top: ['0%', '100%', '0%'] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                        className="absolute left-0 right-0 h-1 bg-nexus-mint shadow-[0_0_20px_#10b981] z-20"
+                      />
+                      
+                      {/* Grid Overlay */}
+                      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+                      
+                      {/* HUD Elements */}
+                      <div className="absolute top-4 left-4 flex flex-col gap-2">
+                        <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                          <Cpu className="w-3 h-3 text-nexus-mint animate-pulse" />
+                          <span className="text-[8px] font-bold text-nexus-mint uppercase tracking-widest">Neural Processing</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                          <Dna className="w-3 h-3 text-blue-400" />
+                          <span className="text-[8px] font-bold text-blue-400 uppercase tracking-widest">Biometric Mapping</span>
+                        </div>
+                      </div>
+
+                      <div className="absolute bottom-4 right-4 bg-black/40 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10">
+                        <div className="flex items-center gap-3">
+                          <div className="space-y-1">
+                            <div className="w-24 h-1 bg-white/10 rounded-full overflow-hidden">
+                              <motion.div 
+                                animate={{ width: ['0%', '100%'] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                                className="h-full bg-nexus-mint"
+                              />
+                            </div>
+                            <p className="text-[7px] font-bold text-white/40 uppercase tracking-widest">Synthesis Progress</p>
+                          </div>
+                          <span className="text-[10px] font-mono text-white font-bold">84%</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
               
               {/* Parameter Inputs */}
               <div className="w-full max-w-md space-y-4 apple-blur bg-white/5 p-6 rounded-[32px] border border-white/10">
