@@ -206,114 +206,164 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="absolute inset-0 overflow-hidden rounded-[32px] pointer-events-none"
+                      className="absolute inset-0 overflow-hidden rounded-[32px] pointer-events-none z-20"
                     >
-                      {/* Scanning Line */}
+                      {/* Scanning Line with Glow */}
                       <motion.div 
                         animate={{ top: ['0%', '100%', '0%'] }}
-                        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute left-0 right-0 h-[2px] bg-nexus-mint shadow-[0_0_30px_#10b981] z-30"
+                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute left-0 right-0 h-[3px] bg-nexus-mint shadow-[0_0_40px_#10b981,0_0_10px_#fff] z-40"
                       />
                       
-                      {/* Wireframe Mesh Effect */}
-                      <div className="absolute inset-0 opacity-20">
-                        <svg width="100%" height="100%" className="text-nexus-mint">
-                          <pattern id="wireframe" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-                            <circle cx="0" cy="0" r="1" fill="currentColor" />
-                          </pattern>
-                          <rect width="100%" height="100%" fill="url(#wireframe)" />
-                          
-                          {/* Dynamic Triangulation Mesh (Simulated) */}
+                      {/* Face Detection Frame */}
+                      <motion.div 
+                        animate={{ opacity: [0.3, 0.6, 0.3] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="absolute inset-12 border-2 border-nexus-mint/30 rounded-[40px] z-30"
+                      >
+                        <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-nexus-mint rounded-tl-3xl"></div>
+                        <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-nexus-mint rounded-tr-3xl"></div>
+                        <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-nexus-mint rounded-bl-3xl"></div>
+                        <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-nexus-mint rounded-br-3xl"></div>
+                      </motion.div>
+
+                      {/* Dynamic Biometric Mesh */}
+                      <div className="absolute inset-0 opacity-40">
+                        <svg width="100%" height="100%" viewBox="0 0 400 500" preserveAspectRatio="none" className="text-nexus-mint">
                           <motion.path 
-                            animate={{ opacity: [0.1, 0.3, 0.1] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            d="M100,100 L150,80 L200,120 L180,180 L120,200 Z M250,150 L300,130 L320,200 L280,220 Z" 
+                            animate={{ 
+                              d: [
+                                "M50,100 L150,80 L250,90 L350,110 L300,250 L200,280 L100,240 Z",
+                                "M60,110 L140,90 L260,80 L340,120 L310,240 L210,270 L90,250 Z",
+                                "M50,100 L150,80 L250,90 L350,110 L300,250 L200,280 L100,240 Z"
+                              ]
+                            }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                             fill="none" 
                             stroke="currentColor" 
-                            strokeWidth="1"
-                            className="drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]"
+                            strokeWidth="0.5"
+                            className="drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]"
                           />
+                          {/* Inner Mesh Lines */}
+                          {[...Array(8)].map((_, i) => (
+                            <motion.line
+                              key={i}
+                              x1={50 + i * 40} y1="0" x2={50 + i * 40} y2="500"
+                              stroke="currentColor" strokeWidth="0.2" strokeDasharray="4 4"
+                              animate={{ opacity: [0.1, 0.3, 0.1] }}
+                              transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
+                            />
+                          ))}
                         </svg>
                       </div>
 
-                      {/* Biometric Points */}
-                      {[...Array(12)].map((_, i) => (
+                      {/* Biometric Markers (Reference Points) */}
+                      {[
+                        { x: '30%', y: '25%' }, { x: '70%', y: '25%' },
+                        { x: '50%', y: '45%' }, { x: '40%', y: '65%' },
+                        { x: '60%', y: '65%' }, { x: '50%', y: '80%' }
+                      ].map((point, i) => (
                         <motion.div
                           key={i}
-                          initial={{ opacity: 0 }}
-                          animate={{ 
-                            opacity: [0, 1, 0],
-                            scale: [0.5, 1.2, 0.5],
-                            x: Math.random() * 300,
-                            y: Math.random() * 400
-                          }}
-                          transition={{ 
-                            duration: 2 + Math.random() * 2, 
-                            repeat: Infinity,
-                            delay: Math.random() * 2
-                          }}
-                          className="absolute w-1.5 h-1.5 bg-nexus-mint rounded-full shadow-[0_0_10px_#10b981]"
-                        />
+                          style={{ left: point.x, top: point.y }}
+                          className="absolute -translate-x-1/2 -translate-y-1/2 z-30"
+                        >
+                          <motion.div 
+                            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3 }}
+                            className="w-3 h-3 border border-nexus-mint rounded-full flex items-center justify-center"
+                          >
+                            <div className="w-1 h-1 bg-nexus-mint rounded-full"></div>
+                          </motion.div>
+                          <motion.span 
+                            animate={{ opacity: [0, 1, 0] }}
+                            transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }}
+                            className="absolute left-4 top-0 text-[6px] font-mono text-nexus-mint whitespace-nowrap"
+                          >
+                            PT_{i+1}: {Math.random().toFixed(4)}
+                          </motion.span>
+                        </motion.div>
                       ))}
                       
-                      {/* HUD Elements */}
-                      <div className="absolute top-6 left-6 flex flex-col gap-3">
-                        <div className="flex items-center gap-3 bg-black/60 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/10">
-                          <div className="w-2 h-2 bg-nexus-mint rounded-full animate-pulse"></div>
-                          <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Biometric Scan Active</span>
+                      {/* HUD Data Streams */}
+                      <div className="absolute top-10 left-10 flex flex-col gap-4">
+                        <div className="flex items-center gap-3 bg-black/80 backdrop-blur-2xl px-5 py-2.5 rounded-2xl border border-white/10 shadow-2xl">
+                          <div className="w-2 h-2 bg-nexus-mint rounded-full animate-pulse shadow-[0_0_10px_#10b981]"></div>
+                          <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Neural Analysis v4.2</span>
                         </div>
-                        <div className="flex items-center gap-3 bg-black/60 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/10">
-                          <Activity className="w-3.5 h-3.5 text-blue-400" />
-                          <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Fetal Mapping: 12.4ms</span>
+                        
+                        <div className="bg-black/60 backdrop-blur-xl p-4 rounded-2xl border border-white/10 space-y-2">
+                          <div className="flex justify-between gap-8">
+                            <span className="text-[8px] font-bold text-white/40 uppercase">Mapping</span>
+                            <span className="text-[8px] font-mono text-nexus-mint">ACTIVE</span>
+                          </div>
+                          <div className="flex justify-between gap-8">
+                            <span className="text-[8px] font-bold text-white/40 uppercase">Density</span>
+                            <span className="text-[8px] font-mono text-nexus-mint">0.842 g/cm³</span>
+                          </div>
+                          <div className="flex justify-between gap-8">
+                            <span className="text-[8px] font-bold text-white/40 uppercase">Confidence</span>
+                            <span className="text-[8px] font-mono text-nexus-mint">99.8%</span>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="absolute top-6 right-6 flex flex-col items-end gap-2">
-                        <div className="bg-nexus-mint/20 text-nexus-mint text-[8px] font-bold px-3 py-1 rounded-full border border-nexus-mint/30 uppercase tracking-widest">
-                          Signal: Optimal
+                      {/* Right Side Data Feed */}
+                      <div className="absolute top-10 right-10 flex flex-col items-end gap-3">
+                        <div className="bg-nexus-mint/10 text-nexus-mint text-[9px] font-black px-4 py-1.5 rounded-full border border-nexus-mint/20 uppercase tracking-[0.2em] backdrop-blur-md">
+                          Processing Stream
                         </div>
-                        <div className="text-white/40 font-mono text-[8px] text-right">
-                          LAT: 40.7128 N<br/>
-                          LNG: 74.0060 W
+                        <div className="bg-black/40 backdrop-blur-md p-3 rounded-xl border border-white/5 font-mono text-[7px] text-white/60 leading-relaxed text-right">
+                          {`SCAN_ID: ${Math.random().toString(36).substr(2, 9).toUpperCase()}`}<br/>
+                          {`FREQ: 14.22 MHz`}<br/>
+                          {`DEPTH: 124.5 mm`}<br/>
+                          {`GAIN: 42.0 dB`}
                         </div>
                       </div>
 
-                      <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
-                        <div className="bg-black/60 backdrop-blur-xl p-5 rounded-[32px] border border-white/10 flex items-center gap-6">
-                          <div className="relative w-12 h-12 flex items-center justify-center">
+                      {/* Bottom Status Bar */}
+                      <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end">
+                        <div className="bg-black/80 backdrop-blur-2xl p-6 rounded-[40px] border border-white/10 flex items-center gap-8 shadow-2xl">
+                          <div className="relative w-14 h-14 flex items-center justify-center">
                             <svg className="absolute inset-0 w-full h-full -rotate-90">
-                              <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="4" />
+                              <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="4" />
                               <motion.circle 
-                                cx="24" cy="24" r="20" 
+                                cx="28" cy="28" r="24" 
                                 fill="none" 
                                 stroke="#10b981" 
                                 strokeWidth="4" 
-                                strokeDasharray="126"
-                                animate={{ strokeDashoffset: [126, 0] }}
-                                transition={{ duration: 10, ease: "linear" }}
+                                strokeDasharray="150.7"
+                                animate={{ strokeDashoffset: [150.7, 0] }}
+                                transition={{ duration: 15, ease: "linear" }}
                               />
                             </svg>
-                            <span className="text-[10px] font-mono text-white font-bold">AI</span>
+                            <Cpu className="w-6 h-6 text-nexus-mint" />
                           </div>
-                          <div className="space-y-1">
-                            <p className="text-[8px] font-black text-nexus-mint uppercase tracking-widest">Neural Synthesis</p>
-                            <p className="text-white text-[10px] font-bold uppercase">Processing Fetal Features...</p>
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[9px] font-black text-nexus-mint uppercase tracking-[0.2em]">AI Synthesis Engine</span>
+                              <motion.span 
+                                animate={{ opacity: [0, 1, 0] }}
+                                transition={{ duration: 1, repeat: Infinity }}
+                                className="w-1.5 h-1.5 bg-nexus-mint rounded-full"
+                              />
+                            </div>
+                            <p className="text-white text-xs font-black uppercase tracking-tight">Reconstructing Fetal Morphology...</p>
                           </div>
                         </div>
                         
-                        <div className="flex flex-col items-end gap-1">
-                          <div className="flex gap-1">
-                            {[1, 2, 3, 4, 5].map((i) => (
+                        <div className="flex flex-col items-end gap-3 mb-4">
+                          <div className="flex gap-1.5">
+                            {[1, 2, 3, 4, 5, 6].map((i) => (
                               <motion.div
                                 key={i}
-                                animate={{ height: [4, 16, 4] }}
-                                transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.1 }}
-                                className="w-1 bg-nexus-mint rounded-full"
+                                animate={{ height: [6, 24, 6] }}
+                                transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.08 }}
+                                className="w-1.5 bg-nexus-mint/40 rounded-full"
                               />
                             ))}
                           </div>
-                          <span className="text-[7px] font-bold text-white/40 uppercase tracking-widest">Data Stream</span>
+                          <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.3em]">Data Link Active</span>
                         </div>
                       </div>
                     </motion.div>
