@@ -15,8 +15,28 @@ import {
   CheckCircle2, 
   AlertCircle,
   Scan,
-  Zap
+  Zap,
+  X,
+  RotateCcw,
+  Box,
+  ChevronRight,
+  ChevronLeft,
+  Settings2
 } from 'lucide-react';
+
+interface Measurements {
+  a_mm: number | null;
+  b_mm: number | null;
+  c_mm: number | null;
+  d_mm: number | null;
+  e_mm: number | null;
+  f_mm: number | null;
+  g_mm: number | null;
+  h_mm: number | null;
+  i_mm: number | null;
+  unit: string;
+  createdAt: string | null;
+}
 
 interface Props { patient: Patient; onScanGenerated: (result: ScanResult) => void; history: ScanResult[]; }
 
@@ -33,7 +53,78 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
     style: 'hyper-realistic',
     notes: ''
   });
+  const [show3DModal, setShow3DModal] = useState(false);
+  const [measurements, setMeasurements] = useState<Measurements>({
+    a_mm: null, b_mm: null, c_mm: null, d_mm: null, e_mm: null, f_mm: null, g_mm: null, h_mm: null, i_mm: null,
+    unit: 'mm',
+    createdAt: null
+  });
+  const [currentStep, setCurrentStep] = useState<keyof Omit<Measurements, 'unit' | 'createdAt'>>('a_mm');
+  const [dragEnabled, setDragEnabled] = useState(false);
+  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const viewerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const steps = [
+    { id: 'a_mm', label: 'a: Tepe–Çene' },
+    { id: 'b_mm', label: 'b: Burun' },
+    { id: 'c_mm', label: 'c: Alın' },
+    { id: 'd_mm', label: 'd: Göz Hattı / Orta Yüz Referansı' },
+    { id: 'e_mm', label: 'e: Alt Dudak–Çene' },
+    { id: 'f_mm', label: 'f: Ağız Genişliği' },
+    { id: 'g_mm', label: 'g: Ön–Arka Kafa (OFD)' },
+    { id: 'h_mm', label: 'h: Sağ–Sol Kafa (BPD)' },
+    { id: 'i_mm', label: 'i: Baş Çevresi (HC)' },
+  ] as const;
+
+  const handleSave3D = () => {
+    const required = ['a_mm', 'g_mm', 'h_mm', 'i_mm'];
+    const missing = required.filter(key => measurements[key as keyof Measurements] === null);
+    
+    if (missing.length > 0) {
+      const labels = missing.map(m => m.split('_')[0]).join(', ');
+      alert(`Lütfen önce zorunlu ölçümleri girin: ${labels}`);
+      return;
+    }
+
+    setMeasurements(prev => ({ ...prev, createdAt: new Date().toISOString() }));
+    setShow3DModal(false);
+    alert("3D ölçümler kaydedildi.");
+  };
+
+  const handleViewerInteraction = (e: React.MouseEvent | React.WheelEvent) => {
+    if (e.type === 'wheel') {
+      const we = e as React.WheelEvent;
+      setZoom(prev => Math.max(0.5, Math.min(3, prev - we.deltaY * 0.001)));
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const isRightClick = e.button === 2 || (e.button === 0 && e.shiftKey);
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const dx = moveEvent.clientX - startX;
+      const dy = moveEvent.clientY - startY;
+
+      if (isRightClick) {
+        setPan(prev => ({ x: prev.x + dx * 0.5, y: prev.y + dy * 0.5 }));
+      } else {
+        setRotation(prev => ({ x: prev.x + dy * 0.5, y: prev.y + dx * 0.5 }));
+      }
+    };
+
+    const handleMouseUp = () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -113,6 +204,161 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 relative">
+      {/* 3D Measurement Modal */}
+      <AnimatePresence>
+        {show3DModal && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white rounded-[48px] w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden shadow-2xl"
+            >
+              {/* Modal Header */}
+              <div className="p-8 border-b border-black/5 flex justify-between items-center">
+                <div>
+                  <h3 className="text-2xl font-black text-black tracking-tight">3D Kafa Ölçümleme</h3>
+                  <p className="text-apple-gray text-xs font-semibold uppercase tracking-widest mt-1">Modeli döndür, ölçümü seç, mm gir veya sürükleyerek ayarla.</p>
+                </div>
+                <button onClick={() => setShow3DModal(false)} className="p-3 hover:bg-slate-100 rounded-full transition-colors">
+                  <X className="w-6 h-6 text-black" />
+                </button>
+              </div>
+
+              {/* Modal Content - 3 Columns */}
+              <div className="flex-1 flex overflow-hidden">
+                {/* Left Column: Step List */}
+                <div className="w-72 border-r border-black/5 overflow-y-auto p-6 space-y-2">
+                  <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest mb-4 px-2">Ölçüm Adımları</p>
+                  {steps.map((step) => (
+                    <button
+                      key={step.id}
+                      onClick={() => setCurrentStep(step.id as any)}
+                      className={`w-full text-left p-4 rounded-2xl transition-all flex items-center justify-between group ${currentStep === step.id ? 'bg-black text-white shadow-lg' : 'hover:bg-slate-50'}`}
+                    >
+                      <span className={`text-[11px] font-bold ${currentStep === step.id ? 'text-white' : 'text-slate-600'}`}>{step.label}</span>
+                      {measurements[step.id as keyof Measurements] !== null && (
+                        <CheckCircle2 className={`w-4 h-4 ${currentStep === step.id ? 'text-nexus-mint' : 'text-nexus-mint'}`} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Center Column: Head Viewer */}
+                <div className="flex-1 bg-slate-50 relative overflow-hidden flex flex-col">
+                  <div 
+                    ref={viewerRef}
+                    onWheel={handleViewerInteraction}
+                    onMouseDown={handleMouseDown}
+                    onContextMenu={(e) => e.preventDefault()}
+                    className="flex-1 cursor-move relative"
+                  >
+                    {/* Placeholder Head Silhouette */}
+                    <div 
+                      className="absolute inset-0 flex items-center justify-center transition-transform duration-75"
+                      style={{ 
+                        transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
+                        transformStyle: 'preserve-3d'
+                      }}
+                    >
+                      <div className="w-64 h-80 bg-slate-200 rounded-full relative shadow-inner border border-black/5">
+                        {/* Draggable Handles Mockup */}
+                        {dragEnabled && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-full h-px bg-nexus-mint shadow-[0_0_10px_#10b981] relative">
+                              <div className="absolute -left-2 -top-2 w-4 h-4 bg-nexus-mint rounded-full cursor-pointer"></div>
+                              <div className="absolute -right-2 -top-2 w-4 h-4 bg-nexus-mint rounded-full cursor-pointer"></div>
+                            </div>
+                          </div>
+                        )}
+                        {/* Simple Face Features */}
+                        <div className="absolute top-1/4 left-1/4 w-8 h-4 bg-slate-300 rounded-full"></div>
+                        <div className="absolute top-1/4 right-1/4 w-8 h-4 bg-slate-300 rounded-full"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-4 h-12 bg-slate-300 rounded-full"></div>
+                      </div>
+                    </div>
+
+                    {/* Viewer Controls */}
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-black/5">
+                      <button onClick={() => { setRotation({ x: 0, y: 0 }); setZoom(1); setPan({ x: 0, y: 0 }); }} className="p-2 hover:bg-slate-100 rounded-xl transition-colors" title="Sıfırla">
+                        <RotateCcw className="w-4 h-4" />
+                      </button>
+                      <div className="w-px h-8 bg-black/5 mx-1"></div>
+                      <button onClick={() => setRotation({ x: 0, y: 0 })} className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-100 rounded-xl transition-colors">Ön</button>
+                      <button onClick={() => setRotation({ x: 0, y: 90 })} className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-100 rounded-xl transition-colors">Profil</button>
+                      <button onClick={() => setRotation({ x: 90, y: 0 })} className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-100 rounded-xl transition-colors">Üst</button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Numeric Input */}
+                <div className="w-80 border-l border-black/5 p-8 space-y-10">
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest">Değer Girişi</p>
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-bold text-black">{steps.find(s => s.id === currentStep)?.label}</label>
+                      <div className="relative">
+                        <input 
+                          type="number" 
+                          value={measurements[currentStep as keyof Measurements] || ''}
+                          onChange={(e) => setMeasurements(prev => ({ ...prev, [currentStep]: e.target.value ? parseFloat(e.target.value) : null }))}
+                          className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-lg font-black focus:bg-white transition-all shadow-inner"
+                          placeholder="0.0"
+                        />
+                        <span className="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-bold text-apple-gray">mm</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      {[-0.5, -0.1, 0.1, 0.5].map(val => (
+                        <button
+                          key={val}
+                          onClick={() => setMeasurements(prev => ({ ...prev, [currentStep]: (prev[currentStep as keyof Measurements] || 0) + val }))}
+                          className="py-3 bg-slate-100 hover:bg-slate-200 rounded-xl text-[10px] font-bold transition-all"
+                        >
+                          {val > 0 ? `+${val}` : val}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-10 border-t border-black/5 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <p className="text-[11px] font-bold text-black">Sürükleyerek Ayarla</p>
+                        <p className="text-[9px] text-apple-gray font-medium">Viewer üzerinden manuel kontrol</p>
+                      </div>
+                      <button 
+                        onClick={() => setDragEnabled(!dragEnabled)}
+                        className={`w-12 h-6 rounded-full relative transition-all ${dragEnabled ? 'bg-nexus-mint' : 'bg-slate-200'}`}
+                      >
+                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${dragEnabled ? 'left-7' : 'left-1'}`}></div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-8 border-t border-black/5 flex justify-between items-center bg-slate-50/50">
+                <button 
+                  onClick={() => setShow3DModal(false)}
+                  className="px-10 py-4 bg-white border border-black/5 text-black rounded-full font-bold text-xs uppercase tracking-widest hover:bg-slate-100 transition-all"
+                >
+                  Kapat
+                </button>
+                <button 
+                  onClick={handleSave3D}
+                  className="px-12 py-4 bg-black text-white rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/20"
+                >
+                  Kaydet ve Devam Et
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Share Modal */}
       {sharingScan && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
@@ -450,6 +696,17 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
               >
                 Select DICOM File
               </button>
+              <button 
+                onClick={() => setShow3DModal(true)}
+                className="px-6 py-2.5 bg-white/5 text-white/40 hover:text-white hover:bg-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all"
+              >
+                3D Ölçüm ile Devam Et
+              </button>
+              {measurements.createdAt && (
+                <div className="text-[9px] font-mono text-nexus-mint/60 uppercase tracking-tighter animate-in fade-in slide-in-from-top-1">
+                  {steps.filter(s => measurements[s.id as keyof Measurements] !== null).map(s => `${s.id.split('_')[0]}: ${measurements[s.id as keyof Measurements]}mm`).join(' · ')}
+                </div>
+              )}
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
             </div>
           )}
