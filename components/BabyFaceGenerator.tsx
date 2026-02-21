@@ -268,73 +268,51 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                     <div 
                       className="absolute inset-0 flex items-center justify-center transition-transform duration-300 ease-out"
                       style={{ 
-                        transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-                        transformStyle: 'preserve-3d'
+                        transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                       }}
                     >
                       <div className="relative w-80 h-96 flex items-center justify-center">
-                        {/* Realistic Fetal Head SVG (2.5D Stylized) */}
-                        <svg viewBox="0 0 200 240" className="w-full h-full drop-shadow-[0_20px_50px_rgba(0,0,0,0.1)]">
-                          <defs>
-                            <radialGradient id="headGrad" cx="40%" cy="30%" r="70%">
-                              <stop offset="0%" stopColor="#ffffff" />
-                              <stop offset="60%" stopColor="#f1f5f9" />
-                              <stop offset="100%" stopColor="#cbd5e1" />
-                            </radialGradient>
-                            <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-                              <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
-                              <feOffset dx="2" dy="4" result="offsetblur" />
-                              <feComponentTransfer>
-                                <feFuncA type="linear" slope="0.2" />
-                              </feComponentTransfer>
-                              <feMerge>
-                                <feMergeNode />
-                                <feMergeNode in="SourceGraphic" />
-                              </feMerge>
-                            </filter>
-                          </defs>
-                          
-                          {/* Main Skull Shape - Fetal Proportion (Large Cranium) */}
-                          <path 
-                            d="M100,20 C150,20 185,60 185,110 C185,160 150,210 100,210 C50,210 15,160 15,110 C15,60 50,20 100,20 Z" 
-                            fill="url(#headGrad)" 
-                            stroke="#94a3b8" 
-                            strokeWidth="0.5"
-                          />
-                          
-                          {/* Face Features (Front View) */}
-                          <g style={{ opacity: Math.max(0, 1 - Math.abs(rotation.y) / 60) }}>
-                            {/* Forehead Softness */}
-                            <ellipse cx="100" cy="70" rx="60" ry="40" fill="white" opacity="0.3" />
-                            {/* Cheeks - Full and Round */}
-                            <ellipse cx="60" cy="150" rx="30" ry="35" fill="#e2e8f0" opacity="0.4" />
-                            <ellipse cx="140" cy="150" rx="30" ry="35" fill="#e2e8f0" opacity="0.4" />
-                            {/* Eyes - Closed/Soft */}
-                            <path d="M65,120 Q80,115 95,120" fill="none" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
-                            <path d="M105,120 Q120,115 135,120" fill="none" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
-                            {/* Nose - Small and Button-like */}
-                            <path d="M92,145 Q100,138 108,145 L100,165 Z" fill="#94a3b8" opacity="0.3" />
-                            {/* Mouth - Small and Pouty */}
-                            <path d="M88,185 Q100,195 112,185" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
-                            <path d="M92,188 Q100,192 108,188" fill="none" stroke="#64748b" strokeWidth="1" opacity="0.3" />
-                          </g>
+                        {/* Realistic Fetal Head Images */}
+                        <div className="relative w-full h-full flex items-center justify-center">
+                          <AnimatePresence mode="wait">
+                            {rotation.x === 0 && rotation.y === 0 && (
+                              <motion.img 
+                                key="front"
+                                src="/fetal/front.png"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="w-full h-full object-contain drop-shadow-2xl"
+                                referrerPolicy="no-referrer"
+                              />
+                            )}
+                            {rotation.y === 90 && (
+                              <motion.img 
+                                key="profile"
+                                src="/fetal/profile.png"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="w-full h-full object-contain drop-shadow-2xl"
+                                referrerPolicy="no-referrer"
+                              />
+                            )}
+                            {rotation.x === 90 && (
+                              <motion.img 
+                                key="top"
+                                src="/fetal/top.png"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="w-full h-full object-contain drop-shadow-2xl"
+                                referrerPolicy="no-referrer"
+                              />
+                            )}
+                          </AnimatePresence>
 
-                          {/* Profile Features (Side View) */}
-                          <g style={{ opacity: Math.max(0, (Math.abs(rotation.y) - 30) / 60), transform: rotation.y > 0 ? 'none' : 'scaleX(-1) translateX(-200px)' }}>
-                            {/* Profile Silhouette */}
-                            <path 
-                              d="M100,20 C150,20 180,60 180,110 C180,135 175,150 165,160 L175,170 L165,180 C155,200 130,215 100,215" 
-                              fill="none" stroke="#64748b" strokeWidth="1" opacity="0.2"
-                            />
-                            {/* Ear */}
-                            <path d="M100,110 Q115,110 115,130 Q115,150 100,150" fill="none" stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
-                          </g>
-
-                          {/* Top View Features (Axial) */}
-                          <g style={{ opacity: Math.max(0, (Math.abs(rotation.x) - 30) / 60) }}>
-                            <ellipse cx="100" cy="115" rx="75" ry="90" fill="none" stroke="#64748b" strokeWidth="0.5" strokeDasharray="4 4" opacity="0.3" />
-                          </g>
-                        </svg>
+                          {/* Shading/Medical Overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-tr from-nexus-mint/5 to-transparent pointer-events-none rounded-full"></div>
+                        </div>
 
                         {/* Interactive Markers Layer */}
                         <div className="absolute inset-0 pointer-events-none">
@@ -347,51 +325,60 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                                 {/* Marker Points based on Step */}
                                 {step.id === 'a_mm' && (
                                   <>
-                                    <div className="absolute top-[10%] bottom-[88%] left-1/2 -translate-x-1/2 w-px bg-nexus-mint/30 border-l border-dashed border-nexus-mint/50"></div>
-                                    <MarkerPoint x="50%" y="10%" label="Tepe (Vertex)" onValueChange={(v) => setMeasurements(p => ({...p, a_mm: v}))} value={measurements.a_mm} dragEnabled={dragEnabled} />
-                                    <MarkerPoint x="50%" y="88%" label="Çene (Menton)" onValueChange={(v) => setMeasurements(p => ({...p, a_mm: v}))} value={measurements.a_mm} dragEnabled={dragEnabled} />
+                                    <div className="absolute top-[16%] bottom-[84%] left-1/2 -translate-x-1/2 w-px bg-nexus-mint/30 border-l border-dashed border-nexus-mint/50"></div>
+                                    <MarkerPoint x="50%" y="16%" label="Tepe (Vertex)" onValueChange={(v) => setMeasurements(p => ({...p, a_mm: v}))} value={measurements.a_mm} dragEnabled={dragEnabled} />
+                                    <MarkerPoint x="50%" y="86%" label="Çene (Menton)" onValueChange={(v) => setMeasurements(p => ({...p, a_mm: v}))} value={measurements.a_mm} dragEnabled={dragEnabled} />
                                   </>
                                 )}
                                 {step.id === 'b_mm' && (
-                                  <MarkerPoint x="78%" y="58%" label="Burun Ucu" onValueChange={(v) => setMeasurements(p => ({...p, b_mm: v}))} value={measurements.b_mm} dragEnabled={dragEnabled} />
+                                  <MarkerPoint x="62%" y="50%" label="Burun Ucu" onValueChange={(v) => setMeasurements(p => ({...p, b_mm: v}))} value={measurements.b_mm} dragEnabled={dragEnabled} />
                                 )}
                                 {step.id === 'c_mm' && (
-                                  <MarkerPoint x="50%" y="30%" label="Alın" onValueChange={(v) => setMeasurements(p => ({...p, c_mm: v}))} value={measurements.c_mm} dragEnabled={dragEnabled} />
+                                  <MarkerPoint x="50%" y="28%" label="Alın" onValueChange={(v) => setMeasurements(p => ({...p, c_mm: v}))} value={measurements.c_mm} dragEnabled={dragEnabled} />
                                 )}
                                 {step.id === 'd_mm' && (
-                                  <div className="absolute top-[48%] left-[15%] right-[15%] h-px bg-nexus-mint shadow-[0_0_10px_#10b981] flex justify-between items-center">
-                                    <MarkerPoint x="0%" y="50%" label="Göz Hattı (Sol)" onValueChange={(v) => setMeasurements(p => ({...p, d_mm: v}))} value={measurements.d_mm} dragEnabled={dragEnabled} />
-                                    <MarkerPoint x="100%" y="50%" label="Göz Hattı (Sağ)" onValueChange={(v) => setMeasurements(p => ({...p, d_mm: v}))} value={measurements.d_mm} dragEnabled={dragEnabled} />
-                                  </div>
+                                  <MarkerPoint x="50%" y="46%" label="Göz Hattı / Orta Yüz" onValueChange={(v) => setMeasurements(p => ({...p, d_mm: v}))} value={measurements.d_mm} dragEnabled={dragEnabled} />
                                 )}
                                 {step.id === 'e_mm' && (
-                                  <MarkerPoint x="50%" y="80%" label="Alt Dudak" onValueChange={(v) => setMeasurements(p => ({...p, e_mm: v}))} value={measurements.e_mm} dragEnabled={dragEnabled} />
+                                  <>
+                                    <MarkerPoint x="50%" y="66%" label="Alt Dudak" onValueChange={(v) => setMeasurements(p => ({...p, e_mm: v}))} value={measurements.e_mm} dragEnabled={dragEnabled} />
+                                    <MarkerPoint x="50%" y="86%" label="Çene" onValueChange={(v) => setMeasurements(p => ({...p, e_mm: v}))} value={measurements.e_mm} dragEnabled={dragEnabled} />
+                                  </>
                                 )}
                                 {step.id === 'f_mm' && (
-                                  <div className="absolute top-[75%] left-[35%] right-[35%] h-px bg-nexus-mint/50 flex justify-between items-center">
-                                    <MarkerPoint x="0%" y="50%" label="Ağız (Sol)" onValueChange={(v) => setMeasurements(p => ({...p, f_mm: v}))} value={measurements.f_mm} dragEnabled={dragEnabled} />
-                                    <MarkerPoint x="100%" y="50%" label="Ağız (Sağ)" onValueChange={(v) => setMeasurements(p => ({...p, f_mm: v}))} value={measurements.f_mm} dragEnabled={dragEnabled} />
+                                  <div className="absolute top-[60%] left-[38%] right-[62%] h-px bg-nexus-mint/50 flex justify-between items-center">
+                                    <MarkerPoint x="38%" y="60%" label="Ağız (Sol)" onValueChange={(v) => setMeasurements(p => ({...p, f_mm: v}))} value={measurements.f_mm} dragEnabled={dragEnabled} />
+                                    <MarkerPoint x="62%" y="60%" label="Ağız (Sağ)" onValueChange={(v) => setMeasurements(p => ({...p, f_mm: v}))} value={measurements.f_mm} dragEnabled={dragEnabled} />
                                   </div>
                                 )}
                                 {step.id === 'g_mm' && (
                                   <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-px h-[70%] bg-nexus-mint shadow-[0_0_10px_#10b981] relative">
-                                      <MarkerPoint x="50%" y="0%" label="Ön (OFD)" onValueChange={(v) => setMeasurements(p => ({...p, g_mm: v}))} value={measurements.g_mm} dragEnabled={dragEnabled} />
-                                      <MarkerPoint x="50%" y="100%" label="Arka (OFD)" onValueChange={(v) => setMeasurements(p => ({...p, g_mm: v}))} value={measurements.g_mm} dragEnabled={dragEnabled} />
+                                    <div className="w-px h-[50%] bg-nexus-mint shadow-[0_0_10px_#10b981] relative" style={{ top: '53%', height: '50%' }}>
+                                      <MarkerPoint x="50%" y="28%" label="Ön (OFD)" onValueChange={(v) => setMeasurements(p => ({...p, g_mm: v}))} value={measurements.g_mm} dragEnabled={dragEnabled} />
+                                      <MarkerPoint x="50%" y="78%" label="Arka (OFD)" onValueChange={(v) => setMeasurements(p => ({...p, g_mm: v}))} value={measurements.g_mm} dragEnabled={dragEnabled} />
                                     </div>
                                   </div>
                                 )}
                                 {step.id === 'h_mm' && (
                                   <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-[70%] h-px bg-nexus-mint shadow-[0_0_10px_#10b981] relative">
-                                      <MarkerPoint x="0%" y="50%" label="Sol (BPD)" onValueChange={(v) => setMeasurements(p => ({...p, h_mm: v}))} value={measurements.h_mm} dragEnabled={dragEnabled} />
-                                      <MarkerPoint x="100%" y="50%" label="Sağ (BPD)" onValueChange={(v) => setMeasurements(p => ({...p, h_mm: v}))} value={measurements.h_mm} dragEnabled={dragEnabled} />
+                                    <div className="w-[44%] h-px bg-nexus-mint shadow-[0_0_10px_#10b981] relative" style={{ top: '54%' }}>
+                                      <MarkerPoint x="28%" y="54%" label="Sol (BPD)" onValueChange={(v) => setMeasurements(p => ({...p, h_mm: v}))} value={measurements.h_mm} dragEnabled={dragEnabled} />
+                                      <MarkerPoint x="72%" y="54%" label="Sağ (BPD)" onValueChange={(v) => setMeasurements(p => ({...p, h_mm: v}))} value={measurements.h_mm} dragEnabled={dragEnabled} />
                                     </div>
                                   </div>
                                 )}
                                 {step.id === 'i_mm' && (
                                   <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-[75%] h-[85%] border-2 border-dashed border-nexus-mint rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                                    <div 
+                                      className="absolute border-2 border-dashed border-nexus-mint rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                                      style={{ 
+                                        left: '50%', 
+                                        top: '54%', 
+                                        width: '56%', 
+                                        height: '44%', 
+                                        transform: 'translate(-50%, -50%)' 
+                                      }}
+                                    >
                                       <MarkerPoint x="50%" y="0%" label="HC (Baş Çevresi)" onValueChange={(v) => setMeasurements(p => ({...p, i_mm: v}))} value={measurements.i_mm} dragEnabled={dragEnabled} />
                                     </div>
                                   </div>
