@@ -64,20 +64,31 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [activeMarker, setActiveMarker] = useState<string | null>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const steps = [
-    { id: 'a_mm', label: 'a: Tepe–Çene' },
-    { id: 'b_mm', label: 'b: Burun' },
-    { id: 'c_mm', label: 'c: Alın' },
-    { id: 'd_mm', label: 'd: Göz Hattı / Orta Yüz Referansı' },
-    { id: 'e_mm', label: 'e: Alt Dudak–Çene' },
-    { id: 'f_mm', label: 'f: Ağız Genişliği' },
-    { id: 'g_mm', label: 'g: Ön–Arka Kafa (OFD)' },
-    { id: 'h_mm', label: 'h: Sağ–Sol Kafa (BPD)' },
-    { id: 'i_mm', label: 'i: Baş Çevresi (HC)' },
+    { id: 'a_mm', label: 'a: Tepe–Çene', view: 'front' },
+    { id: 'b_mm', label: 'b: Burun', view: 'profile' },
+    { id: 'c_mm', label: 'c: Alın', view: 'front' },
+    { id: 'd_mm', label: 'd: Göz Hattı / Orta Yüz Referansı', view: 'front' },
+    { id: 'e_mm', label: 'e: Alt Dudak–Çene', view: 'front' },
+    { id: 'f_mm', label: 'f: Ağız Genişliği', view: 'front' },
+    { id: 'g_mm', label: 'g: Ön–Arka Kafa (OFD)', view: 'top' },
+    { id: 'h_mm', label: 'h: Sağ–Sol Kafa (BPD)', view: 'top' },
+    { id: 'i_mm', label: 'i: Baş Çevresi (HC)', view: 'top' },
   ] as const;
+
+  // Auto-switch view when step changes
+  useEffect(() => {
+    const step = steps.find(s => s.id === currentStep);
+    if (step) {
+      if (step.view === 'front') setRotation({ x: 0, y: 0 });
+      if (step.view === 'profile') setRotation({ x: 0, y: 90 });
+      if (step.view === 'top') setRotation({ x: 90, y: 0 });
+    }
+  }, [currentStep]);
 
   const handleSave3D = () => {
     const required = ['a_mm', 'g_mm', 'h_mm', 'i_mm'];
@@ -253,40 +264,154 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                     onContextMenu={(e) => e.preventDefault()}
                     className="flex-1 cursor-move relative"
                   >
-                    {/* Placeholder Head Silhouette */}
+                    {/* Fetal Head Model Container */}
                     <div 
-                      className="absolute inset-0 flex items-center justify-center transition-transform duration-75"
+                      className="absolute inset-0 flex items-center justify-center transition-transform duration-300 ease-out"
                       style={{ 
                         transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
                         transformStyle: 'preserve-3d'
                       }}
                     >
-                      <div className="w-64 h-80 bg-slate-200 rounded-full relative shadow-inner border border-black/5">
-                        {/* Draggable Handles Mockup */}
-                        {dragEnabled && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-full h-px bg-nexus-mint shadow-[0_0_10px_#10b981] relative">
-                              <div className="absolute -left-2 -top-2 w-4 h-4 bg-nexus-mint rounded-full cursor-pointer"></div>
-                              <div className="absolute -right-2 -top-2 w-4 h-4 bg-nexus-mint rounded-full cursor-pointer"></div>
-                            </div>
-                          </div>
-                        )}
-                        {/* Simple Face Features */}
-                        <div className="absolute top-1/4 left-1/4 w-8 h-4 bg-slate-300 rounded-full"></div>
-                        <div className="absolute top-1/4 right-1/4 w-8 h-4 bg-slate-300 rounded-full"></div>
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-4 h-12 bg-slate-300 rounded-full"></div>
+                      <div className="relative w-80 h-96 flex items-center justify-center">
+                        {/* Realistic Fetal Head SVG (2.5D Stylized) */}
+                        <svg viewBox="0 0 200 240" className="w-full h-full drop-shadow-[0_20px_50px_rgba(0,0,0,0.1)]">
+                          <defs>
+                            <radialGradient id="headGrad" cx="40%" cy="30%" r="70%">
+                              <stop offset="0%" stopColor="#ffffff" />
+                              <stop offset="60%" stopColor="#f1f5f9" />
+                              <stop offset="100%" stopColor="#cbd5e1" />
+                            </radialGradient>
+                            <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+                              <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
+                              <feOffset dx="2" dy="4" result="offsetblur" />
+                              <feComponentTransfer>
+                                <feFuncA type="linear" slope="0.2" />
+                              </feComponentTransfer>
+                              <feMerge>
+                                <feMergeNode />
+                                <feMergeNode in="SourceGraphic" />
+                              </feMerge>
+                            </filter>
+                          </defs>
+                          
+                          {/* Main Skull Shape - Fetal Proportion (Large Cranium) */}
+                          <path 
+                            d="M100,20 C150,20 185,60 185,110 C185,160 150,210 100,210 C50,210 15,160 15,110 C15,60 50,20 100,20 Z" 
+                            fill="url(#headGrad)" 
+                            stroke="#94a3b8" 
+                            strokeWidth="0.5"
+                          />
+                          
+                          {/* Face Features (Front View) */}
+                          <g style={{ opacity: Math.max(0, 1 - Math.abs(rotation.y) / 60) }}>
+                            {/* Forehead Softness */}
+                            <ellipse cx="100" cy="70" rx="60" ry="40" fill="white" opacity="0.3" />
+                            {/* Cheeks - Full and Round */}
+                            <ellipse cx="60" cy="150" rx="30" ry="35" fill="#e2e8f0" opacity="0.4" />
+                            <ellipse cx="140" cy="150" rx="30" ry="35" fill="#e2e8f0" opacity="0.4" />
+                            {/* Eyes - Closed/Soft */}
+                            <path d="M65,120 Q80,115 95,120" fill="none" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
+                            <path d="M105,120 Q120,115 135,120" fill="none" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
+                            {/* Nose - Small and Button-like */}
+                            <path d="M92,145 Q100,138 108,145 L100,165 Z" fill="#94a3b8" opacity="0.3" />
+                            {/* Mouth - Small and Pouty */}
+                            <path d="M88,185 Q100,195 112,185" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
+                            <path d="M92,188 Q100,192 108,188" fill="none" stroke="#64748b" strokeWidth="1" opacity="0.3" />
+                          </g>
+
+                          {/* Profile Features (Side View) */}
+                          <g style={{ opacity: Math.max(0, (Math.abs(rotation.y) - 30) / 60), transform: rotation.y > 0 ? 'none' : 'scaleX(-1) translateX(-200px)' }}>
+                            {/* Profile Silhouette */}
+                            <path 
+                              d="M100,20 C150,20 180,60 180,110 C180,135 175,150 165,160 L175,170 L165,180 C155,200 130,215 100,215" 
+                              fill="none" stroke="#64748b" strokeWidth="1" opacity="0.2"
+                            />
+                            {/* Ear */}
+                            <path d="M100,110 Q115,110 115,130 Q115,150 100,150" fill="none" stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
+                          </g>
+
+                          {/* Top View Features (Axial) */}
+                          <g style={{ opacity: Math.max(0, (Math.abs(rotation.x) - 30) / 60) }}>
+                            <ellipse cx="100" cy="115" rx="75" ry="90" fill="none" stroke="#64748b" strokeWidth="0.5" strokeDasharray="4 4" opacity="0.3" />
+                          </g>
+                        </svg>
+
+                        {/* Interactive Markers Layer */}
+                        <div className="absolute inset-0 pointer-events-none">
+                          {steps.map((step) => {
+                            const isSelected = currentStep === step.id;
+                            if (!isSelected) return null;
+
+                            return (
+                              <div key={step.id} className="absolute inset-0 pointer-events-auto">
+                                {/* Marker Points based on Step */}
+                                {step.id === 'a_mm' && (
+                                  <>
+                                    <div className="absolute top-[10%] bottom-[88%] left-1/2 -translate-x-1/2 w-px bg-nexus-mint/30 border-l border-dashed border-nexus-mint/50"></div>
+                                    <MarkerPoint x="50%" y="10%" label="Tepe (Vertex)" onValueChange={(v) => setMeasurements(p => ({...p, a_mm: v}))} value={measurements.a_mm} dragEnabled={dragEnabled} />
+                                    <MarkerPoint x="50%" y="88%" label="Çene (Menton)" onValueChange={(v) => setMeasurements(p => ({...p, a_mm: v}))} value={measurements.a_mm} dragEnabled={dragEnabled} />
+                                  </>
+                                )}
+                                {step.id === 'b_mm' && (
+                                  <MarkerPoint x="78%" y="58%" label="Burun Ucu" onValueChange={(v) => setMeasurements(p => ({...p, b_mm: v}))} value={measurements.b_mm} dragEnabled={dragEnabled} />
+                                )}
+                                {step.id === 'c_mm' && (
+                                  <MarkerPoint x="50%" y="30%" label="Alın" onValueChange={(v) => setMeasurements(p => ({...p, c_mm: v}))} value={measurements.c_mm} dragEnabled={dragEnabled} />
+                                )}
+                                {step.id === 'd_mm' && (
+                                  <div className="absolute top-[48%] left-[15%] right-[15%] h-px bg-nexus-mint shadow-[0_0_10px_#10b981] flex justify-between items-center">
+                                    <MarkerPoint x="0%" y="50%" label="Göz Hattı (Sol)" onValueChange={(v) => setMeasurements(p => ({...p, d_mm: v}))} value={measurements.d_mm} dragEnabled={dragEnabled} />
+                                    <MarkerPoint x="100%" y="50%" label="Göz Hattı (Sağ)" onValueChange={(v) => setMeasurements(p => ({...p, d_mm: v}))} value={measurements.d_mm} dragEnabled={dragEnabled} />
+                                  </div>
+                                )}
+                                {step.id === 'e_mm' && (
+                                  <MarkerPoint x="50%" y="80%" label="Alt Dudak" onValueChange={(v) => setMeasurements(p => ({...p, e_mm: v}))} value={measurements.e_mm} dragEnabled={dragEnabled} />
+                                )}
+                                {step.id === 'f_mm' && (
+                                  <div className="absolute top-[75%] left-[35%] right-[35%] h-px bg-nexus-mint/50 flex justify-between items-center">
+                                    <MarkerPoint x="0%" y="50%" label="Ağız (Sol)" onValueChange={(v) => setMeasurements(p => ({...p, f_mm: v}))} value={measurements.f_mm} dragEnabled={dragEnabled} />
+                                    <MarkerPoint x="100%" y="50%" label="Ağız (Sağ)" onValueChange={(v) => setMeasurements(p => ({...p, f_mm: v}))} value={measurements.f_mm} dragEnabled={dragEnabled} />
+                                  </div>
+                                )}
+                                {step.id === 'g_mm' && (
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-px h-[70%] bg-nexus-mint shadow-[0_0_10px_#10b981] relative">
+                                      <MarkerPoint x="50%" y="0%" label="Ön (OFD)" onValueChange={(v) => setMeasurements(p => ({...p, g_mm: v}))} value={measurements.g_mm} dragEnabled={dragEnabled} />
+                                      <MarkerPoint x="50%" y="100%" label="Arka (OFD)" onValueChange={(v) => setMeasurements(p => ({...p, g_mm: v}))} value={measurements.g_mm} dragEnabled={dragEnabled} />
+                                    </div>
+                                  </div>
+                                )}
+                                {step.id === 'h_mm' && (
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-[70%] h-px bg-nexus-mint shadow-[0_0_10px_#10b981] relative">
+                                      <MarkerPoint x="0%" y="50%" label="Sol (BPD)" onValueChange={(v) => setMeasurements(p => ({...p, h_mm: v}))} value={measurements.h_mm} dragEnabled={dragEnabled} />
+                                      <MarkerPoint x="100%" y="50%" label="Sağ (BPD)" onValueChange={(v) => setMeasurements(p => ({...p, h_mm: v}))} value={measurements.h_mm} dragEnabled={dragEnabled} />
+                                    </div>
+                                  </div>
+                                )}
+                                {step.id === 'i_mm' && (
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-[75%] h-[85%] border-2 border-dashed border-nexus-mint rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                                      <MarkerPoint x="50%" y="0%" label="HC (Baş Çevresi)" onValueChange={(v) => setMeasurements(p => ({...p, i_mm: v}))} value={measurements.i_mm} dragEnabled={dragEnabled} />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
 
                     {/* Viewer Controls */}
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-black/5">
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-black/5 z-50">
                       <button onClick={() => { setRotation({ x: 0, y: 0 }); setZoom(1); setPan({ x: 0, y: 0 }); }} className="p-2 hover:bg-slate-100 rounded-xl transition-colors" title="Sıfırla">
                         <RotateCcw className="w-4 h-4" />
                       </button>
                       <div className="w-px h-8 bg-black/5 mx-1"></div>
-                      <button onClick={() => setRotation({ x: 0, y: 0 })} className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-100 rounded-xl transition-colors">Ön</button>
-                      <button onClick={() => setRotation({ x: 0, y: 90 })} className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-100 rounded-xl transition-colors">Profil</button>
-                      <button onClick={() => setRotation({ x: 90, y: 0 })} className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-100 rounded-xl transition-colors">Üst</button>
+                      <button onClick={() => setRotation({ x: 0, y: 0 })} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-colors ${rotation.x === 0 && rotation.y === 0 ? 'bg-black text-white' : 'hover:bg-slate-100'}`}>Ön</button>
+                      <button onClick={() => setRotation({ x: 0, y: 90 })} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-colors ${rotation.x === 0 && rotation.y === 90 ? 'bg-black text-white' : 'hover:bg-slate-100'}`}>Profil</button>
+                      <button onClick={() => setRotation({ x: 90, y: 0 })} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-colors ${rotation.x === 90 && rotation.y === 0 ? 'bg-black text-white' : 'hover:bg-slate-100'}`}>Üst</button>
                     </div>
                   </div>
                 </div>
@@ -779,6 +904,93 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
           )}
         </div>
       </div>
+    </div>
+  );
+};
+
+interface MarkerPointProps {
+  x: string;
+  y: string;
+  label: string;
+  value: number | null;
+  onValueChange: (val: number) => void;
+  dragEnabled: boolean;
+}
+
+const MarkerPoint: React.FC<MarkerPointProps> = ({ x, y, label, value, onValueChange, dragEnabled }) => {
+  const [showPopover, setShowPopover] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const markerRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!dragEnabled) return;
+    setIsDragging(true);
+    e.stopPropagation();
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const delta = Math.round((moveEvent.movementY || 0) * -0.1 * 10) / 10;
+      if (delta !== 0) {
+        onValueChange(Math.max(0, (value || 0) + delta));
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  };
+
+  return (
+    <div 
+      ref={markerRef}
+      className={`absolute -translate-x-1/2 -translate-y-1/2 group z-40 ${isDragging ? 'cursor-grabbing' : dragEnabled ? 'cursor-grab' : 'cursor-pointer'}`}
+      style={{ left: x, top: y }}
+      onMouseDown={handleMouseDown}
+    >
+      <div 
+        onClick={() => !isDragging && setShowPopover(!showPopover)}
+        className={`w-5 h-5 rounded-full border-2 border-white shadow-xl transition-all flex items-center justify-center ${value !== null ? 'bg-nexus-mint scale-110 shadow-nexus-mint/40' : 'bg-white/80 backdrop-blur-sm hover:bg-nexus-mint/20'}`}
+      >
+        <div className={`w-1.5 h-1.5 rounded-full ${value !== null ? 'bg-white' : 'bg-nexus-mint'}`}></div>
+      </div>
+
+      <AnimatePresence>
+        {showPopover && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 bg-white rounded-2xl shadow-2xl p-4 border border-black/5 min-w-[120px] z-[120]"
+          >
+            <p className="text-[9px] font-bold text-apple-gray uppercase tracking-widest mb-2">{label}</p>
+            <div className="flex items-center gap-2">
+              <input 
+                autoFocus
+                type="number" 
+                value={value || ''}
+                onChange={(e) => onValueChange(parseFloat(e.target.value) || 0)}
+                className="w-full px-3 py-2 bg-slate-50 rounded-xl border-none text-xs font-black focus:bg-white transition-all"
+                placeholder="mm"
+              />
+              <button onClick={() => setShowPopover(false)} className="p-1.5 bg-black text-white rounded-lg">
+                <CheckCircle2 className="w-3 h-3" />
+              </button>
+            </div>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-white"></div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Label Tooltip */}
+      {!showPopover && (
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-black/80 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+          {label} {value && `: ${value}mm`}
+        </div>
+      )}
     </div>
   );
 };
