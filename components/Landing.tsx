@@ -113,74 +113,121 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
           </div>
 
           <div className="hidden lg:block relative">
-            <div className="absolute inset-0 bg-nexus-green/10 blur-[120px] rounded-full animate-pulse"></div>
+            <div className="absolute inset-0 bg-nexus-green/5 blur-[120px] rounded-full animate-pulse"></div>
 
-            <div className="relative bg-white p-3 rounded-[56px] shadow-2xl overflow-hidden aspect-square border border-slate-100">
+            <div className="relative bg-white p-3 rounded-[56px] shadow-2xl overflow-hidden aspect-square border border-slate-100 group">
               <AnimatePresence mode="wait">
                 {!isRealistic ? (
                   <motion.div
                     key="ultrasound"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 1 }}
-                    className="absolute inset-0"
+                    initial={{ opacity: 0, filter: 'blur(10px)' }}
+                    animate={{ opacity: 1, filter: 'blur(0px)' }}
+                    exit={{ opacity: 0, filter: 'blur(10px)' }}
+                    transition={{ duration: 0.8 }}
+                    className="absolute inset-0 bg-slate-900"
                   >
                     <img
-                      src="https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80&w=800"
+                      src="/hero-ultrasound.png"
                       alt="Ultrasound Raw"
-                      className="w-full h-full object-cover grayscale contrast-150 brightness-75"
+                      className="w-full h-full object-cover contrast-125 brightness-90 opacity-90"
                     />
-                    <div className="absolute inset-0 bg-black/40"></div>
-
+                    
+                    {/* Medical Grid Overlay */}
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff10_1px,transparent_1px),linear-gradient(to_bottom,#ffffff10_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+                    
+                    {/* Scanning Beam */}
                     <motion.div
                       initial={{ top: "-10%" }}
                       animate={{ top: "110%" }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                      className="absolute left-0 right-0 h-1 bg-nexus-green shadow-[0_0_20px_rgba(16,185,129,0.8)] z-10"
+                      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                      className="absolute left-0 right-0 h-[2px] bg-nexus-green shadow-[0_0_30px_#10b981] z-10"
                     />
+
+                    {/* HUD Elements */}
+                    <div className="absolute top-8 left-8 flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-nexus-green rounded-full animate-pulse"></div>
+                        <span className="text-[10px] font-mono text-nexus-green uppercase tracking-widest">Live Signal</span>
+                      </div>
+                      <span className="text-white/40 text-[9px] font-mono">FREQ: 12.4MHz</span>
+                    </div>
+
+                    <div className="absolute top-8 right-8 text-right">
+                      <span className="text-white/40 text-[9px] font-mono block">LAT: 34.0522° N</span>
+                      <span className="text-white/40 text-[9px] font-mono block">LNG: 118.2437° W</span>
+                    </div>
+
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-64 h-64 border border-white/10 rounded-full flex items-center justify-center">
+                        <div className="w-48 h-48 border border-nexus-green/20 rounded-full animate-[spin_10s_linear_infinite] border-t-nexus-green"></div>
+                      </div>
+                    </div>
 
                     <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
                       <div className="space-y-1">
-                        <p className="text-[10px] font-black text-nexus-green uppercase tracking-widest">Signal Status</p>
-                        <p className="text-white text-xs font-bold uppercase tracking-tight">Raw Fetal Data Stream</p>
+                        <p className="text-[10px] font-black text-nexus-green uppercase tracking-widest">Processing</p>
+                        <p className="text-white text-xs font-bold uppercase tracking-tight">Fetal Biometric Stream</p>
                       </div>
-                      <span className="text-white/40 text-[10px] font-mono">0x442_RECON</span>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4].map((i) => (
+                          <motion.div
+                            key={i}
+                            animate={{ height: [4, 12, 4] }}
+                            transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.1 }}
+                            className="w-1 bg-nexus-green/40 rounded-full"
+                          />
+                        ))}
+                      </div>
                     </div>
                   </motion.div>
                 ) : (
                   <motion.div
                     key="realistic"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 1 }}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.8 }}
                     className="absolute inset-0"
                   >
                     <img
-                      src="https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&q=80&w=800"
+                      src="/hero-realistic.png"
                       alt="AI Synthesis"
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+
+                    {/* Focus Corners */}
+                    <div className="absolute inset-12 border-white/20 pointer-events-none">
+                      <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-nexus-green"></div>
+                      <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-nexus-green"></div>
+                      <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-nexus-green"></div>
+                      <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-nexus-green"></div>
+                    </div>
 
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="px-8 py-3 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="px-8 py-3 bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl"
+                      >
                         <div className="flex items-center gap-3">
                           <Sparkles className="w-4 h-4 text-nexus-green" />
                           <span className="text-white text-[11px] font-black uppercase tracking-[0.4em]">
-                            NeoBreed AI Sentezi
+                            Synthesis Complete
                           </span>
                         </div>
-                      </div>
+                      </motion.div>
                     </div>
 
                     <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
                       <div className="space-y-1">
-                        <p className="text-[10px] font-black text-nexus-green uppercase tracking-widest">Synthesis Complete</p>
-                        <p className="text-white text-xs font-bold uppercase tracking-tight">4K Anatomik Rekonstrüksiyon</p>
+                        <p className="text-[10px] font-black text-nexus-green uppercase tracking-widest">Anatomical Map</p>
+                        <p className="text-white text-xs font-bold uppercase tracking-tight">4K High-Fidelity Render</p>
                       </div>
-                      <span className="text-nexus-green text-[10px] font-mono">CONFIDENCE: 99.8%</span>
+                      <div className="text-right">
+                        <span className="text-nexus-green text-[10px] font-mono block">ACCURACY: 99.9%</span>
+                        <span className="text-white/40 text-[9px] font-mono block">ID: NB-882-X</span>
+                      </div>
                     </div>
                   </motion.div>
                 )}
