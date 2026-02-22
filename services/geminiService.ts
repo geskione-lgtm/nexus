@@ -29,12 +29,24 @@ export async function generateBabyFace(ultrasoundBase64: string, highRes: boolea
   }
 
   const prompt = `
-    Analyze the ultrasound scan. Generate a ${stylePrompt} of a ${genderPrompt}'s face.
-    The baby should have a ${expressionPrompt}.
-    Focus on anatomical accuracy based on the scan's bone structure and soft tissue.
-    ${biometricPrompt}
-    Output: One high-quality baby face, cinematic lighting, neutral medical background.
-    ${options?.notes ? `Additional context: ${options.notes}` : ''}
+    CRITICAL INSTRUCTION: You are a high-precision medical reconstruction AI. 
+    STRICTLY AVOID generic or repetitive baby faces. 
+    
+    TASK: Analyze the provided ultrasound scan and reconstruct the SPECIFIC individual baby's face.
+    
+    ANATOMICAL CONSTRAINTS:
+    1. Extract unique facial characteristics from the ultrasound (e.g., specific nose bridge curvature, chin prominence, cheek volume).
+    2. Use these biometric measurements as ABSOLUTE proportions:
+       ${biometricPrompt}
+    
+    VISUAL STYLE:
+    - Style: ${stylePrompt}
+    - Expression: ${expressionPrompt}
+    - Lighting: Cinematic medical studio lighting.
+    - Background: Neutral, professional medical environment.
+    
+    Every generation must be a UNIQUE, high-fidelity reconstruction of the specific morphology seen in the scan. Do not output "average" features.
+    ${options?.notes ? `Additional clinical context: ${options.notes}` : ''}
   `;
 
   try {
@@ -61,7 +73,9 @@ export async function generateBabyFace(ultrasoundBase64: string, highRes: boolea
         ],
       },
       config: {
-        imageConfig
+        imageConfig,
+        seed: Math.floor(Math.random() * 1000000), // Ensure variety in generations
+        temperature: 0.9 // Slightly higher temperature for more unique feature interpretation
       }
     });
 

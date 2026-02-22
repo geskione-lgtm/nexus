@@ -104,9 +104,10 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
     setShow3DModal(false);
     
     if (previewUrl) {
+      // Direct transition to generation without extra steps
       handleGenerate();
     } else {
-      alert("3D ölçümler kaydedildi. Lütfen sentez için bir ultrason dosyası seçin.");
+      alert("Lütfen önce bir ultrason dosyası seçin.");
     }
   };
 
