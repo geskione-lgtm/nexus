@@ -1,7 +1,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-export async function generateBabyFace(ultrasoundBase64: string, highRes: boolean = false, options?: any): Promise<string> {
+export async function generateBabyFace(ultrasoundBase64: string, highRes: boolean = false, options?: any, measurements?: any): Promise<string> {
   // Yüksek çözünürlük için Pro modeli, hızlı üretim için Flash modeli.
   const modelName = highRes ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
   
@@ -12,10 +12,27 @@ export async function generateBabyFace(ultrasoundBase64: string, highRes: boolea
   const expressionPrompt = options?.expression === 'smiling' ? 'smiling and happy' : options?.expression === 'sleeping' ? 'peacefully sleeping' : 'natural expression';
   const stylePrompt = options?.style === 'artistic' ? 'artistic portrait photography' : options?.style === '3d-render' ? '3D medical visualization' : 'hyper-realistic photography';
 
+  let biometricPrompt = '';
+  if (measurements) {
+    biometricPrompt = `
+      Use the following biometric measurements for anatomical precision:
+      - Head Height (Tepe-Çene): ${measurements.a_mm}mm
+      - Nose Length: ${measurements.b_mm}mm
+      - Forehead Height: ${measurements.c_mm}mm
+      - Midface/Eye Line: ${measurements.d_mm}mm
+      - Lower Face (Lip-Chin): ${measurements.e_mm}mm
+      - Mouth Width: ${measurements.f_mm}mm
+      - Occipitofrontal Diameter (OFD): ${measurements.g_mm}mm
+      - Biparietal Diameter (BPD): ${measurements.h_mm}mm
+      - Head Circumference (HC): ${measurements.i_mm}mm
+    `;
+  }
+
   const prompt = `
     Analyze the ultrasound scan. Generate a ${stylePrompt} of a ${genderPrompt}'s face.
     The baby should have a ${expressionPrompt}.
     Focus on anatomical accuracy based on the scan's bone structure and soft tissue.
+    ${biometricPrompt}
     Output: One high-quality baby face, cinematic lighting, neutral medical background.
     ${options?.notes ? `Additional context: ${options.notes}` : ''}
   `;

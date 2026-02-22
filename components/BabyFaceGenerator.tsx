@@ -102,7 +102,12 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
     setMeasurements(prev => ({ ...prev, createdAt: new Date().toISOString() }));
     setShow3DModal(false);
-    alert("3D ölçümler kaydedildi.");
+    
+    if (previewUrl) {
+      handleGenerate();
+    } else {
+      alert("3D ölçümler kaydedildi. Lütfen sentez için bir ultrason dosyası seçin.");
+    }
   };
 
   const handleViewerInteraction = (e: React.MouseEvent | React.WheelEvent) => {
@@ -153,8 +158,8 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
     try {
       // 1. Generate baby face (returns base64)
-      console.log('Starting AI Synthesis...');
-      const resultBase64 = await generateBabyFace(previewUrl, highRes, options);
+      console.log('Starting AI Synthesis with Biometric Data...');
+      const resultBase64 = await generateBabyFace(previewUrl, highRes, options, measurements);
       
       // 2. Upload both to Supabase Storage
       console.log('Uploading results to cloud storage...');
@@ -238,25 +243,71 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
               {/* Modal Content - 3 Columns */}
               <div className="flex-1 flex overflow-hidden">
-                {/* Left Column: Step List */}
-                <div className="w-72 border-r border-black/5 overflow-y-auto p-6 space-y-2">
-                  <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest mb-4 px-2">Ölçüm Adımları</p>
-                  {steps.map((step) => (
-                    <button
-                      key={step.id}
-                      onClick={() => setCurrentStep(step.id as any)}
-                      className={`w-full text-left p-4 rounded-2xl transition-all flex items-center justify-between group ${currentStep === step.id ? 'bg-black text-white shadow-lg' : 'hover:bg-slate-50'}`}
-                    >
-                      <span className={`text-[11px] font-bold ${currentStep === step.id ? 'text-white' : 'text-slate-600'}`}>{step.label}</span>
-                      {measurements[step.id as keyof Measurements] !== null && (
-                        <CheckCircle2 className={`w-4 h-4 ${currentStep === step.id ? 'text-nexus-mint' : 'text-nexus-mint'}`} />
-                      )}
-                    </button>
-                  ))}
+                {/* Left Column: Step List - Redesigned for Professional Look */}
+                <div className="w-80 bg-slate-900 overflow-y-auto flex flex-col">
+                  <div className="p-8 border-b border-white/5">
+                    <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-2">Ölçüm Protokolü</p>
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-white font-bold text-sm">Biyometrik Analiz</h4>
+                      <div className="px-2 py-1 bg-nexus-mint/20 rounded text-[9px] font-bold text-nexus-mint uppercase tracking-wider">
+                        {steps.filter(s => measurements[s.id as keyof Measurements] !== null).length}/{steps.length}
+                      </div>
+                    </div>
+                    {/* Progress Bar */}
+                    <div className="mt-4 h-1 bg-white/5 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(steps.filter(s => measurements[s.id as keyof Measurements] !== null).length / steps.length) * 100}%` }}
+                        className="h-full bg-nexus-mint shadow-[0_0_10px_#10b981]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex-1 py-4">
+                    {steps.map((step, idx) => (
+                      <button
+                        key={step.id}
+                        onClick={() => setCurrentStep(step.id as any)}
+                        className={`w-full text-left px-8 py-5 transition-all flex items-center gap-4 border-b border-white/5 relative group ${currentStep === step.id ? 'bg-white/5' : 'hover:bg-white/[0.02]'}`}
+                      >
+                        {currentStep === step.id && (
+                          <motion.div layoutId="activeStep" className="absolute left-0 top-0 bottom-0 w-1 bg-nexus-mint shadow-[0_0_15px_#10b981]" />
+                        )}
+                        <span className={`font-mono text-[10px] ${currentStep === step.id ? 'text-nexus-mint' : 'text-white/20'}`}>
+                          {(idx + 1).toString().padStart(2, '0')}
+                        </span>
+                        <div className="flex-1">
+                          <p className={`text-[11px] font-bold tracking-tight ${currentStep === step.id ? 'text-white' : 'text-white/60'}`}>
+                            {step.label.split(': ')[1] || step.label}
+                          </p>
+                          <p className="text-[9px] text-white/20 font-medium uppercase tracking-widest mt-0.5">
+                            {step.view === 'front' ? 'Anterior' : step.view === 'profile' ? 'Sagittal' : 'Axial'} Görünüm
+                          </p>
+                        </div>
+                        {measurements[step.id as keyof Measurements] !== null ? (
+                          <div className="w-5 h-5 rounded-full bg-nexus-mint/20 flex items-center justify-center">
+                            <CheckCircle2 className="w-3 h-3 text-nexus-mint" />
+                          </div>
+                        ) : (
+                          <div className="w-5 h-5 rounded-full border border-white/10 group-hover:border-white/20 transition-colors" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <div className="p-6 bg-black/20">
+                    <div className="flex items-center gap-3 text-white/30">
+                      <Activity className="w-4 h-4" />
+                      <span className="text-[9px] font-bold uppercase tracking-[0.2em]">Sistem Hazır</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Center Column: Head Viewer */}
-                <div className="flex-1 bg-slate-50 relative overflow-hidden flex flex-col">
+                <div className="flex-1 bg-[#f8fafc] relative overflow-hidden flex flex-col">
+                  {/* Grid Background Overlay */}
+                  <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
+                  
                   <div 
                     ref={viewerRef}
                     onWheel={handleViewerInteraction}
@@ -325,45 +376,42 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                                 {/* Marker Points based on Step */}
                                 {step.id === 'a_mm' && (
                                   <>
-                                    <div className="absolute top-[16%] bottom-[84%] left-1/2 -translate-x-1/2 w-px bg-nexus-mint/30 border-l border-dashed border-nexus-mint/50"></div>
-                                    <MarkerPoint x="50%" y="16%" label="Tepe (Vertex)" onValueChange={(v) => setMeasurements(p => ({...p, a_mm: v}))} value={measurements.a_mm} dragEnabled={dragEnabled} />
-                                    <MarkerPoint x="50%" y="86%" label="Çene (Menton)" onValueChange={(v) => setMeasurements(p => ({...p, a_mm: v}))} value={measurements.a_mm} dragEnabled={dragEnabled} />
+                                    <div className="absolute top-[10%] bottom-[90%] left-1/2 -translate-x-1/2 w-px bg-nexus-mint/30 border-l border-dashed border-nexus-mint/50"></div>
+                                    <MarkerPoint x="50%" y="10%" label="Tepe (Vertex)" onValueChange={(v) => setMeasurements(p => ({...p, a_mm: v}))} value={measurements.a_mm} dragEnabled={dragEnabled} />
+                                    <MarkerPoint x="50%" y="90%" label="Çene (Menton)" onValueChange={(v) => setMeasurements(p => ({...p, a_mm: v}))} value={measurements.a_mm} dragEnabled={dragEnabled} />
                                   </>
                                 )}
                                 {step.id === 'b_mm' && (
-                                  <MarkerPoint x="62%" y="50%" label="Burun Ucu" onValueChange={(v) => setMeasurements(p => ({...p, b_mm: v}))} value={measurements.b_mm} dragEnabled={dragEnabled} />
+                                  <MarkerPoint x="8%" y="56%" label="Burun Ucu" onValueChange={(v) => setMeasurements(p => ({...p, b_mm: v}))} value={measurements.b_mm} dragEnabled={dragEnabled} />
                                 )}
                                 {step.id === 'c_mm' && (
-                                  <MarkerPoint x="50%" y="28%" label="Alın" onValueChange={(v) => setMeasurements(p => ({...p, c_mm: v}))} value={measurements.c_mm} dragEnabled={dragEnabled} />
+                                  <MarkerPoint x="50%" y="30%" label="Alın" onValueChange={(v) => setMeasurements(p => ({...p, c_mm: v}))} value={measurements.c_mm} dragEnabled={dragEnabled} />
                                 )}
                                 {step.id === 'd_mm' && (
-                                  <MarkerPoint x="50%" y="46%" label="Göz Hattı / Orta Yüz" onValueChange={(v) => setMeasurements(p => ({...p, d_mm: v}))} value={measurements.d_mm} dragEnabled={dragEnabled} />
+                                  <MarkerPoint x="50%" y="58%" label="Göz Hattı / Orta Yüz" onValueChange={(v) => setMeasurements(p => ({...p, d_mm: v}))} value={measurements.d_mm} dragEnabled={dragEnabled} />
                                 )}
                                 {step.id === 'e_mm' && (
                                   <>
-                                    <MarkerPoint x="50%" y="66%" label="Alt Dudak" onValueChange={(v) => setMeasurements(p => ({...p, e_mm: v}))} value={measurements.e_mm} dragEnabled={dragEnabled} />
-                                    <MarkerPoint x="50%" y="86%" label="Çene" onValueChange={(v) => setMeasurements(p => ({...p, e_mm: v}))} value={measurements.e_mm} dragEnabled={dragEnabled} />
+                                    <MarkerPoint x="50%" y="78%" label="Alt Dudak" onValueChange={(v) => setMeasurements(p => ({...p, e_mm: v}))} value={measurements.e_mm} dragEnabled={dragEnabled} />
+                                    <MarkerPoint x="50%" y="90%" label="Çene" onValueChange={(v) => setMeasurements(p => ({...p, e_mm: v}))} value={measurements.e_mm} dragEnabled={dragEnabled} />
                                   </>
                                 )}
                                 {step.id === 'f_mm' && (
-                                  <div className="absolute top-[60%] left-[38%] right-[62%] h-px bg-nexus-mint/50 flex justify-between items-center">
-                                    <MarkerPoint x="38%" y="60%" label="Ağız (Sol)" onValueChange={(v) => setMeasurements(p => ({...p, f_mm: v}))} value={measurements.f_mm} dragEnabled={dragEnabled} />
-                                    <MarkerPoint x="62%" y="60%" label="Ağız (Sağ)" onValueChange={(v) => setMeasurements(p => ({...p, f_mm: v}))} value={measurements.f_mm} dragEnabled={dragEnabled} />
-                                  </div>
+                                  <MarkerPoint x="50%" y="72.5%" label="Ağız Merkezi (Stomion)" onValueChange={(v) => setMeasurements(p => ({...p, f_mm: v}))} value={measurements.f_mm} dragEnabled={dragEnabled} />
                                 )}
                                 {step.id === 'g_mm' && (
                                   <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-px h-[50%] bg-nexus-mint shadow-[0_0_10px_#10b981] relative" style={{ top: '53%', height: '50%' }}>
-                                      <MarkerPoint x="50%" y="28%" label="Ön (OFD)" onValueChange={(v) => setMeasurements(p => ({...p, g_mm: v}))} value={measurements.g_mm} dragEnabled={dragEnabled} />
-                                      <MarkerPoint x="50%" y="78%" label="Arka (OFD)" onValueChange={(v) => setMeasurements(p => ({...p, g_mm: v}))} value={measurements.g_mm} dragEnabled={dragEnabled} />
+                                    <div className="w-px h-[68%] bg-nexus-mint shadow-[0_0_10px_#10b981] relative">
+                                      <MarkerPoint x="50%" y="16%" label="Ön (OFD)" onValueChange={(v) => setMeasurements(p => ({...p, g_mm: v}))} value={measurements.g_mm} dragEnabled={dragEnabled} />
+                                      <MarkerPoint x="50%" y="84%" label="Arka (OFD)" onValueChange={(v) => setMeasurements(p => ({...p, g_mm: v}))} value={measurements.g_mm} dragEnabled={dragEnabled} />
                                     </div>
                                   </div>
                                 )}
                                 {step.id === 'h_mm' && (
                                   <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-[44%] h-px bg-nexus-mint shadow-[0_0_10px_#10b981] relative" style={{ top: '54%' }}>
-                                      <MarkerPoint x="28%" y="54%" label="Sol (BPD)" onValueChange={(v) => setMeasurements(p => ({...p, h_mm: v}))} value={measurements.h_mm} dragEnabled={dragEnabled} />
-                                      <MarkerPoint x="72%" y="54%" label="Sağ (BPD)" onValueChange={(v) => setMeasurements(p => ({...p, h_mm: v}))} value={measurements.h_mm} dragEnabled={dragEnabled} />
+                                    <div className="w-[60%] h-px bg-nexus-mint shadow-[0_0_10px_#10b981] relative">
+                                      <MarkerPoint x="20%" y="50%" label="Sol (BPD)" onValueChange={(v) => setMeasurements(p => ({...p, h_mm: v}))} value={measurements.h_mm} dragEnabled={dragEnabled} />
+                                      <MarkerPoint x="80%" y="50%" label="Sağ (BPD)" onValueChange={(v) => setMeasurements(p => ({...p, h_mm: v}))} value={measurements.h_mm} dragEnabled={dragEnabled} />
                                     </div>
                                   </div>
                                 )}
@@ -373,9 +421,9 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                                       className="absolute border-2 border-dashed border-nexus-mint rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.2)]"
                                       style={{ 
                                         left: '50%', 
-                                        top: '54%', 
-                                        width: '56%', 
-                                        height: '44%', 
+                                        top: '50%', 
+                                        width: '60%', 
+                                        height: '68%', 
                                         transform: 'translate(-50%, -50%)' 
                                       }}
                                     >
@@ -403,49 +451,77 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                   </div>
                 </div>
 
-                {/* Right Column: Numeric Input */}
-                <div className="w-80 border-l border-black/5 p-8 space-y-10">
-                  <div className="space-y-4">
-                    <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest">Değer Girişi</p>
-                    <div className="space-y-2">
-                      <label className="text-[11px] font-bold text-black">{steps.find(s => s.id === currentStep)?.label}</label>
-                      <div className="relative">
-                        <input 
-                          type="number" 
-                          value={measurements[currentStep as keyof Measurements] || ''}
-                          onChange={(e) => setMeasurements(prev => ({ ...prev, [currentStep]: e.target.value ? parseFloat(e.target.value) : null }))}
-                          className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-lg font-black focus:bg-white transition-all shadow-inner"
-                          placeholder="0.0"
-                        />
-                        <span className="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-bold text-apple-gray">mm</span>
+                {/* Right Column: Numeric Input - Redesigned for Professional Look */}
+                <div className="w-80 border-l border-black/5 flex flex-col">
+                  <div className="p-8 border-b border-black/5 bg-slate-50/50">
+                    <p className="text-[10px] font-black text-apple-gray uppercase tracking-[0.2em] mb-6">Veri Giriş Paneli</p>
+                    
+                    <div className="space-y-6">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[11px] font-black text-black uppercase tracking-tight">
+                            {steps.find(s => s.id === currentStep)?.label.split(': ')[1] || steps.find(s => s.id === currentStep)?.label}
+                          </label>
+                          <span className="text-[10px] font-mono text-apple-gray">REF: {currentStep.split('_')[0].toUpperCase()}</span>
+                        </div>
+                        
+                        <div className="relative group">
+                          <input 
+                            type="number" 
+                            value={measurements[currentStep as keyof Measurements] || ''}
+                            onChange={(e) => setMeasurements(prev => ({ ...prev, [currentStep]: e.target.value ? parseFloat(e.target.value) : null }))}
+                            className="w-full px-8 py-6 bg-white rounded-3xl border border-black/5 text-3xl font-black focus:ring-2 focus:ring-nexus-mint focus:border-transparent transition-all shadow-xl shadow-black/[0.02] text-center"
+                            placeholder="0.0"
+                          />
+                          <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col items-center">
+                            <span className="text-[10px] font-black text-nexus-mint uppercase">mm</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-2">
-                      {[-0.5, -0.1, 0.1, 0.5].map(val => (
-                        <button
-                          key={val}
-                          onClick={() => setMeasurements(prev => ({ ...prev, [currentStep]: (prev[currentStep as keyof Measurements] || 0) + val }))}
-                          className="py-3 bg-slate-100 hover:bg-slate-200 rounded-xl text-[10px] font-bold transition-all"
-                        >
-                          {val > 0 ? `+${val}` : val}
-                        </button>
-                      ))}
+                      <div className="grid grid-cols-4 gap-2">
+                        {[-0.5, -0.1, 0.1, 0.5].map(val => (
+                          <button
+                            key={val}
+                            onClick={() => setMeasurements(prev => ({ ...prev, [currentStep]: Math.round(((prev[currentStep as keyof Measurements] || 0) + val) * 10) / 10 }))}
+                            className="py-3 bg-white border border-black/5 hover:border-nexus-mint hover:text-nexus-mint rounded-2xl text-[10px] font-black transition-all shadow-sm active:scale-95"
+                          >
+                            {val > 0 ? `+${val}` : val}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="pt-10 border-t border-black/5 space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <p className="text-[11px] font-bold text-black">Sürükleyerek Ayarla</p>
-                        <p className="text-[9px] text-apple-gray font-medium">Viewer üzerinden manuel kontrol</p>
+                  <div className="flex-1 p-8 space-y-8">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="text-[11px] font-black text-black uppercase tracking-tight">Hassas Kontrol</p>
+                          <p className="text-[9px] text-apple-gray font-medium">Model üzerinden sürükleme</p>
+                        </div>
+                        <button 
+                          onClick={() => setDragEnabled(!dragEnabled)}
+                          className={`w-12 h-6 rounded-full relative transition-all duration-300 ${dragEnabled ? 'bg-nexus-mint shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'bg-slate-200'}`}
+                        >
+                          <motion.div 
+                            animate={{ x: dragEnabled ? 24 : 4 }}
+                            className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                          />
+                        </button>
                       </div>
-                      <button 
-                        onClick={() => setDragEnabled(!dragEnabled)}
-                        className={`w-12 h-6 rounded-full relative transition-all ${dragEnabled ? 'bg-nexus-mint' : 'bg-slate-200'}`}
-                      >
-                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${dragEnabled ? 'left-7' : 'left-1'}`}></div>
-                      </button>
+                    </div>
+
+                    <div className="p-6 bg-slate-50 rounded-[32px] border border-black/5 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                          <Settings2 className="w-4 h-4 text-apple-gray" />
+                        </div>
+                        <p className="text-[10px] font-bold text-black uppercase tracking-widest">Kılavuz</p>
+                      </div>
+                      <p className="text-[10px] leading-relaxed text-apple-gray font-medium">
+                        Ölçüm yapmak için model üzerindeki hedef noktaları kullanın veya sağ panelden değer girin. Sürükleme modu aktifken noktaları dikey yönde hareket ettirerek ince ayar yapabilirsiniz.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -938,11 +1014,35 @@ const MarkerPoint: React.FC<MarkerPointProps> = ({ x, y, label, value, onValueCh
       style={{ left: x, top: y }}
       onMouseDown={handleMouseDown}
     >
+      {/* Professional Medical Crosshair Marker */}
       <div 
         onClick={() => !isDragging && setShowPopover(!showPopover)}
-        className={`w-5 h-5 rounded-full border-2 border-white shadow-xl transition-all flex items-center justify-center ${value !== null ? 'bg-nexus-mint scale-110 shadow-nexus-mint/40' : 'bg-white/80 backdrop-blur-sm hover:bg-nexus-mint/20'}`}
+        className="relative flex items-center justify-center"
       >
-        <div className={`w-1.5 h-1.5 rounded-full ${value !== null ? 'bg-white' : 'bg-nexus-mint'}`}></div>
+        {/* Outer Ring */}
+        <motion.div 
+          animate={{ 
+            scale: value !== null ? [1, 1.1, 1] : 1,
+            opacity: value !== null ? 1 : 0.6
+          }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-300 ${value !== null ? 'border-nexus-mint bg-nexus-mint/10 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'border-black/20 bg-white/40 backdrop-blur-sm group-hover:border-nexus-mint/50 group-hover:bg-nexus-mint/5'}`}
+        >
+          {/* Crosshair Lines */}
+          <div className={`absolute w-full h-px ${value !== null ? 'bg-nexus-mint/40' : 'bg-black/10'}`}></div>
+          <div className={`absolute h-full w-px ${value !== null ? 'bg-nexus-mint/40' : 'bg-black/10'}`}></div>
+          
+          {/* Inner Core */}
+          <div className={`w-2 h-2 rounded-full shadow-sm transition-all duration-300 ${value !== null ? 'bg-nexus-mint scale-125' : 'bg-black/20 group-hover:bg-nexus-mint/60'}`}></div>
+        </motion.div>
+
+        {/* Target Corners */}
+        <div className="absolute -inset-1 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-nexus-mint"></div>
+          <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-nexus-mint"></div>
+          <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-nexus-mint"></div>
+          <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-nexus-mint"></div>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -951,31 +1051,40 @@ const MarkerPoint: React.FC<MarkerPointProps> = ({ x, y, label, value, onValueCh
             initial={{ opacity: 0, scale: 0.9, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 10 }}
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 bg-white rounded-2xl shadow-2xl p-4 border border-black/5 min-w-[120px] z-[120]"
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-6 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-5 border border-black/5 min-w-[160px] z-[120]"
           >
-            <p className="text-[9px] font-bold text-apple-gray uppercase tracking-widest mb-2">{label}</p>
-            <div className="flex items-center gap-2">
-              <input 
-                autoFocus
-                type="number" 
-                value={value || ''}
-                onChange={(e) => onValueChange(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 bg-slate-50 rounded-xl border-none text-xs font-black focus:bg-white transition-all"
-                placeholder="mm"
-              />
-              <button onClick={() => setShowPopover(false)} className="p-1.5 bg-black text-white rounded-lg">
-                <CheckCircle2 className="w-3 h-3" />
-              </button>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-[9px] font-black text-apple-gray uppercase tracking-[0.2em]">{label}</span>
+                <span className="text-[9px] font-mono text-nexus-mint">INPUT</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input 
+                    autoFocus
+                    type="number" 
+                    value={value || ''}
+                    onChange={(e) => onValueChange(parseFloat(e.target.value) || 0)}
+                    className="w-full px-4 py-3 bg-slate-50 rounded-2xl border-none text-sm font-black focus:bg-white transition-all text-center"
+                    placeholder="0.0"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] font-bold text-apple-gray">mm</span>
+                </div>
+                <button onClick={() => setShowPopover(false)} className="p-3 bg-black text-white rounded-2xl hover:bg-nexus-mint transition-colors shadow-lg shadow-black/10">
+                  <CheckCircle2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-white"></div>
+            {/* Popover Arrow */}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[8px] border-transparent border-t-white drop-shadow-sm"></div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Label Tooltip */}
+      {/* Label Tooltip - Refined */}
       {!showPopover && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-black/80 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-          {label} {value && `: ${value}mm`}
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 px-3 py-1.5 bg-black/90 backdrop-blur-xl text-white text-[9px] font-black uppercase tracking-[0.15em] rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap shadow-xl border border-white/10 translate-y-2 group-hover:translate-y-0">
+          {label} {value && <span className="text-nexus-mint ml-2">· {value}mm</span>}
         </div>
       )}
     </div>
