@@ -36,5 +36,6 @@ export interface ScanResult {
   patientId: string;
   ultrasoundUrl: string;
   babyFaceUrl: string;
+  measurements?: any;
   createdAt: string;
 }
