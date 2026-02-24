@@ -246,22 +246,22 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
               {/* Modal Content - 3 Columns */}
               <div className="flex-1 flex overflow-hidden">
-                {/* Left Column: Step List - Redesigned for Professional Look */}
-                <div className="w-80 bg-slate-900 overflow-y-auto flex flex-col">
-                  <div className="p-8 border-b border-white/5">
-                    <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-2">Ölçüm Protokolü</p>
+                {/* Left Column: Step List - Redesigned for Maximum Readability */}
+                <div className="w-80 bg-[#0a0f1d] overflow-y-auto flex flex-col border-r border-white/5">
+                  <div className="p-8 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
+                    <p className="text-[10px] font-black text-nexus-mint uppercase tracking-[0.25em] mb-2">Ölçüm Protokolü</p>
                     <div className="flex items-center justify-between">
-                      <h4 className="text-white font-bold text-sm">Biyometrik Analiz</h4>
-                      <div className="px-2 py-1 bg-nexus-mint/20 rounded text-[9px] font-bold text-nexus-mint uppercase tracking-wider">
+                      <h4 className="text-white font-bold text-base tracking-tight">Biyometrik Analiz</h4>
+                      <div className="px-2.5 py-1 bg-nexus-mint/20 rounded-lg text-[10px] font-black text-nexus-mint uppercase tracking-wider border border-nexus-mint/30">
                         {steps.filter(s => measurements[s.id as keyof Measurements] !== null).length}/{steps.length}
                       </div>
                     </div>
                     {/* Progress Bar */}
-                    <div className="mt-4 h-1 bg-white/5 rounded-full overflow-hidden">
+                    <div className="mt-5 h-1.5 bg-white/5 rounded-full overflow-hidden">
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${(steps.filter(s => measurements[s.id as keyof Measurements] !== null).length / steps.length) * 100}%` }}
-                        className="h-full bg-nexus-mint shadow-[0_0_10px_#10b981]"
+                        className="h-full bg-nexus-mint shadow-[0_0_15px_#10b981]"
                       />
                     </div>
                   </div>
@@ -271,45 +271,74 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                       <button
                         key={step.id}
                         onClick={() => setCurrentStep(step.id as any)}
-                        className={`w-full text-left px-8 py-5 transition-all flex items-center gap-4 border-b border-white/5 relative group ${currentStep === step.id ? 'bg-white/5' : 'hover:bg-white/[0.02]'}`}
+                        className={`w-full text-left px-8 py-6 transition-all flex items-center gap-5 border-b border-white/[0.03] relative group ${currentStep === step.id ? 'bg-nexus-mint/[0.07]' : 'hover:bg-white/[0.02]'}`}
                       >
                         {currentStep === step.id && (
-                          <motion.div layoutId="activeStep" className="absolute left-0 top-0 bottom-0 w-1 bg-nexus-mint shadow-[0_0_15px_#10b981]" />
+                          <motion.div layoutId="activeStep" className="absolute left-0 top-0 bottom-0 w-1.5 bg-nexus-mint shadow-[0_0_20px_#10b981]" />
                         )}
-                        <span className={`font-mono text-[10px] ${currentStep === step.id ? 'text-nexus-mint' : 'text-white/20'}`}>
+                        <span className={`font-mono text-xs font-bold ${currentStep === step.id ? 'text-nexus-mint' : 'text-white/20'}`}>
                           {(idx + 1).toString().padStart(2, '0')}
                         </span>
                         <div className="flex-1">
-                          <p className={`text-[11px] font-bold tracking-tight ${currentStep === step.id ? 'text-white' : 'text-white/60'}`}>
+                          <p className={`text-base font-black tracking-tight transition-colors ${currentStep === step.id ? 'text-white' : 'text-white/40 group-hover:text-white/70'}`}>
                             {step.label.split(': ')[1] || step.label}
                           </p>
-                          <p className="text-[9px] text-white/20 font-medium uppercase tracking-widest mt-0.5">
-                            {step.view === 'front' ? 'Anterior' : step.view === 'profile' ? 'Sagittal' : 'Axial'} Görünüm
+                          <p className={`text-[10px] font-black uppercase tracking-[0.2em] mt-1 transition-colors ${currentStep === step.id ? 'text-nexus-mint' : 'text-white/10'}`}>
+                            {step.view === 'front' ? 'Anterior' : step.view === 'profile' ? 'Sagittal' : 'Axial'}
                           </p>
                         </div>
                         {measurements[step.id as keyof Measurements] !== null ? (
-                          <div className="w-5 h-5 rounded-full bg-nexus-mint/20 flex items-center justify-center">
-                            <CheckCircle2 className="w-3 h-3 text-nexus-mint" />
+                          <div className="w-6 h-6 rounded-full bg-nexus-mint flex items-center justify-center shadow-[0_0_10px_rgba(16,185,129,0.4)]">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                           </div>
                         ) : (
-                          <div className="w-5 h-5 rounded-full border border-white/10 group-hover:border-white/20 transition-colors" />
+                          <div className="w-6 h-6 rounded-full border-2 border-white/5 group-hover:border-white/10 transition-colors" />
                         )}
                       </button>
                     ))}
                   </div>
                   
-                  <div className="p-6 bg-black/20">
-                    <div className="flex items-center gap-3 text-white/30">
-                      <Activity className="w-4 h-4" />
-                      <span className="text-[9px] font-bold uppercase tracking-[0.2em]">Sistem Hazır</span>
+                  <div className="p-6 bg-black/40 border-t border-white/5">
+                    <div className="flex items-center gap-3 text-nexus-mint/40">
+                      <div className="w-2 h-2 bg-nexus-mint rounded-full animate-pulse shadow-[0_0_8px_#10b981]"></div>
+                      <span className="text-[10px] font-black uppercase tracking-[0.25em]">System Online</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Center Column: Head Viewer */}
-                <div className="flex-1 bg-[#f8fafc] relative overflow-hidden flex flex-col">
+                <div className="flex-1 bg-[#f1f5f9] relative overflow-hidden flex flex-col">
+                  {/* Medical HUD Overlay */}
+                  <div className="absolute inset-0 pointer-events-none z-20">
+                    <div className="absolute top-8 left-8 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-nexus-mint rounded-full animate-ping"></div>
+                        <p className="text-[10px] font-black text-black uppercase tracking-[0.2em]">Live Reconstruction</p>
+                      </div>
+                      <p className="text-[8px] font-mono text-black/40 uppercase tracking-widest">Buffer: 1024kb · Latency: 12ms</p>
+                    </div>
+
+                    <div className="absolute top-8 right-8 text-right">
+                      <p className="text-[10px] font-black text-black uppercase tracking-[0.2em]">View: {steps.find(s => s.id === currentStep)?.view.toUpperCase()}</p>
+                      <p className="text-[8px] font-mono text-black/40 uppercase tracking-widest">Rotation: {rotation.x}°, {rotation.y}°</p>
+                    </div>
+
+                    {/* Scanning Line Animation */}
+                    <motion.div 
+                      animate={{ top: ['0%', '100%', '0%'] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                      className="absolute left-0 right-0 h-px bg-nexus-mint/20 shadow-[0_0_15px_#10b981] z-10"
+                    />
+
+                    {/* Corner Brackets */}
+                    <div className="absolute top-10 left-10 w-8 h-8 border-t-2 border-l-2 border-black/10"></div>
+                    <div className="absolute top-10 right-10 w-8 h-8 border-t-2 border-r-2 border-black/10"></div>
+                    <div className="absolute bottom-10 left-10 w-8 h-8 border-b-2 border-l-2 border-black/10"></div>
+                    <div className="absolute bottom-10 right-10 w-8 h-8 border-b-2 border-r-2 border-black/10"></div>
+                  </div>
+
                   {/* Grid Background Overlay */}
-                  <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '32px 32px' }}></div>
+                  <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
                   
                   <div 
                     ref={viewerRef}
@@ -454,40 +483,41 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                   </div>
                 </div>
 
-                {/* Right Column: Numeric Input - Redesigned for Professional Look */}
-                <div className="w-80 border-l border-black/5 flex flex-col">
-                  <div className="p-8 border-b border-black/5 bg-slate-50/50">
-                    <p className="text-[10px] font-black text-apple-gray uppercase tracking-[0.2em] mb-6">Veri Giriş Paneli</p>
+                {/* Right Column: Numeric Input - Redesigned for High-Tech Medical Feel */}
+                <div className="w-80 border-l border-black/5 flex flex-col bg-white">
+                  <div className="p-8 border-b border-black/5 bg-slate-50/80 backdrop-blur-sm">
+                    <p className="text-[10px] font-black text-apple-gray uppercase tracking-[0.25em] mb-8">Veri Giriş Paneli</p>
                     
-                    <div className="space-y-6">
-                      <div className="space-y-3">
+                    <div className="space-y-8">
+                      <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <label className="text-[11px] font-black text-black uppercase tracking-tight">
+                          <label className="text-xs font-black text-black uppercase tracking-tight">
                             {steps.find(s => s.id === currentStep)?.label.split(': ')[1] || steps.find(s => s.id === currentStep)?.label}
                           </label>
-                          <span className="text-[10px] font-mono text-apple-gray">REF: {currentStep.split('_')[0].toUpperCase()}</span>
+                          <div className="px-2 py-1 bg-black text-white rounded text-[8px] font-mono font-bold">REF_{currentStep.split('_')[0].toUpperCase()}</div>
                         </div>
                         
                         <div className="relative group">
+                          <div className="absolute inset-0 bg-nexus-mint/5 rounded-[32px] blur-xl group-focus-within:bg-nexus-mint/10 transition-all"></div>
                           <input 
                             type="number" 
                             value={measurements[currentStep as keyof Measurements] || ''}
                             onChange={(e) => setMeasurements(prev => ({ ...prev, [currentStep]: e.target.value ? parseFloat(e.target.value) : null }))}
-                            className="w-full px-8 py-6 bg-white rounded-3xl border border-black/5 text-3xl font-black focus:ring-2 focus:ring-nexus-mint focus:border-transparent transition-all shadow-xl shadow-black/[0.02] text-center"
+                            className="relative w-full px-8 py-8 bg-white rounded-[32px] border-2 border-black/[0.03] text-4xl font-black focus:border-nexus-mint focus:ring-0 transition-all shadow-2xl shadow-black/[0.05] text-center"
                             placeholder="0.0"
                           />
-                          <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col items-center">
-                            <span className="text-[10px] font-black text-nexus-mint uppercase">mm</span>
+                          <div className="absolute right-8 top-1/2 -translate-y-1/2">
+                            <span className="text-xs font-black text-nexus-mint uppercase tracking-widest">mm</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-4 gap-2">
+                      <div className="grid grid-cols-4 gap-2.5">
                         {[-0.5, -0.1, 0.1, 0.5].map(val => (
                           <button
                             key={val}
                             onClick={() => setMeasurements(prev => ({ ...prev, [currentStep]: Math.round(((prev[currentStep as keyof Measurements] || 0) + val) * 10) / 10 }))}
-                            className="py-3 bg-white border border-black/5 hover:border-nexus-mint hover:text-nexus-mint rounded-2xl text-[10px] font-black transition-all shadow-sm active:scale-95"
+                            className="py-4 bg-white border border-black/5 hover:border-nexus-mint hover:text-nexus-mint rounded-2xl text-[11px] font-black transition-all shadow-sm active:scale-95 hover:shadow-md"
                           >
                             {val > 0 ? `+${val}` : val}
                           </button>
@@ -496,34 +526,35 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                     </div>
                   </div>
 
-                  <div className="flex-1 p-8 space-y-8">
-                    <div className="space-y-4">
+                  <div className="flex-1 p-8 space-y-10">
+                    <div className="space-y-5">
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
-                          <p className="text-[11px] font-black text-black uppercase tracking-tight">Hassas Kontrol</p>
-                          <p className="text-[9px] text-apple-gray font-medium">Model üzerinden sürükleme</p>
+                          <p className="text-xs font-black text-black uppercase tracking-tight">Hassas Kontrol</p>
+                          <p className="text-[10px] text-apple-gray font-bold uppercase tracking-widest opacity-60">Model Drag Mode</p>
                         </div>
                         <button 
                           onClick={() => setDragEnabled(!dragEnabled)}
-                          className={`w-12 h-6 rounded-full relative transition-all duration-300 ${dragEnabled ? 'bg-nexus-mint shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'bg-slate-200'}`}
+                          className={`w-14 h-7 rounded-full relative transition-all duration-500 ${dragEnabled ? 'bg-nexus-mint shadow-[0_0_20px_rgba(16,185,129,0.5)]' : 'bg-slate-200'}`}
                         >
                           <motion.div 
-                            animate={{ x: dragEnabled ? 24 : 4 }}
-                            className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                            animate={{ x: dragEnabled ? 30 : 4 }}
+                            className="absolute top-1 w-5 h-5 bg-white rounded-full shadow-md"
                           />
                         </button>
                       </div>
                     </div>
 
-                    <div className="p-6 bg-slate-50 rounded-[32px] border border-black/5 space-y-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-sm">
-                          <Settings2 className="w-4 h-4 text-apple-gray" />
+                    <div className="p-8 bg-[#0a0f1d] rounded-[40px] border border-white/5 space-y-5 relative overflow-hidden group">
+                      <div className="absolute inset-0 bg-nexus-mint/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <div className="flex items-center gap-4 relative z-10">
+                        <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
+                          <Settings2 className="w-5 h-5 text-nexus-mint" />
                         </div>
-                        <p className="text-[10px] font-bold text-black uppercase tracking-widest">Kılavuz</p>
+                        <p className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Kılavuz</p>
                       </div>
-                      <p className="text-[10px] leading-relaxed text-apple-gray font-medium">
-                        Ölçüm yapmak için model üzerindeki hedef noktaları kullanın veya sağ panelden değer girin. Sürükleme modu aktifken noktaları dikey yönde hareket ettirerek ince ayar yapabilirsiniz.
+                      <p className="text-[11px] leading-relaxed text-white/40 font-medium relative z-10">
+                        Ölçüm yapmak için model üzerindeki hedef noktaları kullanın. Sürükleme modu aktifken noktaları dikey yönde hareket ettirerek <span className="text-nexus-mint font-bold">0.1mm</span> hassasiyetle ayar yapabilirsiniz.
                       </p>
                     </div>
                   </div>
