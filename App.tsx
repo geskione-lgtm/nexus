@@ -117,15 +117,26 @@ const App: React.FC = () => {
     return <Onboarding onComplete={checkUserStatus} />;
   }
 
+  if (!currentUser) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-6">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-[0_0_20px_rgba(16,185,129,0.2)]"></div>
+          <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.3em] animate-pulse">Oturum Doğrulanıyor...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <PageShell
-      user={currentUser!}
+      user={currentUser}
       activeTab={activeTab}
       onTabChange={setActiveTab}
       onLogout={() => supabase.auth.signOut()}
     >
       <TopBar 
-        user={currentUser!} 
+        user={currentUser} 
         onLogout={() => supabase.auth.signOut()} 
         onTabChange={setActiveTab}
         activeTab={activeTab}
