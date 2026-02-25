@@ -11,10 +11,13 @@ import Login from './components/Login';
 import Register from './components/Register';
 import CloudStatus from './components/CloudStatus';
 import Onboarding from './components/Onboarding';
+import { PageShell } from './components/ui/PageShell';
+import { TopBar } from './components/ui/TopBar';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<'landing' | 'login' | 'register' | 'dashboard' | 'onboarding'>('landing');
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
@@ -89,8 +92,11 @@ const App: React.FC = () => {
 
   if (!authChecked && currentPage !== 'landing') {
     return (
-      <div className="h-screen flex items-center justify-center bg-[#f4f7f6]">
-        <div className="w-12 h-12 border-4 border-nexus-green border-t-transparent rounded-full animate-spin"></div>
+      <div className="h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-6">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-[0_0_20px_rgba(16,185,129,0.2)]"></div>
+          <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.3em] animate-pulse">Sistem Yükleniyor...</p>
+        </div>
       </div>
     );
   }
@@ -112,67 +118,52 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen bg-[#f4f7f6] overflow-hidden">
-      {/* Sidebar */}
-      {currentUser && (
-        <Sidebar 
-          user={currentUser} 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab} 
-          onLogout={() => supabase.auth.signOut()} 
-        />
-      )}
-      
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto px-10 py-8 relative">
-        {/* Header Bar */}
-        <header className="flex justify-between items-center mb-10">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 capitalize">
-              {activeTab === 'dashboard' ? 'Admin Dashboard' : activeTab.replace('_', ' ')}
-            </h1>
-            <div className="hidden md:flex items-center bg-white border border-slate-100 rounded-2xl px-4 py-2 card-shadow">
-              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              <input type="text" placeholder="Burada ara..." className="bg-transparent border-none outline-none px-3 text-xs font-medium w-48" />
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-             <CloudStatus isSyncing={isSyncing} />
-          </div>
-        </header>
+    <PageShell
+      user={currentUser!}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      onLogout={() => supabase.auth.signOut()}
+    >
+      <TopBar 
+        user={currentUser!} 
+        onLogout={() => supabase.auth.signOut()} 
+        onTabChange={setActiveTab}
+        activeTab={activeTab}
+        title={activeTab === 'dashboard' ? 'Genel Bakış' : activeTab === 'studio' ? 'AI Stüdyo' : activeTab === 'patients' ? 'Hasta Kayıtları' : activeTab === 'packages' ? 'Lisans Paketleri' : activeTab === 'revenue' ? 'Finansal Analiz' : activeTab === 'reports' ? 'Raporlar' : activeTab === 'settings' ? 'Ayarlar' : activeTab.replace('_', ' ')}
+      />
 
-        {/* Dashboard Content */}
-        {currentUser?.role === UserRole.SUPER_ADMIN ? (
-          /* Fixed: Removed doctors and onAddDoctor props as SuperAdminDashboard doesn't define them in its Props interface */
-          <SuperAdminDashboard 
-            activeTab={activeTab}
-          />
-        ) : (
-          currentUser && <DoctorDashboard 
+      {/* Dashboard Content */}
+      {currentUser?.role === UserRole.SUPER_ADMIN ? (
+        <SuperAdminDashboard activeTab={activeTab} />
+      ) : (
+        currentUser && (
+          <DoctorDashboard 
             activeTab={activeTab}
             setActiveTab={setActiveTab}
+            selectedPatient={selectedPatient}
+            setSelectedPatient={setSelectedPatient}
             doctor={currentUser} 
             patients={patients} 
             onAddPatient={async (p) => {
               setIsSyncing(true);
-              try { await DatabaseService.savePatient(p); checkUserStatus(); } catch(e) { alert(e.message); }
+              try { await DatabaseService.savePatient(p); checkUserStatus(); } catch(e: any) { alert(e.message); }
               setIsSyncing(false);
             }}
             onUpdatePatient={async (id, p) => {
               setIsSyncing(true);
-              try { await DatabaseService.updatePatient(id, p); checkUserStatus(); } catch(e) { alert(e.message); }
+              try { await DatabaseService.updatePatient(id, p); checkUserStatus(); } catch(e: any) { alert(e.message); }
               setIsSyncing(false);
             }}
             onAddScan={async (s) => {
               setIsSyncing(true);
-              try { await DatabaseService.saveScan(s); checkUserStatus(); } catch(e) { alert(e.message); }
+              try { await DatabaseService.saveScan(s); checkUserStatus(); } catch(e: any) { alert(e.message); }
               setIsSyncing(false);
             }}
             scanHistory={scanHistory}
           />
-        )}
-      </main>
-    </div>
+        )
+      )}
+    </PageShell>
   );
 };
 

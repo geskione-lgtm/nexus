@@ -1,8 +1,26 @@
 
 import React, { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
 import { User, UserRole, Package } from '../types';
 import { PACKAGES as INITIAL_PACKAGES } from '../constants';
 import { DatabaseService } from '../services/databaseService';
+import { 
+  Building2, 
+  Users, 
+  Activity, 
+  TrendingUp, 
+  Plus, 
+  ShieldCheck, 
+  CreditCard,
+  ArrowRight,
+  MoreHorizontal,
+  CheckCircle2
+} from 'lucide-react';
+import { KpiCard } from './ui/KpiCard';
+import { ChartCard } from './ui/ChartCard';
+import { DataTableCard } from './ui/DataTableCard';
+import { SoftCard } from './ui/SoftCard';
+import { EmptyState } from './ui/EmptyState';
 
 interface Props { 
   activeTab: string;
@@ -68,11 +86,11 @@ const SuperAdminDashboard: React.FC<Props> = ({ activeTab }) => {
 
   if (activeTab === 'packages') {
     return (
-      <div className="space-y-12 animate-in fade-in duration-700">
+      <div className="space-y-10">
         <div className="flex justify-between items-end">
-          <div>
-            <p className="text-apple-gray text-xs font-semibold mb-1 uppercase tracking-widest">Abonelik Yönetimi</p>
-            <h2 className="text-4xl font-bold text-black tracking-tight">Lisans Paketleri</h2>
+          <div className="space-y-1">
+            <h2 className="text-4xl font-black tracking-tighter text-text-primary">Lisans Paketleri</h2>
+            <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.25em]">Abonelik ve Limit Yönetimi</p>
           </div>
           {!showPackageForm && (
             <button 
@@ -80,90 +98,104 @@ const SuperAdminDashboard: React.FC<Props> = ({ activeTab }) => {
                 setEditingPackage({ id: `pkg_${Date.now()}`, name: '', price: 0, limit: 100, features: [] });
                 setShowPackageForm(true);
               }}
-              className="px-8 py-3 bg-black text-white rounded-full text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-black/10"
+              className="px-10 py-4 bg-text-primary text-white rounded-full text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-black/20 flex items-center gap-3"
             >
-              Yeni Paket Ekle
+              <Plus className="w-4 h-4" /> Yeni Paket Ekle
             </button>
           )}
         </div>
 
         {showPackageForm && editingPackage && (
-          <div className="apple-card p-10 rounded-[40px] animate-in slide-in-from-top-4 duration-500">
-            <h3 className="text-xl font-bold mb-8 text-black">Paket Detaylarını Düzenle</h3>
-            <form onSubmit={handleSavePackage} className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-apple-gray uppercase px-1">Paket Adı</label>
-                  <input required className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white transition-all shadow-inner" 
+          <SoftCard className="animate-in slide-in-from-top-4 duration-500">
+            <h3 className="text-xl font-black mb-10 text-text-primary tracking-tight">Paket Detaylarını Düzenle</h3>
+            <form onSubmit={handleSavePackage} className="grid grid-cols-1 xl:grid-cols-2 gap-12">
+              <div className="space-y-8">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-1">Paket Adı</label>
+                  <input required className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" 
                     value={editingPackage.name} onChange={e => setEditingPackage({...editingPackage, name: e.target.value})} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-apple-gray uppercase px-1">Aylık Fiyat (₺)</label>
-                    <input required type="number" className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white transition-all shadow-inner" 
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-1">Aylık Fiyat (₺)</label>
+                    <input required type="number" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" 
                       value={editingPackage.price} onChange={e => setEditingPackage({...editingPackage, price: parseInt(e.target.value)})} />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-apple-gray uppercase px-1">Analiz Limiti</label>
-                    <input required type="number" className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white transition-all shadow-inner" 
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-1">Analiz Limiti</label>
+                    <input required type="number" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" 
                       value={editingPackage.limit} onChange={e => setEditingPackage({...editingPackage, limit: parseInt(e.target.value)})} />
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <div className="space-y-4">
-                  <label className="text-[10px] font-bold text-apple-gray uppercase px-1 flex justify-between">
+                  <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-1 flex justify-between">
                     Paket Özellikleri
-                    <button type="button" onClick={addNewFeature} className="text-nexus-mint hover:underline">+ Ekle</button>
+                    <button type="button" onClick={addNewFeature} className="text-primary hover:underline font-black">+ Ekle</button>
                   </label>
-                  <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                  <div className="space-y-3 max-h-64 overflow-y-auto pr-4 scrollbar-hide">
                     {editingPackage.features.map((feat, idx) => (
-                      <div key={idx} className="flex gap-2">
-                        <input className="flex-1 px-4 py-3 bg-slate-50 rounded-xl border-none text-xs font-medium focus:bg-white transition-all shadow-inner" 
+                      <div key={idx} className="flex gap-3">
+                        <input className="flex-1 px-5 py-3 bg-slate-50 rounded-xl border-none text-xs font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" 
                           value={feat} onChange={e => {
                             const newFeats = [...editingPackage.features];
                             newFeats[idx] = e.target.value;
                             setEditingPackage({...editingPackage, features: newFeats});
                           }} />
-                        <button type="button" onClick={() => removeFeature(idx)} className="p-2 text-red-400 hover:text-red-600">×</button>
+                        <button type="button" onClick={() => removeFeature(idx)} className="w-10 h-10 flex items-center justify-center text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">×</button>
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="flex gap-4 pt-4">
-                  <button type="submit" className="flex-1 py-4 bg-black text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-colors">Kaydet</button>
-                  <button type="button" onClick={() => setShowPackageForm(false)} className="px-8 py-4 bg-slate-100 text-black rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-slate-200 transition-colors">Vazgeç</button>
+                <div className="flex gap-4 pt-6">
+                  <button type="submit" className="flex-1 py-4 bg-text-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all shadow-xl shadow-black/10">Kaydet</button>
+                  <button type="button" onClick={() => setShowPackageForm(false)} className="px-10 py-4 bg-slate-100 text-text-primary rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">Vazgeç</button>
                 </div>
               </div>
             </form>
-          </div>
+          </SoftCard>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {packages.map(pkg => (
-            <div key={pkg.id} className="apple-card p-10 rounded-[40px] flex flex-col relative group">
-              <div className="mb-8">
-                <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest mb-2">{pkg.name}</p>
-                <p className="text-3xl font-bold text-black tracking-tighter">₺{pkg.price.toLocaleString()}<span className="text-xs text-apple-gray font-medium">/ay</span></p>
+            <SoftCard key={pkg.id} className="relative group flex flex-col h-full">
+              <div className="mb-10">
+                <div className="flex justify-between items-start mb-6">
+                  <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.25em]">{pkg.name}</p>
+                  <div className="p-2 bg-primary/5 rounded-xl text-primary">
+                    <CreditCard className="w-4 h-4" />
+                  </div>
+                </div>
+                <h3 className="text-4xl font-black text-text-primary tracking-tighter">
+                  ₺{pkg.price.toLocaleString()}
+                  <span className="text-xs text-text-secondary font-bold uppercase tracking-widest ml-2 opacity-40">/ay</span>
+                </h3>
               </div>
-              <ul className="space-y-3 flex-1 mb-10">
+              
+              <ul className="space-y-4 flex-1 mb-12">
                 {pkg.features.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-[11px] font-semibold text-slate-600">
-                    <div className="w-1 h-1 bg-nexus-mint rounded-full"></div> {f}
+                  <li key={i} className="flex items-center gap-3 text-xs font-bold text-text-secondary">
+                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                    <span className="tracking-tight">{f}</span>
                   </li>
                 ))}
               </ul>
-              <div className="pt-6 border-t border-black/5 flex justify-between items-center">
-                 <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest">Limit: {pkg.limit} İşlem</p>
+              
+              <div className="pt-8 border-t border-border-subtle flex justify-between items-center">
+                 <div className="space-y-1">
+                   <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest opacity-40">İşlem Limiti</p>
+                   <p className="text-sm font-black text-text-primary tracking-tight">{pkg.limit} Analiz</p>
+                 </div>
                  <button 
                   onClick={() => { setEditingPackage(pkg); setShowPackageForm(true); }}
-                  className="text-[10px] font-bold text-black uppercase tracking-widest hover:underline"
+                  className="w-10 h-10 rounded-full bg-slate-50 border border-border-subtle flex items-center justify-center hover:bg-text-primary hover:text-white transition-all group"
                  >
-                   Düzenle
+                   <MoreHorizontal className="w-4 h-4" />
                  </button>
               </div>
-            </div>
+            </SoftCard>
           ))}
         </div>
       </div>
@@ -172,15 +204,18 @@ const SuperAdminDashboard: React.FC<Props> = ({ activeTab }) => {
 
   if (activeTab === 'patients') {
     return (
-      <div className="space-y-12 animate-in fade-in duration-700">
-        <div>
-          <p className="text-apple-gray text-xs font-semibold mb-1 uppercase tracking-widest">Veri Güvenliği</p>
-          <h2 className="text-4xl font-bold text-black tracking-tight">Hasta Havuzu (Maskelenmiş)</h2>
+      <div className="space-y-10">
+        <div className="space-y-1">
+          <h2 className="text-4xl font-black tracking-tighter text-text-primary">Global Hasta Havuzu</h2>
+          <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.25em]">Maskelenmiş Anonim Veri Seti</p>
         </div>
 
-        <div className="apple-card rounded-[40px] overflow-hidden">
+        <DataTableCard 
+          title="Tüm Kayıtlar" 
+          subtitle={`${allPatients.length} Toplam Profil`}
+        >
           <table className="w-full text-left">
-            <thead className="bg-[#FAFAFB] text-apple-gray text-[10px] font-bold uppercase tracking-widest border-b border-black/5">
+            <thead className="text-[10px] font-black text-text-secondary uppercase tracking-widest border-b border-border-subtle">
               <tr>
                 <th className="px-10 py-6">Hasta Kimliği (Maskeli)</th>
                 <th className="px-10 py-6">Bağlı Klinik</th>
@@ -188,141 +223,225 @@ const SuperAdminDashboard: React.FC<Props> = ({ activeTab }) => {
                 <th className="px-10 py-6 text-right">Durum</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-black/[0.03]">
+            <tbody className="divide-y divide-border-subtle">
               {allPatients.map(patient => (
-                <tr key={patient.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-10 py-8 font-bold text-black text-base">
+                <tr key={patient.id} className="hover:bg-slate-50/30 transition-colors group">
+                  <td className="px-10 py-8 font-black text-text-primary text-base tracking-tight">
                     {maskName(patient.name)}
                   </td>
                   <td className="px-10 py-8">
-                    <div className="text-black font-semibold text-xs">{patient.profiles?.clinic_name || 'Bilinmiyor'}</div>
-                    <div className="text-[9px] text-apple-gray font-bold uppercase tracking-widest">{patient.profiles?.name}</div>
+                    <div className="text-text-primary font-black text-xs tracking-tight">{patient.profiles?.clinic_name || 'Bilinmiyor'}</div>
+                    <div className="text-[9px] text-text-secondary font-bold uppercase tracking-widest mt-1 opacity-50">{patient.profiles?.name}</div>
                   </td>
-                  <td className="px-10 py-8 text-apple-gray text-xs font-medium">
+                  <td className="px-10 py-8 text-text-secondary text-xs font-bold uppercase tracking-widest opacity-60">
                     {patient.last_scan_date}
                   </td>
                   <td className="px-10 py-8 text-right">
-                    <span className="text-[9px] font-bold text-nexus-mint uppercase tracking-widest bg-nexus-mint/5 px-3 py-1 rounded-full">Anonim Veri</span>
+                    <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/5 px-4 py-1.5 rounded-full border border-primary/10">
+                      Anonim Veri
+                    </span>
                   </td>
                 </tr>
               ))}
               {allPatients.length === 0 && !loading && (
                 <tr>
-                  <td colSpan={4} className="px-10 py-24 text-center text-apple-gray font-medium uppercase tracking-[0.2em] text-xs">Sistemde henüz hasta kaydı bulunmamaktadır.</td>
+                  <td colSpan={4}>
+                    <EmptyState 
+                      title="Veri Bulunmuyor"
+                      description="Sistemde henüz anonimleştirilmiş hasta kaydı mevcut değil."
+                    />
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
-        </div>
+        </DataTableCard>
       </div>
     );
   }
 
   if (activeTab === 'revenue') {
     return (
-      <div className="space-y-12 animate-in fade-in duration-700">
-        <h2 className="text-4xl font-bold text-black tracking-tight">Finansal Analiz</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-           <div className="apple-card p-10 rounded-[40px]">
-              <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest mb-4">Aylık Tahmini Gelir (MRR)</p>
-              <p className="text-5xl font-bold text-black tracking-tighter mb-10">₺{(doctors.reduce((acc, d) => acc + (packages.find(p => p.id === d.packageId)?.price || 0), 0)).toLocaleString()}</p>
-              <div className="h-40 flex items-end gap-2">
+      <div className="space-y-10">
+        <div className="space-y-1">
+          <h2 className="text-4xl font-black tracking-tighter text-text-primary">Finansal Analiz</h2>
+          <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.25em]">Gelir ve Lisans Metrikleri</p>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+           <SoftCard className="flex flex-col">
+              <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.25em] mb-4">Aylık Tahmini Gelir (MRR)</p>
+              <h3 className="text-6xl font-black text-text-primary tracking-tighter mb-12">
+                ₺{(doctors.reduce((acc, d) => acc + (packages.find(p => p.id === d.packageId)?.price || 0), 0)).toLocaleString()}
+              </h3>
+              <div className="h-48 flex items-end gap-3">
                  {[40, 70, 55, 90, 85, 100, 75].map((h, i) => (
-                   <div key={i} className="flex-1 bg-black/5 rounded-t-xl relative group overflow-hidden">
-                      <div className="absolute bottom-0 w-full bg-black transition-all duration-1000" style={{height: `${h}%`}}></div>
+                   <div key={i} className="flex-1 bg-slate-50 rounded-2xl relative group overflow-hidden h-full">
+                      <div className="absolute bottom-0 w-full bg-text-primary transition-all duration-1000 ease-out group-hover:bg-primary" style={{height: `${h}%`}}></div>
                    </div>
                  ))}
               </div>
-           </div>
-           <div className="apple-card p-10 rounded-[40px]">
-              <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest mb-4">Lisans Dağılımı</p>
-              <div className="space-y-8 pt-4">
+           </SoftCard>
+
+           <SoftCard className="flex flex-col">
+              <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.25em] mb-10">Lisans Dağılımı</p>
+              <div className="space-y-10 flex-1 flex flex-col justify-center">
                  {packages.map(pkg => (
-                    <div key={pkg.id}>
-                       <div className="flex justify-between text-xs font-bold mb-2">
-                          <span className="text-black uppercase">{pkg.name}</span>
-                          <span className="text-apple-gray">{doctors.filter(d => d.packageId === pkg.id).length} Klinik</span>
+                    <div key={pkg.id} className="space-y-3">
+                       <div className="flex justify-between items-end">
+                          <span className="text-xs font-black text-text-primary uppercase tracking-widest">{pkg.name}</span>
+                          <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">{doctors.filter(d => d.packageId === pkg.id).length} Klinik</span>
                        </div>
-                       <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
-                          <div className="h-full bg-black rounded-full" style={{width: `${(doctors.filter(d => d.packageId === pkg.id).length / (doctors.length || 1)) * 100}%`}}></div>
+                       <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${(doctors.filter(d => d.packageId === pkg.id).length / (doctors.length || 1)) * 100}%` }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            className="h-full bg-text-primary rounded-full" 
+                          />
                        </div>
                     </div>
                  ))}
               </div>
-           </div>
+           </SoftCard>
         </div>
       </div>
     );
   }
 
+  if (activeTab === 'reports') {
+    return (
+      <div className="space-y-10">
+        <h2 className="text-4xl font-black tracking-tighter text-text-primary">Sistem Raporları</h2>
+        <EmptyState 
+          title="Global Raporlar"
+          description="Tüm kliniklerin performans ve kullanım raporları burada listelenecektir."
+          icon={<TrendingUp className="w-10 h-10" />}
+        />
+      </div>
+    );
+  }
+
+  if (activeTab === 'settings') {
+    return (
+      <div className="space-y-10">
+        <h2 className="text-4xl font-black tracking-tighter text-text-primary">Sistem Ayarları</h2>
+        <EmptyState 
+          title="Yönetici Ayarları"
+          description="Sistem genelindeki yapılandırmalar ve yönetici tercihleri burada olacaktır."
+          icon={<ShieldCheck className="w-10 h-10" />}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-12 animate-in fade-in duration-1000">
-      {/* Stat Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <StatCard title="Toplam Kayıtlı Klinik" value={doctors.length.toString()} label="Aktif Node" />
-        <StatCard title="Toplam Hasta Havuzu" value={doctors.reduce((acc, d) => acc + d.patientCount, 0).toString()} label="Data ID" />
-        <StatCard title="Sistem Sağlığı" value="%99.9" label="Stable Core" />
+    <div className="space-y-8">
+      {/* Hero Section */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        <div className="xl:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <KpiCard 
+            label="Toplam Kayıtlı Klinik" 
+            value={doctors.length} 
+            icon={<Building2 />} 
+            color="bg-indigo-500"
+            delta={{ value: 8, isPositive: true }}
+          />
+          <KpiCard 
+            label="Toplam Hasta Havuzu" 
+            value={doctors.reduce((acc, d) => acc + d.patientCount, 0)} 
+            icon={<Users />} 
+            color="bg-emerald-500"
+            delta={{ value: 15, isPositive: true }}
+          />
+          <KpiCard 
+            label="Sistem Sağlığı" 
+            value="%99.9" 
+            icon={<ShieldCheck />} 
+            color="bg-primary"
+          />
+        </div>
+        
+        {/* System Status Bento */}
+        <SoftCard className="bg-indigo-600 text-white relative overflow-hidden group flex flex-col justify-between">
+          <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-700" />
+          <div className="relative z-10">
+            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">Sunucu Durumu</p>
+            <h4 className="text-lg font-bold tracking-tight">Global Node: Aktif</h4>
+            <p className="text-xs text-white/40 font-medium mt-1">Gecikme: 24ms</p>
+          </div>
+          <div className="relative z-10 flex items-center gap-2 mt-4">
+            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Tüm Sistemler Operasyonel</span>
+          </div>
+        </SoftCard>
       </div>
 
       {/* Doctor List */}
-      <div className="space-y-6">
-        <h3 className="text-2xl font-bold text-black tracking-tight px-2">Klinik Ağı</h3>
-        <div className="apple-card rounded-[40px] overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-[#FAFAFB] text-apple-gray text-[10px] font-bold uppercase tracking-widest border-b border-black/5">
-              <tr>
-                <th className="px-10 py-6">Klinik & Doktor ID</th>
-                <th className="px-10 py-6">Lisans Tipi</th>
-                <th className="px-10 py-6">Hasta Sayısı</th>
-                <th className="px-10 py-6">Üretilen Resim</th>
-                <th className="px-10 py-6 text-right">Durum</th>
+      <DataTableCard 
+        title="Klinik Ağı Yönetimi" 
+        subtitle={`${doctors.length} Aktif Node Bulundu`}
+        onSearch={() => {}}
+        actions={
+          <button className="px-6 py-2.5 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Yeni Klinik Ekle
+          </button>
+        }
+      >
+        <table className="w-full text-left">
+          <thead className="text-[10px] font-bold text-text-secondary uppercase tracking-wider border-b border-border-subtle">
+            <tr>
+              <th className="px-6 py-4">Klinik & Doktor ID</th>
+              <th className="px-6 py-4">Lisans Tipi</th>
+              <th className="px-6 py-4">Hasta Sayısı</th>
+              <th className="px-6 py-4">Üretilen Resim</th>
+              <th className="px-6 py-4 text-right">Durum</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border-subtle">
+            {doctors.map(doctor => (
+              <tr key={doctor.id} className="hover:bg-surface-hover transition-colors group">
+                <td className="px-6 py-5">
+                  <div className="font-semibold text-text-primary text-sm tracking-tight">{doctor.clinicName}</div>
+                  <div className="text-[10px] text-text-secondary font-medium mt-1 opacity-60">ID: {doctor.id.slice(0, 13)}...</div>
+                </td>
+                <td className="px-6 py-5">
+                  <span className="px-3 py-1 bg-text-primary text-white rounded-md text-[9px] font-bold uppercase tracking-wider">
+                    {packages.find(p => p.id === doctor.packageId)?.name}
+                  </span>
+                </td>
+                <td className="px-6 py-5">
+                  <div className="font-semibold text-text-primary text-sm">{doctor.patientCount}</div>
+                  <div className="text-[9px] text-text-secondary font-medium uppercase tracking-wider opacity-60">Profil</div>
+                </td>
+                <td className="px-6 py-5">
+                  <div className="font-semibold text-primary text-sm">{doctor.scanCount}</div>
+                  <div className="text-[9px] text-text-secondary font-medium uppercase tracking-wider opacity-60">Render</div>
+                </td>
+                <td className="px-6 py-5 text-right">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-bold uppercase tracking-wider border border-emerald-100">
+                     <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                     Aktif
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-black/[0.03]">
-              {doctors.map(doctor => (
-                <tr key={doctor.id} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-10 py-8">
-                    <div className="font-bold text-black text-base">{doctor.clinicName}</div>
-                    <div className="text-[10px] text-apple-gray font-bold uppercase tracking-widest mt-1">ID: {doctor.id.slice(0, 13)}...</div>
-                  </td>
-                  <td className="px-10 py-8">
-                    <span className="px-3 py-1 bg-black text-white rounded-full text-[9px] font-bold uppercase tracking-widest">
-                      {packages.find(p => p.id === doctor.packageId)?.name}
-                    </span>
-                  </td>
-                  <td className="px-10 py-8 font-bold text-black text-sm">
-                    {doctor.patientCount} <span className="text-[10px] text-apple-gray font-medium uppercase ml-1">Profil</span>
-                  </td>
-                  <td className="px-10 py-8 font-bold text-nexus-mint text-sm">
-                    {doctor.scanCount} <span className="text-[10px] text-apple-gray font-medium uppercase ml-1">Render</span>
-                  </td>
-                  <td className="px-10 py-8 text-right">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-bold uppercase tracking-widest">
-                       <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                       Aktif
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {doctors.length === 0 && !loading && (
-                <tr>
-                  <td colSpan={4} className="px-10 py-24 text-center text-apple-gray font-medium uppercase tracking-[0.2em] text-xs">Henüz kayıtlı klinik bulunmamaktadır.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            ))}
+            {doctors.length === 0 && !loading && (
+              <tr>
+                <td colSpan={5}>
+                  <EmptyState 
+                    title="Klinik Bulunmuyor"
+                    description="Sistemde henüz kayıtlı klinik veya doktor hesabı bulunmamaktadır."
+                  />
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </DataTableCard>
     </div>
   );
 };
-
-const StatCard: React.FC<{ title: string; value: string; label: string }> = ({ title, value, label }) => (
-  <div className="apple-card p-10 rounded-[40px]">
-    <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest mb-3">{title}</p>
-    <p className="text-4xl font-bold text-black tracking-tighter mb-4">{value}</p>
-    <p className="text-[10px] font-bold text-black/20 uppercase tracking-[0.3em]">{label}</p>
-  </div>
-);
 
 export default SuperAdminDashboard;

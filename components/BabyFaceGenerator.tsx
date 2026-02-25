@@ -222,77 +222,77 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 relative">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       {/* 3D Measurement Modal */}
       <AnimatePresence>
         {show3DModal && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/40 backdrop-blur-xl animate-in fade-in duration-500">
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-[48px] w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden shadow-2xl"
+              exit={{ opacity: 0, scale: 0.95, y: 40 }}
+              className="bg-white rounded-3xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden shadow-soft border border-border-subtle"
             >
               {/* Modal Header */}
-              <div className="p-8 border-b border-black/5 flex justify-between items-center">
-                <div>
-                  <h3 className="text-2xl font-black text-black tracking-tight">3D Kafa Ölçümleme</h3>
-                  <p className="text-apple-gray text-xs font-semibold uppercase tracking-widest mt-1">Modeli döndür, ölçümü seç, mm gir veya sürükleyerek ayarla.</p>
+              <div className="p-6 border-b border-border-subtle flex justify-between items-center bg-surface">
+                <div className="space-y-1">
+                  <h3 className="text-xl font-bold text-text-primary tracking-tight">Biyometrik Ölçümleme</h3>
+                  <p className="text-text-secondary text-[10px] font-semibold uppercase tracking-wider opacity-50">3D Morfolojik Analiz Protokolü</p>
                 </div>
-                <button onClick={() => setShow3DModal(false)} className="p-3 hover:bg-slate-100 rounded-full transition-colors">
-                  <X className="w-6 h-6 text-black" />
+                <button onClick={() => setShow3DModal(false)} className="w-12 h-12 flex items-center justify-center hover:bg-slate-100 rounded-full transition-all group">
+                  <X className="w-6 h-6 text-text-primary group-hover:rotate-90 transition-transform duration-300" />
                 </button>
               </div>
 
               {/* Modal Content - 3 Columns */}
               <div className="flex-1 flex overflow-hidden">
                 {/* Left Column: Step List - Redesigned for Maximum Readability */}
-                <div className="w-80 bg-[#0a0f1d] overflow-y-auto flex flex-col border-r border-white/5">
-                  <div className="p-8 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
-                    <p className="text-[10px] font-black text-nexus-mint uppercase tracking-[0.25em] mb-2">Ölçüm Protokolü</p>
+                <div className="w-[340px] bg-text-primary overflow-y-auto flex flex-col border-r border-white/5">
+                  <div className="p-10 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
+                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-3">Analiz Protokolü</p>
                     <div className="flex items-center justify-between">
-                      <h4 className="text-white font-bold text-base tracking-tight">Biyometrik Analiz</h4>
-                      <div className="px-2.5 py-1 bg-nexus-mint/20 rounded-lg text-[10px] font-black text-nexus-mint uppercase tracking-wider border border-nexus-mint/30">
+                      <h4 className="text-white font-black text-lg tracking-tighter">Biyometrik Veri</h4>
+                      <div className="px-3 py-1 bg-primary/20 rounded-lg text-[10px] font-black text-primary uppercase tracking-wider border border-primary/30">
                         {steps.filter(s => measurements[s.id as keyof Measurements] !== null).length}/{steps.length}
                       </div>
                     </div>
                     {/* Progress Bar */}
-                    <div className="mt-5 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div className="mt-6 h-1.5 bg-white/5 rounded-full overflow-hidden">
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${(steps.filter(s => measurements[s.id as keyof Measurements] !== null).length / steps.length) * 100}%` }}
-                        className="h-full bg-nexus-mint shadow-[0_0_15px_#10b981]"
+                        className="h-full bg-primary shadow-[0_0_15px_#10b981]"
                       />
                     </div>
                   </div>
 
-                  <div className="flex-1 py-4">
+                  <div className="flex-1 py-6">
                     {steps.map((step, idx) => (
                       <button
                         key={step.id}
                         onClick={() => setCurrentStep(step.id as any)}
-                        className={`w-full text-left px-8 py-6 transition-all flex items-center gap-5 border-b border-white/[0.03] relative group ${currentStep === step.id ? 'bg-nexus-mint/[0.07]' : 'hover:bg-white/[0.02]'}`}
+                        className={`w-full text-left px-10 py-6 transition-all flex items-center gap-6 border-b border-white/[0.03] relative group ${currentStep === step.id ? 'bg-primary/[0.07]' : 'hover:bg-white/[0.02]'}`}
                       >
                         {currentStep === step.id && (
-                          <motion.div layoutId="activeStep" className="absolute left-0 top-0 bottom-0 w-1.5 bg-nexus-mint shadow-[0_0_20px_#10b981]" />
+                          <motion.div layoutId="activeStep" className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary shadow-[0_0_20px_#10b981]" />
                         )}
-                        <span className={`font-mono text-xs font-bold ${currentStep === step.id ? 'text-nexus-mint' : 'text-white/20'}`}>
+                        <span className={`font-mono text-xs font-black ${currentStep === step.id ? 'text-primary' : 'text-white/20'}`}>
                           {(idx + 1).toString().padStart(2, '0')}
                         </span>
                         <div className="flex-1">
                           <p className={`text-base font-black tracking-tight transition-colors ${currentStep === step.id ? 'text-white' : 'text-white/40 group-hover:text-white/70'}`}>
                             {step.label.split(': ')[1] || step.label}
                           </p>
-                          <p className={`text-[10px] font-black uppercase tracking-[0.2em] mt-1 transition-colors ${currentStep === step.id ? 'text-nexus-mint' : 'text-white/10'}`}>
+                          <p className={`text-[9px] font-black uppercase tracking-[0.2em] mt-1 transition-colors ${currentStep === step.id ? 'text-primary' : 'text-white/10'}`}>
                             {step.view === 'front' ? 'Anterior' : step.view === 'profile' ? 'Sagittal' : 'Axial'}
                           </p>
                         </div>
                         {measurements[step.id as keyof Measurements] !== null ? (
-                          <div className="w-6 h-6 rounded-full bg-nexus-mint flex items-center justify-center shadow-[0_0_10px_rgba(16,185,129,0.4)]">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                          <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+                            <CheckCircle2 className="w-4 h-4 text-white" />
                           </div>
                         ) : (
-                          <div className="w-6 h-6 rounded-full border-2 border-white/5 group-hover:border-white/10 transition-colors" />
+                          <div className="w-7 h-7 rounded-full border-2 border-white/5 group-hover:border-white/10 transition-colors" />
                         )}
                       </button>
                     ))}
@@ -583,46 +583,51 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
       {/* Share Modal */}
       {sharingScan && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white rounded-[48px] p-10 max-w-md w-full shadow-2xl animate-in zoom-in duration-300">
-            <div className="flex justify-between items-start mb-8">
-              <div>
-                <h3 className="text-2xl font-bold text-black tracking-tight">Görseli Paylaş</h3>
-                <p className="text-apple-gray text-xs font-semibold uppercase tracking-widest mt-1">Hasta: {patient.name}</p>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-xl animate-in fade-in duration-500">
+          <div className="bg-white rounded-[56px] p-12 max-w-md w-full shadow-2xl animate-in zoom-in duration-500 border border-white/20">
+            <div className="flex justify-between items-start mb-10">
+              <div className="space-y-1">
+                <h3 className="text-3xl font-black text-text-primary tracking-tighter">Görseli Paylaş</h3>
+                <p className="text-text-secondary text-[10px] font-black uppercase tracking-[0.25em] opacity-50">Hasta: {patient.name}</p>
               </div>
-              <button onClick={() => { setSharingScan(null); setShowQRCode(false); }} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              <button onClick={() => { setSharingScan(null); setShowQRCode(false); }} className="w-10 h-10 flex items-center justify-center hover:bg-slate-100 rounded-full transition-all">
+                <X className="w-6 h-6 text-text-primary" />
               </button>
             </div>
 
-            <div className="space-y-8">
-              <div className="bg-slate-50 p-6 rounded-[32px] flex flex-col items-center justify-center space-y-4 min-h-[240px]">
+            <div className="space-y-10">
+              <div className="bg-slate-50 p-8 rounded-[40px] flex flex-col items-center justify-center space-y-6 min-h-[280px] border border-border-subtle">
                 {showQRCode ? (
-                  <div className="animate-in zoom-in duration-300 flex flex-col items-center">
+                  <div className="animate-in zoom-in duration-500 flex flex-col items-center">
                     {!sharingScan.babyFaceUrl.startsWith('data:') ? (
                       <>
-                        <QRCodeSVG value={sharingScan.babyFaceUrl} size={200} level="H" includeMargin={true} />
-                        <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest text-center mt-4">
+                        <div className="p-4 bg-white rounded-3xl shadow-xl">
+                          <QRCodeSVG value={sharingScan.babyFaceUrl} size={200} level="H" includeMargin={true} />
+                        </div>
+                        <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] text-center mt-6 opacity-60">
                           Telefonunuzla okutarak<br/>görseli anında indirebilirsiniz.
                         </p>
                       </>
                     ) : (
                       <div className="text-center p-6">
-                        <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        <div className="w-16 h-16 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-100">
+                          <AlertCircle className="w-8 h-8" />
                         </div>
-                        <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest">
+                        <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] opacity-60">
                           Bu eski bir kayıt.<br/>
                           QR kod sadece yeni ve buluta<br/>yüklenmiş kayıtlar için çalışır.
                         </p>
-                        <button onClick={() => setShowQRCode(false)} className="mt-4 text-[9px] font-bold text-black underline uppercase tracking-widest">Görsele Dön</button>
+                        <button onClick={() => setShowQRCode(false)} className="mt-6 text-[10px] font-black text-text-primary underline uppercase tracking-widest">Görsele Dön</button>
                       </div>
                     )}
                   </div>
                 ) : (
                   <>
-                    <img src={sharingScan.babyFaceUrl} className="w-40 h-40 object-cover rounded-2xl shadow-lg" alt="Preview" />
-                    <p className="text-[10px] font-bold text-apple-gray uppercase tracking-widest text-center">
+                    <div className="relative group">
+                      <img src={sharingScan.babyFaceUrl} className="w-48 h-48 object-cover rounded-[32px] shadow-2xl shadow-black/20" alt="Preview" />
+                      <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-[32px]"></div>
+                    </div>
+                    <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] text-center opacity-60">
                       {sharingScan.babyFaceUrl.startsWith('data:') 
                         ? 'Yerel Kayıt (Buluta yüklenmemiş)' 
                         : 'Görsel buluta yüklendi.'}
@@ -636,13 +641,13 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
               <div className="grid grid-cols-2 gap-4">
                 <button 
                   onClick={() => shareWhatsApp(sharingScan.babyFaceUrl)}
-                  className="flex items-center justify-center gap-3 py-4 bg-[#25D366] text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:scale-[1.02] transition-all"
+                  className="flex items-center justify-center gap-3 py-4 bg-[#25D366] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all shadow-lg shadow-[#25D366]/20"
                 >
                   WhatsApp
                 </button>
                 <button 
                   onClick={() => setShowQRCode(!showQRCode)}
-                  className={`flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest hover:scale-[1.02] transition-all ${showQRCode ? 'bg-slate-100 text-black' : 'bg-black text-white'}`}
+                  className={`flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all ${showQRCode ? 'bg-slate-100 text-text-primary' : 'bg-text-primary text-white shadow-lg shadow-black/10'}`}
                 >
                   {showQRCode ? 'Görsele Dön' : 'QR Kod Göster'}
                 </button>
@@ -650,7 +655,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
               <button 
                 onClick={() => downloadImage(sharingScan.babyFaceUrl, `nexus-baby-${patient.name}.png`)}
-                className="w-full py-4 border border-black/10 text-black rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-all"
+                className="w-full py-4 border border-border-subtle text-text-primary rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all"
               >
                 Cihaza İndir
               </button>
@@ -660,12 +665,15 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
       )}
 
       {/* Studio Viewport */}
-      <div className="space-y-8">
-        <div className="aspect-[4/5] bg-black rounded-[48px] overflow-hidden relative flex flex-col items-center justify-center p-10 group shadow-2xl border border-white/5">
+      <div className="lg:col-span-7 space-y-8">
+        <div className="aspect-square bg-black rounded-[48px] overflow-hidden relative flex flex-col items-center justify-center p-12 group shadow-2xl border border-white/5">
+          {/* Background Glow Effect */}
+          <div className="absolute inset-0 bg-primary/5 blur-[120px] rounded-full animate-pulse" />
+          
           {previewUrl ? (
-            <div className="w-full h-full flex flex-col items-center justify-center space-y-6 animate-in zoom-in duration-500 relative">
-              <div className="relative w-full max-h-[60%] flex items-center justify-center">
-                <img src={previewUrl} className="max-w-full max-h-full object-contain rounded-[32px] border border-white/10" />
+            <div className="w-full h-full flex flex-col items-center justify-center space-y-8 animate-in zoom-in duration-700 relative">
+              <div className="relative w-full max-h-[65%] flex items-center justify-center">
+                <img src={previewUrl} className="max-w-full max-h-full object-contain rounded-card border border-border-subtle shadow-soft" />
                 
                 {/* Analysis Overlay */}
                 <AnimatePresence>
@@ -840,59 +848,59 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
               </div>
               
               {/* Parameter Inputs */}
-              <div className="w-full max-w-md space-y-4 apple-blur bg-white/5 p-6 rounded-[32px] border border-white/10">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest px-1">Cinsiyet</label>
+              <div className="w-full max-w-md space-y-6 bg-white/5 backdrop-blur-xl p-8 rounded-[40px] border border-white/10 shadow-2xl">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2.5">
+                    <label className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] px-1">Cinsiyet</label>
                     <select 
                       value={options.gender} 
                       onChange={e => setOptions({...options, gender: e.target.value})}
-                      className="w-full bg-white/5 border-none rounded-xl text-[11px] text-white font-medium focus:ring-1 focus:ring-nexus-mint transition-all"
+                      className="w-full bg-white/5 border-none rounded-2xl text-[11px] text-white font-black uppercase tracking-widest focus:ring-2 focus:ring-primary transition-all p-4"
                     >
-                      <option value="unknown" className="bg-slate-900">Belirsiz</option>
-                      <option value="boy" className="bg-slate-900">Erkek</option>
-                      <option value="girl" className="bg-slate-900">Kız</option>
+                      <option value="unknown" className="bg-text-primary">Belirsiz</option>
+                      <option value="boy" className="bg-text-primary">Erkek</option>
+                      <option value="girl" className="bg-text-primary">Kız</option>
                     </select>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest px-1">İfade</label>
+                  <div className="space-y-2.5">
+                    <label className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] px-1">İfade</label>
                     <select 
                       value={options.expression} 
                       onChange={e => setOptions({...options, expression: e.target.value})}
-                      className="w-full bg-white/5 border-none rounded-xl text-[11px] text-white font-medium focus:ring-1 focus:ring-nexus-mint transition-all"
+                      className="w-full bg-white/5 border-none rounded-2xl text-[11px] text-white font-black uppercase tracking-widest focus:ring-2 focus:ring-primary transition-all p-4"
                     >
-                      <option value="neutral" className="bg-slate-900">Doğal</option>
-                      <option value="smiling" className="bg-slate-900">Gülümseyen</option>
-                      <option value="sleeping" className="bg-slate-900">Uykuda</option>
+                      <option value="neutral" className="bg-text-primary">Doğal</option>
+                      <option value="smiling" className="bg-text-primary">Gülümseyen</option>
+                      <option value="sleeping" className="bg-text-primary">Uykuda</option>
                     </select>
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest px-1">Görsel Stil</label>
+                <div className="space-y-2.5">
+                  <label className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] px-1">Görsel Stil</label>
                   <select 
                     value={options.style} 
                     onChange={e => setOptions({...options, style: e.target.value})}
-                    className="w-full bg-white/5 border-none rounded-xl text-[11px] text-white font-medium focus:ring-1 focus:ring-nexus-mint transition-all"
+                    className="w-full bg-white/5 border-none rounded-2xl text-[11px] text-white font-black uppercase tracking-widest focus:ring-2 focus:ring-primary transition-all p-4"
                   >
-                    <option value="hyper-realistic" className="bg-slate-900">Hiper-Gerçekçi</option>
-                    <option value="artistic" className="bg-slate-900">Sanatsal Portre</option>
-                    <option value="3d-render" className="bg-slate-900">3D Medikal Render</option>
+                    <option value="hyper-realistic" className="bg-text-primary">Hiper-Gerçekçi</option>
+                    <option value="artistic" className="bg-text-primary">Sanatsal Portre</option>
+                    <option value="3d-render" className="bg-text-primary">3D Medikal Render</option>
                   </select>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest px-1">Medikal Notlar (Opsiyonel)</label>
+                <div className="space-y-2.5">
+                  <label className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] px-1">Medikal Notlar (Opsiyonel)</label>
                   <textarea 
                     value={options.notes} 
                     onChange={e => setOptions({...options, notes: e.target.value})}
                     placeholder="Örn: Burun yapısına odaklan..."
-                    className="w-full bg-white/5 border-none rounded-xl text-[11px] text-white font-medium focus:ring-1 focus:ring-nexus-mint transition-all h-16 resize-none p-3"
+                    className="w-full bg-white/5 border-none rounded-2xl text-[11px] text-white font-black focus:ring-2 focus:ring-primary transition-all h-24 resize-none p-4 placeholder:text-white/20"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 px-4 py-2 bg-nexus-mint/10 rounded-full border border-nexus-mint/20">
-                <div className="w-1.5 h-1.5 bg-nexus-mint rounded-full animate-pulse"></div>
-                <span className="text-[9px] font-bold text-nexus-mint uppercase tracking-widest">NeoBreed Intelligence Core Synthesis</span>
+              <div className="flex items-center gap-3 px-6 py-3 bg-primary/10 rounded-full border border-primary/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_8px_#10b981]"></div>
+                <span className="text-[9px] font-black text-primary uppercase tracking-[0.25em]">NeoBreed Intelligence Core Synthesis</span>
               </div>
 
               {error && (
@@ -909,21 +917,23 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
               </div>
               <div className="space-y-2">
-                <p className="text-xl font-bold text-white tracking-tight">Upload Ultrasound Data</p>
-                <p className="text-white/30 text-[10px] font-bold uppercase tracking-widest">Secure Cloud Synthesis v3.0</p>
+                <p className="text-2xl font-black text-white tracking-tight">Upload Ultrasound Data</p>
+                <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.3em]">SECURE CLOUD SYNTHESIS V3.0</p>
               </div>
-              <button 
-                onClick={() => fileInputRef.current?.click()}
-                className="px-10 py-4 bg-white text-black rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
-              >
-                Select DICOM File
-              </button>
-              <button 
-                onClick={() => setShow3DModal(true)}
-                className="px-6 py-2.5 bg-white/5 text-white/40 hover:text-white hover:bg-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all"
-              >
-                3D Ölçüm ile Devam Et
-              </button>
+              <div className="flex flex-col gap-4 w-full max-w-xs">
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-10 py-5 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/20"
+                >
+                  SELECT DICOM FILE
+                </button>
+                <button 
+                  onClick={() => setShow3DModal(true)}
+                  className="px-6 py-4 bg-white/5 text-white/40 hover:text-white hover:bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/5"
+                >
+                  3D ÖLÇÜM İLE DEVAM ET
+                </button>
+              </div>
               {measurements.createdAt && (
                 <div className="text-[9px] font-mono text-nexus-mint/60 uppercase tracking-tighter animate-in fade-in slide-in-from-top-1">
                   {steps.filter(s => measurements[s.id as keyof Measurements] !== null).map(s => `${s.id.split('_')[0]}: ${measurements[s.id as keyof Measurements]}mm`).join(' · ')}
@@ -951,50 +961,59 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
       </div>
 
       {/* History Grid */}
-      <div className="apple-card rounded-[48px] p-10 flex flex-col h-[750px]">
-        <h3 className="text-xl font-bold text-black mb-10 tracking-tight flex justify-between items-center">
-          Render Archives
-          <span className="text-[10px] font-bold text-apple-gray uppercase tracking-widest">{patient.name}</span>
-        </h3>
+      <div className="lg:col-span-5 bg-white rounded-[48px] p-10 flex flex-col h-[calc(100vh-200px)] border border-border-subtle shadow-soft sticky top-8">
+        <div className="flex justify-between items-center mb-10">
+          <div className="space-y-1">
+            <h3 className="text-2xl font-black text-text-primary tracking-tighter">Render Archives</h3>
+            <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.25em] opacity-50">{patient.name}</p>
+          </div>
+          <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center border border-border-subtle">
+            <Activity className="w-4 h-4 text-text-secondary" />
+          </div>
+        </div>
         
-        <div className="flex-1 overflow-y-auto space-y-10 pr-2">
+        <div className="flex-1 overflow-y-auto space-y-12 pr-4 scrollbar-hide">
           {history.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-apple-gray space-y-4">
-              <div className="w-16 h-16 rounded-full border border-black/5 flex items-center justify-center">
-                 <div className="w-1 h-1 bg-black/10 rounded-full"></div>
+            <div className="h-full flex flex-col items-center justify-center text-text-secondary space-y-6">
+              <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center border border-border-subtle">
+                 <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
               </div>
-              <p className="text-[10px] font-bold uppercase tracking-widest">No previous sessions</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Henüz geçmiş analiz bulunmuyor</p>
             </div>
           ) : (
             history.map(result => (
-              <div key={result.id} className="group space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <p className="text-[9px] font-bold text-apple-gray uppercase px-2 tracking-widest">Source</p>
-                    <img src={result.ultrasoundUrl} className="w-full aspect-square object-cover rounded-[28px] grayscale contrast-125 opacity-40 group-hover:opacity-100 transition-opacity" />
+              <div key={result.id} className="group space-y-8 animate-in slide-in-from-bottom-6 duration-700">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <p className="text-[9px] font-black text-text-secondary uppercase px-2 tracking-[0.2em] opacity-50">SOURCE</p>
+                    <div className="aspect-square rounded-[32px] overflow-hidden border border-border-subtle bg-slate-50">
+                      <img src={result.ultrasoundUrl} className="w-full h-full object-cover grayscale contrast-125 opacity-40 group-hover:opacity-100 transition-all duration-500" />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-[9px] font-bold text-nexus-mint uppercase px-2 tracking-widest">AI Synthesis</p>
-                    <img src={result.babyFaceUrl} className="w-full aspect-square object-cover rounded-[28px] shadow-2xl shadow-black/10 transition-transform group-hover:scale-[1.02]" />
+                  <div className="space-y-3">
+                    <p className="text-[9px] font-black text-primary uppercase px-2 tracking-[0.2em]">AI SYNTHESIS</p>
+                    <div className="aspect-square rounded-[32px] overflow-hidden shadow-2xl shadow-black/10 group-hover:scale-[1.02] transition-all duration-500">
+                      <img src={result.babyFaceUrl} className="w-full h-full object-cover" />
+                    </div>
                   </div>
                 </div>
-                <div className="flex justify-between items-center px-4 py-3 bg-slate-50/50 rounded-b-[28px] border-t border-black/[0.03]">
-                  <span className="text-[10px] font-bold text-apple-gray tracking-tight">{result.createdAt}</span>
-                  <div className="flex items-center gap-5">
+                <div className="flex justify-between items-center px-6 py-4 bg-slate-50/50 rounded-[28px] border border-border-subtle">
+                  <span className="text-[10px] font-black text-text-secondary tracking-tight opacity-50">{result.createdAt}</span>
+                  <div className="flex items-center gap-6">
                     {result.measurements && (
                       <button 
                         onClick={() => setViewingProof(result)}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-nexus-mint/10 rounded-full text-[9px] font-black text-nexus-mint uppercase tracking-widest hover:bg-nexus-mint/20 transition-all group"
+                        className="flex items-center gap-2.5 px-4 py-2 bg-primary/10 rounded-full text-[9px] font-black text-primary uppercase tracking-widest hover:bg-primary/20 transition-all group"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5 shadow-[0_0_8px_#10b981]" />
-                        <span>Kanıt Görünümü</span>
+                        <span>Analiz Kanıtı</span>
                       </button>
                     )}
-                    <button onClick={() => setSharingScan(result)} className="text-[9px] font-black text-black/40 hover:text-black uppercase tracking-widest transition-colors">Share</button>
-                    <button onClick={() => downloadImage(result.babyFaceUrl, `nexus-baby-${patient.name}.png`)} className="text-[9px] font-black text-black/40 hover:text-black uppercase tracking-widest transition-colors">Download</button>
+                    <button onClick={() => setSharingScan(result)} className="text-[9px] font-black text-text-secondary hover:text-text-primary uppercase tracking-widest transition-colors opacity-40 hover:opacity-100">SHARE</button>
+                    <button onClick={() => downloadImage(result.babyFaceUrl, `nexus-baby-${patient.name}.png`)} className="text-[9px] font-black text-text-secondary hover:text-text-primary uppercase tracking-widest transition-colors opacity-40 hover:opacity-100">DOWNLOAD</button>
                   </div>
                 </div>
-                <div className="h-px bg-black/[0.03] w-full"></div>
+                <div className="h-px bg-border-subtle w-full opacity-50"></div>
               </div>
             ))
           )}
@@ -1004,102 +1023,102 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
       {/* Proof Modal */}
       <AnimatePresence>
         {viewingProof && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/95 backdrop-blur-xl animate-in fade-in duration-500">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/40 backdrop-blur-xl animate-in fade-in duration-500">
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-white rounded-[64px] w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden shadow-2xl"
+              initial={{ opacity: 0, scale: 0.9, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 40 }}
+              className="bg-white rounded-[64px] w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-white/20"
             >
-              <div className="p-10 border-b border-black/5 flex justify-between items-center">
-                <div>
-                  <h3 className="text-3xl font-black text-black tracking-tighter">Biyometrik Rekonstrüksiyon Kanıtı</h3>
-                  <p className="text-apple-gray text-[10px] font-bold uppercase tracking-[0.3em] mt-2">AI Sentezinin Medikal Verilerle Doğrulanması</p>
+              <div className="p-12 border-b border-border-subtle flex justify-between items-center bg-white/50 backdrop-blur-md">
+                <div className="space-y-1">
+                  <h3 className="text-4xl font-black text-text-primary tracking-tighter">Biyometrik Rekonstrüksiyon Kanıtı</h3>
+                  <p className="text-text-secondary text-[10px] font-black uppercase tracking-[0.3em] opacity-50">AI Sentezinin Medikal Verilerle Doğrulanması</p>
                 </div>
-                <button onClick={() => setViewingProof(null)} className="p-4 hover:bg-slate-100 rounded-full transition-colors">
-                  <X className="w-8 h-8 text-black" />
+                <button onClick={() => setViewingProof(null)} className="w-14 h-14 flex items-center justify-center hover:bg-slate-100 rounded-full transition-all group">
+                  <X className="w-8 h-8 text-text-primary group-hover:rotate-90 transition-transform duration-300" />
                 </button>
               </div>
 
-              <div className="flex-1 p-10 overflow-y-auto bg-slate-50/30">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              <div className="flex-1 p-12 overflow-y-auto bg-slate-50/30 scrollbar-hide">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
                   {/* Left: Ultrasound with Markers */}
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-apple-gray rounded-full"></div>
-                        <h4 className="text-xs font-black text-black uppercase tracking-widest">Kaynak: Ultrason Morfolojisi</h4>
+                  <div className="space-y-8">
+                    <div className="flex items-center justify-between px-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-2.5 h-2.5 bg-text-secondary rounded-full opacity-20"></div>
+                        <h4 className="text-xs font-black text-text-primary uppercase tracking-widest">Kaynak: Ultrason Morfolojisi</h4>
                       </div>
-                      <span className="text-[10px] font-mono text-apple-gray bg-white px-3 py-1 rounded-full border border-black/5">SCAN_REF: {viewingProof.id.split('_')[1]}</span>
+                      <span className="text-[10px] font-mono font-black text-text-secondary bg-white px-4 py-1.5 rounded-full border border-border-subtle shadow-sm">SCAN_REF: {viewingProof.id.split('_')[1]}</span>
                     </div>
-                    <div className="relative aspect-square bg-black rounded-[48px] overflow-hidden border-[12px] border-white shadow-2xl group">
+                    <div className="relative aspect-square bg-surface rounded-card overflow-hidden border-[16px] border-white shadow-soft group">
                       <img src={viewingProof.ultrasoundUrl} className="w-full h-full object-cover grayscale opacity-70 contrast-125" />
                       {/* Technical Overlay */}
                       <div className="absolute inset-0 pointer-events-none">
-                        <div className="absolute inset-0 border border-nexus-mint/20"></div>
+                        <div className="absolute inset-0 border border-primary/20"></div>
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]"></div>
                         
                         {/* Biometric Alignment Lines */}
                         <div className="absolute top-[20%] left-1/2 -translate-x-1/2 flex flex-col items-center">
-                          <div className="w-4 h-4 border-2 border-nexus-mint rounded-full bg-nexus-mint/20 shadow-[0_0_15px_#10b981]"></div>
-                          <div className="h-20 w-px bg-gradient-to-b from-nexus-mint to-transparent"></div>
-                          <div className="px-3 py-1.5 bg-nexus-mint text-white text-[9px] font-black rounded-lg shadow-lg">VERTEX: {viewingProof.measurements?.a_mm}mm</div>
+                          <div className="w-5 h-5 border-2 border-primary rounded-full bg-primary/20 shadow-[0_0_20px_#10b981]"></div>
+                          <div className="h-24 w-px bg-gradient-to-b from-primary to-transparent"></div>
+                          <div className="px-4 py-2 bg-primary text-white text-[10px] font-black rounded-xl shadow-xl border border-white/20">VERTEX: {viewingProof.measurements?.a_mm}mm</div>
                         </div>
 
                         <div className="absolute bottom-[20%] left-1/2 -translate-x-1/2 flex flex-col-reverse items-center">
-                          <div className="w-4 h-4 border-2 border-nexus-mint rounded-full bg-nexus-mint/20 shadow-[0_0_15px_#10b981]"></div>
-                          <div className="h-20 w-px bg-gradient-to-t from-nexus-mint to-transparent"></div>
-                          <div className="px-3 py-1.5 bg-nexus-mint text-white text-[9px] font-black rounded-lg shadow-lg">MENTON</div>
+                          <div className="w-5 h-5 border-2 border-primary rounded-full bg-primary/20 shadow-[0_0_20px_#10b981]"></div>
+                          <div className="h-24 w-px bg-gradient-to-t from-primary to-transparent"></div>
+                          <div className="px-4 py-2 bg-primary text-white text-[10px] font-black rounded-xl shadow-xl border border-white/20">MENTON</div>
                         </div>
 
                         {/* Midface Reference */}
-                        <div className="absolute top-[48%] left-1/2 -translate-x-1/2 w-[60%] h-px bg-nexus-mint/40 border-t border-dashed border-nexus-mint/60">
-                          <div className="absolute -left-2 -top-1 w-2 h-2 bg-nexus-mint rounded-full"></div>
-                          <div className="absolute -right-2 -top-1 w-2 h-2 bg-nexus-mint rounded-full"></div>
+                        <div className="absolute top-[48%] left-1/2 -translate-x-1/2 w-[65%] h-px bg-primary/40 border-t border-dashed border-primary/60">
+                          <div className="absolute -left-2.5 -top-1.5 w-3 h-3 bg-primary rounded-full shadow-[0_0_10px_#10b981]"></div>
+                          <div className="absolute -right-2.5 -top-1.5 w-3 h-3 bg-primary rounded-full shadow-[0_0_10px_#10b981]"></div>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Right: AI Synthesis with Matching Markers */}
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-nexus-mint rounded-full animate-pulse shadow-[0_0_8px_#10b981]"></div>
-                        <h4 className="text-xs font-black text-nexus-mint uppercase tracking-widest">Rekonstrüksiyon: Biyometrik Eşleşme</h4>
+                  <div className="space-y-8">
+                    <div className="flex items-center justify-between px-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse shadow-[0_0_10px_#10b981]"></div>
+                        <h4 className="text-xs font-black text-primary uppercase tracking-widest">Rekonstrüksiyon: Biyometrik Eşleşme</h4>
                       </div>
-                      <div className="px-4 py-1.5 bg-nexus-mint/10 rounded-full border border-nexus-mint/20">
-                        <span className="text-[9px] font-black text-nexus-mint uppercase tracking-widest">Doğruluk: 99.8%</span>
+                      <div className="px-5 py-2 bg-primary/10 rounded-full border border-primary/20 shadow-sm">
+                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Doğruluk: 99.8%</span>
                       </div>
                     </div>
-                    <div className="relative aspect-square bg-white rounded-[48px] overflow-hidden border-[12px] border-white shadow-2xl">
+                    <div className="relative aspect-square bg-white rounded-[56px] overflow-hidden border-[16px] border-white shadow-2xl">
                       <img src={viewingProof.babyFaceUrl} className="w-full h-full object-cover" />
                       {/* Matching Overlay Markers */}
                       <div className="absolute inset-0 pointer-events-none">
-                        <div className="absolute inset-0 bg-gradient-to-tr from-nexus-mint/5 to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent"></div>
                         
                         {/* Alignment Mesh Overlay */}
-                        <svg className="absolute inset-0 w-full h-full opacity-20 text-nexus-mint">
+                        <svg className="absolute inset-0 w-full h-full opacity-10 text-primary">
                           <defs>
-                            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5"/>
+                            <pattern id="grid-proof" width="50" height="50" patternUnits="userSpaceOnUse">
+                              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="currentColor" strokeWidth="0.5"/>
                             </pattern>
                           </defs>
-                          <rect width="100%" height="100%" fill="url(#grid)" />
+                          <rect width="100%" height="100%" fill="url(#grid-proof)" />
                         </svg>
 
                         <div className="absolute top-[20%] left-1/2 -translate-x-1/2 flex flex-col items-center">
-                          <div className="w-5 h-5 border-2 border-nexus-mint rounded-full flex items-center justify-center bg-white shadow-xl">
-                            <div className="w-1.5 h-1.5 bg-nexus-mint rounded-full"></div>
+                          <div className="w-6 h-6 border-2 border-primary rounded-full flex items-center justify-center bg-white shadow-xl">
+                            <div className="w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_#10b981]"></div>
                           </div>
-                          <div className="px-3 py-1.5 bg-black text-white text-[9px] font-black rounded-lg shadow-xl border border-nexus-mint mt-2">VERTEX ALIGNED</div>
+                          <div className="px-4 py-2 bg-text-primary text-white text-[10px] font-black rounded-xl shadow-xl border border-primary/20 mt-3 uppercase tracking-widest">Vertex Aligned</div>
                         </div>
 
                         <div className="absolute bottom-[20%] left-1/2 -translate-x-1/2 flex flex-col-reverse items-center">
-                          <div className="w-5 h-5 border-2 border-nexus-mint rounded-full flex items-center justify-center bg-white shadow-xl">
-                            <div className="w-1.5 h-1.5 bg-nexus-mint rounded-full"></div>
+                          <div className="w-6 h-6 border-2 border-primary rounded-full flex items-center justify-center bg-white shadow-xl">
+                            <div className="w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_#10b981]"></div>
                           </div>
-                          <div className="px-3 py-1.5 bg-black text-white text-[9px] font-black rounded-lg shadow-xl border border-nexus-mint mb-2">MENTON ALIGNED</div>
+                          <div className="px-4 py-2 bg-text-primary text-white text-[10px] font-black rounded-xl shadow-xl border border-primary/20 mb-3 uppercase tracking-widest">Menton Aligned</div>
                         </div>
                       </div>
                     </div>
@@ -1107,46 +1126,46 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                 </div>
 
                 {/* Biometric Data Table - Professional Medical Grid */}
-                <div className="mt-12 p-12 bg-white rounded-[56px] border border-black/5 shadow-sm">
-                  <div className="flex items-center gap-4 mb-10">
-                    <div className="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center">
-                      <Activity className="w-5 h-5 text-nexus-mint" />
+                <div className="mt-16 p-12 bg-slate-50/50 rounded-[64px] border border-black/[0.02] shadow-soft">
+                  <div className="flex items-center gap-6 mb-12">
+                    <div className="w-14 h-14 rounded-2xl bg-surface flex items-center justify-center shadow-soft border border-border-subtle">
+                      <Activity className="w-7 h-7 text-primary" />
                     </div>
-                    <div>
-                      <h5 className="text-sm font-black text-black uppercase tracking-tight">Biyometrik Veri Analiz Tablosu</h5>
-                      <p className="text-[9px] text-apple-gray font-bold uppercase tracking-widest">NeoBreed Reconstruction Engine v4.0</p>
+                    <div className="space-y-1.5">
+                      <h5 className="text-xl font-black text-text-primary uppercase tracking-tighter">Biyometrik Veri Analiz Tablosu</h5>
+                      <p className="text-[10px] font-black text-text-secondary/40 uppercase tracking-[0.3em]">NeoBreed Reconstruction Engine v4.0</p>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-y-10 gap-x-12">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-y-16 gap-x-20">
                     {steps.map(step => (
-                      <div key={step.id} className="space-y-2 group">
-                        <p className="text-[9px] font-black text-apple-gray uppercase tracking-widest group-hover:text-nexus-mint transition-colors">{step.label.split(': ')[1] || step.label}</p>
-                        <div className="flex items-baseline gap-2">
-                          <p className="text-3xl font-black text-black tracking-tighter">{viewingProof.measurements?.[step.id] || '---'}</p>
-                          <span className="text-[10px] font-black text-nexus-mint uppercase">mm</span>
+                      <div key={step.id} className="space-y-4 group">
+                        <p className="text-[11px] font-black text-text-secondary/60 uppercase tracking-[0.25em] group-hover:text-primary transition-colors">{step.label.split(': ')[1] || step.label}</p>
+                        <div className="flex items-baseline gap-3">
+                          <p className="text-5xl font-black text-text-primary tracking-tighter leading-none">{viewingProof.measurements?.[step.id] || '---'}</p>
+                          <span className="text-xs font-black text-primary uppercase tracking-widest opacity-60">mm</span>
                         </div>
-                        <div className="h-1 w-8 bg-slate-100 rounded-full group-hover:w-full group-hover:bg-nexus-mint/30 transition-all duration-500"></div>
+                        <div className="h-2 w-12 bg-black/5 rounded-full group-hover:w-full group-hover:bg-primary/20 transition-all duration-1000 ease-out"></div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="mt-12 flex flex-col items-center text-center space-y-4">
-                  <div className="px-6 py-3 bg-nexus-mint/10 rounded-full border border-nexus-mint/20 flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-nexus-mint" />
-                    <span className="text-[11px] font-black text-nexus-mint uppercase tracking-widest">Bilimsel Doğruluk Onayı: NeoBreed Reconstruction Engine v4.0</span>
+                <div className="mt-16 flex flex-col items-center text-center space-y-6">
+                  <div className="px-8 py-4 bg-primary/10 rounded-full border border-primary/20 flex items-center gap-4 shadow-sm">
+                    <CheckCircle2 className="w-6 h-6 text-primary" />
+                    <span className="text-xs font-black text-primary uppercase tracking-[0.15em]">Bilimsel Doğruluk Onayı: NeoBreed Reconstruction Engine v4.0</span>
                   </div>
-                  <p className="text-[10px] text-apple-gray font-medium max-w-2xl leading-relaxed">
+                  <p className="text-xs text-text-secondary font-bold max-w-3xl leading-relaxed opacity-70">
                     Bu rekonstrüksiyon, yukarıdaki biyometrik ölçümlerin (mm) ve ultrason kemik yapısının AI tarafından birebir eşleştirilmesiyle oluşturulmuştur. Yumuşak doku tahmini, medikal kütüphanemizdeki benzer morfolojik verilerle desteklenmiştir.
                   </p>
                 </div>
               </div>
 
-              <div className="p-10 border-t border-black/5 bg-slate-50/50 flex justify-center">
+              <div className="p-12 border-t border-border-subtle bg-white/50 backdrop-blur-md flex justify-center">
                 <button 
                   onClick={() => setViewingProof(null)}
-                  className="px-16 py-5 bg-black text-white rounded-full font-bold text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-xl"
+                  className="px-20 py-5 bg-primary text-white rounded-full font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-soft"
                 >
                   Raporu Kapat
                 </button>
@@ -1239,32 +1258,32 @@ const MarkerPoint: React.FC<MarkerPointProps> = ({ x, y, label, value, onValueCh
             initial={{ opacity: 0, scale: 0.9, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 10 }}
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-6 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-5 border border-black/5 min-w-[160px] z-[120]"
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-8 bg-white/90 backdrop-blur-2xl rounded-[32px] shadow-floating p-6 border border-white/40 min-w-[200px] z-[120]"
           >
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-[9px] font-black text-apple-gray uppercase tracking-[0.2em]">{label}</span>
-                <span className="text-[9px] font-mono text-nexus-mint">INPUT</span>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between gap-6">
+                <span className="text-[10px] font-black text-text-secondary/60 uppercase tracking-[0.25em]">{label}</span>
+                <span className="px-2 py-0.5 bg-primary/10 text-primary text-[9px] font-black rounded-md uppercase tracking-widest">Biometric</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <div className="relative flex-1">
                   <input 
                     autoFocus
                     type="number" 
                     value={value || ''}
                     onChange={(e) => onValueChange(parseFloat(e.target.value) || 0)}
-                    className="w-full px-4 py-3 bg-slate-50 rounded-2xl border-none text-sm font-black focus:bg-white transition-all text-center"
+                    className="w-full px-5 py-4 bg-black/5 rounded-[20px] border-none text-base font-black focus:bg-white focus:ring-8 focus:ring-primary/5 transition-all text-center tracking-tight"
                     placeholder="0.0"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] font-bold text-apple-gray">mm</span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-text-secondary/40 uppercase">mm</span>
                 </div>
-                <button onClick={() => setShowPopover(false)} className="p-3 bg-black text-white rounded-2xl hover:bg-nexus-mint transition-colors shadow-lg shadow-black/10">
-                  <CheckCircle2 className="w-4 h-4" />
+                <button onClick={() => setShowPopover(false)} className="w-12 h-12 bg-text-primary text-white rounded-[20px] hover:bg-primary transition-all shadow-xl shadow-black/10 flex items-center justify-center active:scale-90">
+                  <CheckCircle2 className="w-5 h-5" />
                 </button>
               </div>
             </div>
             {/* Popover Arrow */}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[8px] border-transparent border-t-white drop-shadow-sm"></div>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[10px] border-transparent border-t-white/90 drop-shadow-sm"></div>
           </motion.div>
         )}
       </AnimatePresence>
