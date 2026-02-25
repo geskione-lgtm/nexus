@@ -37,7 +37,7 @@ const SuperAdminDashboard: React.FC<Props> = ({ activeTab }) => {
   useEffect(() => {
     const fetch = async () => {
       setLoading(true);
-      if (activeTab === 'dashboard') {
+      if (activeTab === 'dashboard' || activeTab === 'network') {
         const data = await DatabaseService.getDoctorsWithStats();
         setDoctors(data);
       } else if (activeTab === 'patients') {
