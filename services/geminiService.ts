@@ -6,7 +6,14 @@ export async function generateBabyFace(ultrasoundBase64: string, highRes: boolea
   const modelName = highRes ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
   
   // Her çağrıda yeni instance oluşturarak güncel API key'i almasını sağlıyoruz.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // Pro model için kullanıcı anahtarı (API_KEY), Flash model için sistem anahtarı (GEMINI_API_KEY) kullanılır.
+  const apiKey = highRes ? (process.env.API_KEY || process.env.GEMINI_API_KEY) : process.env.GEMINI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error("API anahtarı bulunamadı. Lütfen sistem yöneticisi ile iletişime geçin.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   
   const genderPrompt = options?.gender === 'boy' ? 'male baby' : options?.gender === 'girl' ? 'female baby' : 'baby';
   const expressionPrompt = options?.expression === 'smiling' ? 'smiling and happy' : options?.expression === 'sleeping' ? 'peacefully sleeping' : 'natural expression';

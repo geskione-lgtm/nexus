@@ -404,7 +404,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                             if (!isSelected) return null;
 
                             return (
-                              <div key={step.id} className="absolute inset-0 pointer-events-auto">
+                              <div key={step.id} className="absolute inset-0 pointer-events-none">
                                 {/* Marker Points based on Step */}
                                 {step.id === 'a_mm' && (
                                   <>
@@ -668,251 +668,189 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
       <div className="lg:col-span-7 space-y-8">
         <div className="aspect-square bg-black rounded-[48px] overflow-hidden relative flex flex-col items-center justify-center p-12 group shadow-2xl border border-white/5">
           {/* Background Glow Effect */}
-          <div className="absolute inset-0 bg-primary/5 blur-[120px] rounded-full animate-pulse" />
+          <div className="absolute inset-0 bg-primary/5 blur-[120px] rounded-full animate-pulse pointer-events-none" />
           
           {previewUrl ? (
-            <div className="w-full h-full flex flex-col items-center justify-center space-y-8 animate-in zoom-in duration-700 relative">
-              <div className="relative w-full max-h-[65%] flex items-center justify-center">
-                <img src={previewUrl} className="max-w-full max-h-full object-contain rounded-card border border-border-subtle shadow-soft" />
-                
-                {/* Analysis Overlay */}
-                <AnimatePresence>
-                  {isGenerating && (
+            <div className="w-full h-full flex items-center justify-center animate-in zoom-in duration-700 relative">
+              <img src={previewUrl} className="max-w-full max-h-full object-contain rounded-card border border-white/10 shadow-2xl" />
+              
+              {/* Analysis Overlay */}
+              <AnimatePresence>
+                {isGenerating && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 overflow-hidden rounded-[32px] pointer-events-none z-20"
+                  >
+                    {/* Scanning Line with Glow */}
                     <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="absolute inset-0 overflow-hidden rounded-[32px] pointer-events-none z-20"
+                      animate={{ top: ['0%', '100%', '0%'] }}
+                      transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute left-0 right-0 h-[2px] bg-nexus-mint shadow-[0_0_30px_#10b981,0_0_10px_#fff] z-40"
+                    />
+                    <motion.div 
+                      animate={{ top: ['100%', '0%', '100%'] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute left-0 right-0 h-[1px] bg-nexus-mint/40 shadow-[0_0_20px_#10b981] z-40"
+                    />
+                    
+                    {/* Face Detection Frame */}
+                    <motion.div 
+                      animate={{ opacity: [0.3, 0.6, 0.3], scale: [0.98, 1.02, 0.98] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="absolute inset-12 border-2 border-nexus-mint/30 rounded-[40px] z-30"
                     >
-                      {/* Scanning Line with Glow */}
-                      <motion.div 
-                        animate={{ top: ['0%', '100%', '0%'] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute left-0 right-0 h-[3px] bg-nexus-mint shadow-[0_0_40px_#10b981,0_0_10px_#fff] z-40"
-                      />
-                      
-                      {/* Face Detection Frame */}
-                      <motion.div 
-                        animate={{ opacity: [0.3, 0.6, 0.3] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="absolute inset-12 border-2 border-nexus-mint/30 rounded-[40px] z-30"
-                      >
-                        <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-nexus-mint rounded-tl-3xl"></div>
-                        <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-nexus-mint rounded-tr-3xl"></div>
-                        <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-nexus-mint rounded-bl-3xl"></div>
-                        <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-nexus-mint rounded-br-3xl"></div>
-                      </motion.div>
+                      <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-nexus-mint rounded-tl-3xl"></div>
+                      <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-nexus-mint rounded-tr-3xl"></div>
+                      <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-nexus-mint rounded-bl-3xl"></div>
+                      <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-nexus-mint rounded-br-3xl"></div>
+                    </motion.div>
 
-                      {/* Dynamic Biometric Mesh */}
-                      <div className="absolute inset-0 opacity-40">
-                        <svg width="100%" height="100%" viewBox="0 0 400 500" preserveAspectRatio="none" className="text-nexus-mint">
-                          <motion.path 
-                            animate={{ 
-                              d: [
-                                "M50,100 L150,80 L250,90 L350,110 L300,250 L200,280 L100,240 Z",
-                                "M60,110 L140,90 L260,80 L340,120 L310,240 L210,270 L90,250 Z",
-                                "M50,100 L150,80 L250,90 L350,110 L300,250 L200,280 L100,240 Z"
-                              ]
-                            }}
-                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                            fill="none" 
-                            stroke="currentColor" 
-                            strokeWidth="0.5"
-                            className="drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]"
+                    {/* Dynamic Biometric Mesh */}
+                    <div className="absolute inset-0 opacity-40">
+                      <svg width="100%" height="100%" viewBox="0 0 400 500" preserveAspectRatio="none" className="text-nexus-mint">
+                        <motion.path 
+                          animate={{ 
+                            d: [
+                              "M50,100 L150,80 L250,90 L350,110 L300,250 L200,280 L100,240 Z",
+                              "M60,110 L140,90 L260,80 L340,120 L310,240 L210,270 L90,250 Z",
+                              "M50,100 L150,80 L250,90 L350,110 L300,250 L200,280 L100,240 Z"
+                            ]
+                          }}
+                          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="0.5"
+                          className="drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]"
+                        />
+                        {[...Array(12)].map((_, i) => (
+                          <motion.line
+                            key={i}
+                            x1={30 + i * 30} y1="0" x2={30 + i * 30} y2="500"
+                            stroke="currentColor" strokeWidth="0.1" strokeDasharray="2 2"
+                            animate={{ opacity: [0.05, 0.2, 0.05] }}
+                            transition={{ duration: 2, repeat: Infinity, delay: i * 0.1 }}
                           />
-                          {/* Inner Mesh Lines */}
-                          {[...Array(8)].map((_, i) => (
-                            <motion.line
+                        ))}
+                      </svg>
+                    </div>
+
+                    {/* Biometric Markers */}
+                    {[
+                      { x: '30%', y: '25%' }, { x: '70%', y: '25%' },
+                      { x: '50%', y: '45%' }, { x: '40%', y: '65%' },
+                      { x: '60%', y: '65%' }, { x: '50%', y: '80%' }
+                    ].map((point, i) => (
+                      <motion.div
+                        key={i}
+                        style={{ left: point.x, top: point.y }}
+                        className="absolute -translate-x-1/2 -translate-y-1/2 z-30"
+                      >
+                        <motion.div 
+                          animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                          transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3 }}
+                          className="w-3 h-3 border border-nexus-mint rounded-full flex items-center justify-center"
+                        >
+                          <div className="w-1 h-1 bg-nexus-mint rounded-full"></div>
+                        </motion.div>
+                        <motion.span 
+                          animate={{ opacity: [0, 1, 0] }}
+                          transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }}
+                          className="absolute left-4 top-0 text-[6px] font-mono text-nexus-mint whitespace-nowrap"
+                        >
+                          PT_{i+1}: {Math.random().toFixed(4)}
+                        </motion.span>
+                      </motion.div>
+                    ))}
+                    
+                    {/* HUD Data Streams */}
+                    <div className="absolute top-10 left-10 flex flex-col gap-4">
+                      <div className="flex items-center gap-3 bg-black/80 backdrop-blur-2xl px-5 py-2.5 rounded-2xl border border-white/10 shadow-2xl">
+                        <div className="w-2 h-2 bg-nexus-mint rounded-full animate-pulse shadow-[0_0_10px_#10b981]"></div>
+                        <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Neural Analysis v4.2</span>
+                      </div>
+                      <div className="bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-white/5 space-y-2">
+                        <div className="flex justify-between gap-8">
+                          <span className="text-[8px] font-bold text-white/40 uppercase">Mapping</span>
+                          <span className="text-[8px] font-mono text-nexus-mint">ACTIVE</span>
+                        </div>
+                        <div className="flex justify-between gap-8">
+                          <span className="text-[8px] font-bold text-white/40 uppercase">Density</span>
+                          <span className="text-[8px] font-mono text-nexus-mint">0.842 g/cm³</span>
+                        </div>
+                        <div className="flex justify-between gap-8">
+                          <span className="text-[8px] font-bold text-white/40 uppercase">Confidence</span>
+                          <span className="text-[8px] font-mono text-nexus-mint">99.8%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Side Data Feed */}
+                    <div className="absolute top-10 right-10 flex flex-col items-end gap-3">
+                      <div className="bg-nexus-mint/10 text-nexus-mint text-[9px] font-black px-4 py-1.5 rounded-full border border-nexus-mint/20 uppercase tracking-[0.2em] backdrop-blur-md">
+                        Processing Stream
+                      </div>
+                      <div className="bg-black/40 backdrop-blur-md p-3 rounded-xl border border-white/5 font-mono text-[7px] text-white/60 leading-relaxed text-right">
+                        {`SCAN_ID: ${Math.random().toString(36).substr(2, 9).toUpperCase()}`}<br/>
+                        {`FREQ: 14.22 MHz`}<br/>
+                        {`DEPTH: 124.5 mm`}<br/>
+                        {`GAIN: 42.0 dB`}
+                      </div>
+                    </div>
+
+                    {/* Bottom Status Bar */}
+                    <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end">
+                      <div className="bg-black/80 backdrop-blur-2xl p-6 rounded-[40px] border border-white/10 flex items-center gap-8 shadow-2xl">
+                        <div className="relative w-14 h-14 flex items-center justify-center">
+                          <svg className="absolute inset-0 w-full h-full -rotate-90">
+                            <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="4" />
+                            <motion.circle 
+                              cx="28" cy="28" r="24" 
+                              fill="none" 
+                              stroke="#10b981" 
+                              strokeWidth="4" 
+                              strokeDasharray="150.7"
+                              animate={{ strokeDashoffset: [150.7, 0] }}
+                              transition={{ duration: 15, ease: "linear" }}
+                            />
+                          </svg>
+                          <Cpu className="w-6 h-6 text-nexus-mint" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] font-black text-nexus-mint uppercase tracking-[0.2em]">AI Synthesis Engine</span>
+                            <motion.span 
+                              animate={{ opacity: [0, 1, 0] }}
+                              transition={{ duration: 1, repeat: Infinity }}
+                              className="w-1.5 h-1.5 bg-nexus-mint rounded-full"
+                            />
+                          </div>
+                          <p className="text-white text-xs font-black uppercase tracking-tight">Reconstructing Fetal Morphology...</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-3 mb-4">
+                        <div className="flex gap-1.5">
+                          {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <motion.div
                               key={i}
-                              x1={50 + i * 40} y1="0" x2={50 + i * 40} y2="500"
-                              stroke="currentColor" strokeWidth="0.2" strokeDasharray="4 4"
-                              animate={{ opacity: [0.1, 0.3, 0.1] }}
-                              transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
+                              animate={{ height: [6, 24, 6] }}
+                              transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.08 }}
+                              className="w-1.5 bg-nexus-mint/40 rounded-full"
                             />
                           ))}
-                        </svg>
+                        </div>
+                        <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.3em]">Data Link Active</span>
                       </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-                      {/* Biometric Markers (Reference Points) */}
-                      {[
-                        { x: '30%', y: '25%' }, { x: '70%', y: '25%' },
-                        { x: '50%', y: '45%' }, { x: '40%', y: '65%' },
-                        { x: '60%', y: '65%' }, { x: '50%', y: '80%' }
-                      ].map((point, i) => (
-                        <motion.div
-                          key={i}
-                          style={{ left: point.x, top: point.y }}
-                          className="absolute -translate-x-1/2 -translate-y-1/2 z-30"
-                        >
-                          <motion.div 
-                            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
-                            transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3 }}
-                            className="w-3 h-3 border border-nexus-mint rounded-full flex items-center justify-center"
-                          >
-                            <div className="w-1 h-1 bg-nexus-mint rounded-full"></div>
-                          </motion.div>
-                          <motion.span 
-                            animate={{ opacity: [0, 1, 0] }}
-                            transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }}
-                            className="absolute left-4 top-0 text-[6px] font-mono text-nexus-mint whitespace-nowrap"
-                          >
-                            PT_{i+1}: {Math.random().toFixed(4)}
-                          </motion.span>
-                        </motion.div>
-                      ))}
-                      
-                      {/* HUD Data Streams */}
-                      <div className="absolute top-10 left-10 flex flex-col gap-4">
-                        <div className="flex items-center gap-3 bg-black/80 backdrop-blur-2xl px-5 py-2.5 rounded-2xl border border-white/10 shadow-2xl">
-                          <div className="w-2 h-2 bg-nexus-mint rounded-full animate-pulse shadow-[0_0_10px_#10b981]"></div>
-                          <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Neural Analysis v4.2</span>
-                        </div>
-                        
-                        <div className="bg-black/60 backdrop-blur-xl p-4 rounded-2xl border border-white/10 space-y-2">
-                          <div className="flex justify-between gap-8">
-                            <span className="text-[8px] font-bold text-white/40 uppercase">Mapping</span>
-                            <span className="text-[8px] font-mono text-nexus-mint">ACTIVE</span>
-                          </div>
-                          <div className="flex justify-between gap-8">
-                            <span className="text-[8px] font-bold text-white/40 uppercase">Density</span>
-                            <span className="text-[8px] font-mono text-nexus-mint">0.842 g/cm³</span>
-                          </div>
-                          <div className="flex justify-between gap-8">
-                            <span className="text-[8px] font-bold text-white/40 uppercase">Confidence</span>
-                            <span className="text-[8px] font-mono text-nexus-mint">99.8%</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Right Side Data Feed */}
-                      <div className="absolute top-10 right-10 flex flex-col items-end gap-3">
-                        <div className="bg-nexus-mint/10 text-nexus-mint text-[9px] font-black px-4 py-1.5 rounded-full border border-nexus-mint/20 uppercase tracking-[0.2em] backdrop-blur-md">
-                          Processing Stream
-                        </div>
-                        <div className="bg-black/40 backdrop-blur-md p-3 rounded-xl border border-white/5 font-mono text-[7px] text-white/60 leading-relaxed text-right">
-                          {`SCAN_ID: ${Math.random().toString(36).substr(2, 9).toUpperCase()}`}<br/>
-                          {`FREQ: 14.22 MHz`}<br/>
-                          {`DEPTH: 124.5 mm`}<br/>
-                          {`GAIN: 42.0 dB`}
-                        </div>
-                      </div>
-
-                      {/* Bottom Status Bar */}
-                      <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end">
-                        <div className="bg-black/80 backdrop-blur-2xl p-6 rounded-[40px] border border-white/10 flex items-center gap-8 shadow-2xl">
-                          <div className="relative w-14 h-14 flex items-center justify-center">
-                            <svg className="absolute inset-0 w-full h-full -rotate-90">
-                              <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="4" />
-                              <motion.circle 
-                                cx="28" cy="28" r="24" 
-                                fill="none" 
-                                stroke="#10b981" 
-                                strokeWidth="4" 
-                                strokeDasharray="150.7"
-                                animate={{ strokeDashoffset: [150.7, 0] }}
-                                transition={{ duration: 15, ease: "linear" }}
-                              />
-                            </svg>
-                            <Cpu className="w-6 h-6 text-nexus-mint" />
-                          </div>
-                          <div className="space-y-1.5">
-                            <div className="flex items-center gap-2">
-                              <span className="text-[9px] font-black text-nexus-mint uppercase tracking-[0.2em]">AI Synthesis Engine</span>
-                              <motion.span 
-                                animate={{ opacity: [0, 1, 0] }}
-                                transition={{ duration: 1, repeat: Infinity }}
-                                className="w-1.5 h-1.5 bg-nexus-mint rounded-full"
-                              />
-                            </div>
-                            <p className="text-white text-xs font-black uppercase tracking-tight">Reconstructing Fetal Morphology...</p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex flex-col items-end gap-3 mb-4">
-                          <div className="flex gap-1.5">
-                            {[1, 2, 3, 4, 5, 6].map((i) => (
-                              <motion.div
-                                key={i}
-                                animate={{ height: [6, 24, 6] }}
-                                transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.08 }}
-                                className="w-1.5 bg-nexus-mint/40 rounded-full"
-                              />
-                            ))}
-                          </div>
-                          <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.3em]">Data Link Active</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-              
-              {/* Parameter Inputs */}
-              <div className="w-full max-w-md space-y-6 bg-white/5 backdrop-blur-xl p-8 rounded-[40px] border border-white/10 shadow-2xl">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2.5">
-                    <label className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] px-1">Cinsiyet</label>
-                    <select 
-                      value={options.gender} 
-                      onChange={e => setOptions({...options, gender: e.target.value})}
-                      className="w-full bg-white/5 border-none rounded-2xl text-[11px] text-white font-black uppercase tracking-widest focus:ring-2 focus:ring-primary transition-all p-4"
-                    >
-                      <option value="unknown" className="bg-text-primary">Belirsiz</option>
-                      <option value="boy" className="bg-text-primary">Erkek</option>
-                      <option value="girl" className="bg-text-primary">Kız</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2.5">
-                    <label className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] px-1">İfade</label>
-                    <select 
-                      value={options.expression} 
-                      onChange={e => setOptions({...options, expression: e.target.value})}
-                      className="w-full bg-white/5 border-none rounded-2xl text-[11px] text-white font-black uppercase tracking-widest focus:ring-2 focus:ring-primary transition-all p-4"
-                    >
-                      <option value="neutral" className="bg-text-primary">Doğal</option>
-                      <option value="smiling" className="bg-text-primary">Gülümseyen</option>
-                      <option value="sleeping" className="bg-text-primary">Uykuda</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="space-y-2.5">
-                  <label className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] px-1">Görsel Stil</label>
-                  <select 
-                    value={options.style} 
-                    onChange={e => setOptions({...options, style: e.target.value})}
-                    className="w-full bg-white/5 border-none rounded-2xl text-[11px] text-white font-black uppercase tracking-widest focus:ring-2 focus:ring-primary transition-all p-4"
-                  >
-                    <option value="hyper-realistic" className="bg-text-primary">Hiper-Gerçekçi</option>
-                    <option value="artistic" className="bg-text-primary">Sanatsal Portre</option>
-                    <option value="3d-render" className="bg-text-primary">3D Medikal Render</option>
-                  </select>
-                </div>
-                <div className="space-y-2.5">
-                  <label className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] px-1">Medikal Notlar (Opsiyonel)</label>
-                  <textarea 
-                    value={options.notes} 
-                    onChange={e => setOptions({...options, notes: e.target.value})}
-                    placeholder="Örn: Burun yapısına odaklan..."
-                    className="w-full bg-white/5 border-none rounded-2xl text-[11px] text-white font-black focus:ring-2 focus:ring-primary transition-all h-24 resize-none p-4 placeholder:text-white/20"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 px-6 py-3 bg-primary/10 rounded-full border border-primary/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_8px_#10b981]"></div>
-                <span className="text-[9px] font-black text-primary uppercase tracking-[0.25em]">NeoBreed Intelligence Core Synthesis</span>
-              </div>
-
-              {error && (
-                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-[10px] text-red-400 font-bold uppercase tracking-widest animate-in fade-in slide-in-from-top-2">
-                  Hata: {error}
-                </div>
-              )}
-
-              <button onClick={() => setPreviewUrl(null)} className="text-[10px] font-bold text-white/40 hover:text-white uppercase tracking-widest transition-colors">Dosyayı Değiştir</button>
+              <button onClick={() => setPreviewUrl(null)} className="absolute top-8 right-8 z-40 px-4 py-2 bg-black/40 backdrop-blur-md rounded-full text-[10px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-all border border-white/10">Dosyayı Değiştir</button>
             </div>
           ) : (
-            <div className="text-center space-y-8">
+            <div className="text-center space-y-8 relative z-20">
               <div className="w-24 h-24 mx-auto bg-white/5 rounded-[32px] flex items-center justify-center text-white/20 group-hover:bg-white/10 transition-colors">
                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
               </div>
@@ -944,7 +882,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
           )}
           
           {/* Controls Overlay */}
-          <div className="absolute bottom-8 left-8 right-8 p-1 apple-blur bg-white/5 rounded-[32px] border border-white/10 flex items-center justify-between">
+          <div className="absolute bottom-8 left-8 right-8 p-1 apple-blur bg-white/5 rounded-[32px] border border-white/10 flex items-center justify-between z-30">
              <div className="px-6 flex items-center gap-4">
                <label className="text-white/40 text-[9px] font-bold uppercase tracking-widest">High Definition</label>
                <input type="checkbox" checked={highRes} onChange={() => setHighRes(!highRes)} className="w-4 h-4 rounded-full accent-nexus-mint bg-white/5" />
@@ -958,6 +896,86 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
              </button>
           </div>
         </div>
+
+        {/* Parameter Inputs & Status - Moved outside for better layout */}
+        <AnimatePresence>
+          {previewUrl && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="space-y-8"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-6 bg-white rounded-[40px] p-8 border border-border-subtle shadow-soft">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2.5">
+                      <label className="text-[9px] font-black text-text-secondary uppercase tracking-[0.2em] px-1">Cinsiyet</label>
+                      <select 
+                        value={options.gender} 
+                        onChange={e => setOptions({...options, gender: e.target.value})}
+                        className="w-full bg-slate-50 border-none rounded-2xl text-[11px] text-text-primary font-black uppercase tracking-widest focus:ring-2 focus:ring-primary transition-all p-4"
+                      >
+                        <option value="unknown">Belirsiz</option>
+                        <option value="boy">Erkek</option>
+                        <option value="girl">Kız</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2.5">
+                      <label className="text-[9px] font-black text-text-secondary uppercase tracking-[0.2em] px-1">İfade</label>
+                      <select 
+                        value={options.expression} 
+                        onChange={e => setOptions({...options, expression: e.target.value})}
+                        className="w-full bg-slate-50 border-none rounded-2xl text-[11px] text-text-primary font-black uppercase tracking-widest focus:ring-2 focus:ring-primary transition-all p-4"
+                      >
+                        <option value="neutral">Doğal</option>
+                        <option value="smiling">Gülümseyen</option>
+                        <option value="sleeping">Uykuda</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="space-y-2.5">
+                    <label className="text-[9px] font-black text-text-secondary uppercase tracking-[0.2em] px-1">Görsel Stil</label>
+                    <select 
+                      value={options.style} 
+                      onChange={e => setOptions({...options, style: e.target.value})}
+                      className="w-full bg-slate-50 border-none rounded-2xl text-[11px] text-text-primary font-black uppercase tracking-widest focus:ring-2 focus:ring-primary transition-all p-4"
+                    >
+                      <option value="hyper-realistic">Hiper-Gerçekçi</option>
+                      <option value="artistic">Sanatsal Portre</option>
+                      <option value="3d-render">3D Medikal Render</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-6 bg-white rounded-[40px] p-8 border border-border-subtle shadow-soft">
+                  <div className="space-y-2.5">
+                    <label className="text-[9px] font-black text-text-secondary uppercase tracking-[0.2em] px-1">Medikal Notlar (Opsiyonel)</label>
+                    <textarea 
+                      value={options.notes} 
+                      onChange={e => setOptions({...options, notes: e.target.value})}
+                      placeholder="Örn: Burun yapısına odaklan..."
+                      className="w-full bg-slate-50 border-none rounded-2xl text-[11px] text-text-primary font-black focus:ring-2 focus:ring-primary transition-all h-32 resize-none p-4 placeholder:text-text-secondary/30"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4 px-8 py-4 bg-primary/5 rounded-full border border-primary/10">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_8px_#10b981]"></div>
+                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.25em]">NeoBreed Intelligence Core Synthesis Active</span>
+                </div>
+
+                {error && (
+                  <div className="px-6 py-4 bg-red-50 text-red-500 rounded-2xl text-[10px] font-bold uppercase tracking-widest border border-red-100">
+                    Hata: {error}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* History Grid */}
@@ -1217,7 +1235,7 @@ const MarkerPoint: React.FC<MarkerPointProps> = ({ x, y, label, value, onValueCh
   return (
     <div 
       ref={markerRef}
-      className={`absolute -translate-x-1/2 -translate-y-1/2 group z-40 ${isDragging ? 'cursor-grabbing' : dragEnabled ? 'cursor-grab' : 'cursor-pointer'}`}
+      className={`absolute -translate-x-1/2 -translate-y-1/2 group z-40 pointer-events-auto ${isDragging ? 'cursor-grabbing' : dragEnabled ? 'cursor-grab' : 'cursor-pointer'}`}
       style={{ left: x, top: y }}
       onMouseDown={handleMouseDown}
     >
