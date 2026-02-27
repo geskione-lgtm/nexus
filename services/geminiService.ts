@@ -45,15 +45,16 @@ export async function generateBabyFace(
       Based on the following biometric measurements, create a HIGHLY DETAILED, ARTISTIC DESCRIPTION of how this baby's face would look in real life.
       
       Measurements (Anatomical Constraints):
-      - Head Height: ${measurements.a_mm}mm
-      - Nose Length: ${measurements.b_mm}mm
-      - Forehead Height: ${measurements.c_mm}mm
-      - Midface Height: ${measurements.d_mm}mm
-      - Lower Face Height: ${measurements.e_mm}mm
-      - Mouth Width: ${measurements.f_mm}mm
-      - OFD (Occipitofrontal Diameter): ${measurements.g_mm}mm
-      - BPD (Biparietal Diameter): ${measurements.h_mm}mm
-      - HC (Head Circumference): ${measurements.i_mm}mm
+      - Fromen (Forehead): ${measurements.fromen_mm}mm
+      - Burun (Nose): ${measurements.burun_mm}mm
+      - Göztepe (Eye Brow area): ${measurements.goztepe_mm}mm
+      - BiocÇap (Biocular Diameter): ${measurements.bioccap_mm}mm
+      - Çene (Chin): ${measurements.cene_mm}mm
+      - Ağızçapı (Mouth Diameter): ${measurements.agizcapi_mm}mm
+      - Önarka baş (OFD): ${measurements.onarka_bas_mm}mm
+      - BPD (Biparietal Diameter): ${measurements.bpd_mm}mm
+      - HC (Head Circumference): ${measurements.hc_mm}mm
+      - Göz (Eye): ${measurements.goz_mm}mm
       
       Context:
       - Gender: ${options?.gender || 'unknown'}

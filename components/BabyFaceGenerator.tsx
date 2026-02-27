@@ -25,15 +25,16 @@ import {
 } from 'lucide-react';
 
 interface Measurements {
-  a_mm: number | null;
-  b_mm: number | null;
-  c_mm: number | null;
-  d_mm: number | null;
-  e_mm: number | null;
-  f_mm: number | null;
-  g_mm: number | null;
-  h_mm: number | null;
-  i_mm: number | null;
+  fromen_mm: number | null;
+  burun_mm: number | null;
+  goztepe_mm: number | null;
+  bioccap_mm: number | null;
+  cene_mm: number | null;
+  agizcapi_mm: number | null;
+  onarka_bas_mm: number | null;
+  bpd_mm: number | null;
+  hc_mm: number | null;
+  goz_mm: number | null;
   unit: string;
   createdAt: string | null;
 }
@@ -57,11 +58,11 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
   const [show3DModal, setShow3DModal] = useState(false);
   const [viewingProof, setViewingProof] = useState<ScanResult | null>(null);
   const [measurements, setMeasurements] = useState<Measurements>({
-    a_mm: null, b_mm: null, c_mm: null, d_mm: null, e_mm: null, f_mm: null, g_mm: null, h_mm: null, i_mm: null,
+    fromen_mm: null, burun_mm: null, goztepe_mm: null, bioccap_mm: null, cene_mm: null, agizcapi_mm: null, onarka_bas_mm: null, bpd_mm: null, hc_mm: null, goz_mm: null,
     unit: 'mm',
     createdAt: null
   });
-  const [currentStep, setCurrentStep] = useState<keyof Omit<Measurements, 'unit' | 'createdAt'>>('a_mm');
+  const [currentStep, setCurrentStep] = useState<keyof Omit<Measurements, 'unit' | 'createdAt'>>('fromen_mm');
   const [dragEnabled, setDragEnabled] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -83,15 +84,16 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
   }, []);
 
   const steps = [
-    { id: 'a_mm', label: 'a: Tepe–Çene', view: 'front' },
-    { id: 'b_mm', label: 'b: Burun', view: 'profile' },
-    { id: 'c_mm', label: 'c: Alın', view: 'front' },
-    { id: 'd_mm', label: 'd: Göz Hattı / Orta Yüz Referansı', view: 'front' },
-    { id: 'e_mm', label: 'e: Alt Dudak–Çene', view: 'front' },
-    { id: 'f_mm', label: 'f: Ağız Genişliği', view: 'front' },
-    { id: 'g_mm', label: 'g: Ön–Arka Kafa (OFD)', view: 'top' },
-    { id: 'h_mm', label: 'h: Sağ–Sol Kafa (BPD)', view: 'top' },
-    { id: 'i_mm', label: 'i: Baş Çevresi (HC)', view: 'top' },
+    { id: 'fromen_mm', label: 'Fromen', view: 'front' },
+    { id: 'burun_mm', label: 'Burun', view: 'profile' },
+    { id: 'goztepe_mm', label: 'Göztepe', view: 'front' },
+    { id: 'bioccap_mm', label: 'BiocÇap', view: 'front' },
+    { id: 'cene_mm', label: 'Çene', view: 'front' },
+    { id: 'agizcapi_mm', label: 'Ağızçapı', view: 'front' },
+    { id: 'onarka_bas_mm', label: 'Önarka baş', view: 'top' },
+    { id: 'bpd_mm', label: 'BPD', view: 'top' },
+    { id: 'hc_mm', label: 'HC', view: 'top' },
+    { id: 'goz_mm', label: 'Göz', view: 'front' },
   ] as const;
 
   useEffect(() => {
@@ -116,11 +118,11 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
   }, []);
 
   const handleSave3D = () => {
-    const required = ['a_mm', 'g_mm', 'h_mm', 'i_mm'];
+    const required = ['fromen_mm', 'burun_mm', 'onarka_bas_mm', 'bpd_mm', 'hc_mm'];
     const missing = required.filter(key => measurements[key as keyof Measurements] === null);
     
     if (missing.length > 0) {
-      const labels = missing.map(m => m.split('_')[0]).join(', ');
+      const labels = missing.map(m => steps.find(s => s.id === m)?.label).join(', ');
       alert(`Lütfen önce zorunlu ölçümleri girin: ${labels}`);
       return;
     }
@@ -184,7 +186,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
   const handleGenerate = async (mode: 'ultrasound' | 'measurements') => {
     if (mode === 'ultrasound' && !previewUrl) return;
-    if (mode === 'measurements' && !measurements.a_mm) return;
+    if (mode === 'measurements' && !measurements.fromen_mm) return;
     
     setIsGenerating(true);
     setError(null);
@@ -325,17 +327,6 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                     <div className="flex items-center justify-between">
                       <h4 className="text-white font-black text-lg tracking-tighter">Biyometrik Veri</h4>
                       <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => {
-                            setMeasurements({
-                              a_mm: 124.5, b_mm: 18.2, c_mm: 42.0, d_mm: 68.4, e_mm: 22.1, f_mm: 34.5, g_mm: 98.2, h_mm: 84.5, i_mm: 284.2,
-                              unit: 'mm', createdAt: new Date().toISOString()
-                            });
-                          }}
-                          className="px-2 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-[8px] font-black text-white/60 uppercase tracking-widest transition-all"
-                        >
-                          Demo Doldur
-                        </button>
                         <div className="px-3 py-1 bg-primary/20 rounded-lg text-[10px] font-black text-primary uppercase tracking-wider border border-primary/30">
                           {steps.filter(s => measurements[s.id as keyof Measurements] !== null).length}/{steps.length}
                         </div>
@@ -488,56 +479,58 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
                             return (
                               <div key={step.id} className="absolute inset-0 pointer-events-none">
-                                {step.id === 'a_mm' && (
+                                {step.id === 'fromen_mm' && (
+                                  <MarkerPoint x="50%" y="25%" label="Fromen (Alın)" onValueChange={(v) => setMeasurements(p => ({...p, fromen_mm: v}))} value={measurements.fromen_mm} dragEnabled={dragEnabled} />
+                                )}
+                                {step.id === 'burun_mm' && (
+                                  <MarkerPoint x="8%" y="56%" label="Burun Ucu" onValueChange={(v) => setMeasurements(p => ({...p, burun_mm: v}))} value={measurements.burun_mm} dragEnabled={dragEnabled} />
+                                )}
+                                {step.id === 'goztepe_mm' && (
+                                  <MarkerPoint x="50%" y="35%" label="Göztepe" onValueChange={(v) => setMeasurements(p => ({...p, goztepe_mm: v}))} value={measurements.goztepe_mm} dragEnabled={dragEnabled} />
+                                )}
+                                {step.id === 'bioccap_mm' && (
                                   <>
-                                    <div className="absolute top-[10%] bottom-[90%] left-1/2 -translate-x-1/2 w-px bg-nexus-mint/30 border-l border-dashed border-nexus-mint/50"></div>
-                                    <MarkerPoint x="50%" y="10%" label="Tepe (Vertex)" onValueChange={(v) => setMeasurements(p => ({...p, a_mm: v}))} value={measurements.a_mm} dragEnabled={dragEnabled} />
-                                    <MarkerPoint x="50%" y="90%" label="Çene (Menton)" onValueChange={(v) => setMeasurements(p => ({...p, a_mm: v}))} value={measurements.a_mm} dragEnabled={dragEnabled} />
+                                    <MarkerPoint x="35%" y="45%" label="BiocÇap (Sol)" onValueChange={(v) => setMeasurements(p => ({...p, bioccap_mm: v}))} value={measurements.bioccap_mm} dragEnabled={dragEnabled} />
+                                    <MarkerPoint x="65%" y="45%" label="BiocÇap (Sağ)" onValueChange={(v) => setMeasurements(p => ({...p, bioccap_mm: v}))} value={measurements.bioccap_mm} dragEnabled={dragEnabled} />
                                   </>
                                 )}
-                                {step.id === 'b_mm' && (
-                                  <MarkerPoint x="8%" y="56%" label="Burun Ucu" onValueChange={(v) => setMeasurements(p => ({...p, b_mm: v}))} value={measurements.b_mm} dragEnabled={dragEnabled} />
+                                {step.id === 'cene_mm' && (
+                                  <MarkerPoint x="50%" y="90%" label="Çene" onValueChange={(v) => setMeasurements(p => ({...p, cene_mm: v}))} value={measurements.cene_mm} dragEnabled={dragEnabled} />
                                 )}
-                                {step.id === 'c_mm' && (
-                                  <MarkerPoint x="50%" y="30%" label="Alın" onValueChange={(v) => setMeasurements(p => ({...p, c_mm: v}))} value={measurements.c_mm} dragEnabled={dragEnabled} />
+                                {step.id === 'agizcapi_mm' && (
+                                  <MarkerPoint x="50%" y="75%" label="Ağızçapı" onValueChange={(v) => setMeasurements(p => ({...p, agizcapi_mm: v}))} value={measurements.agizcapi_mm} dragEnabled={dragEnabled} />
                                 )}
-                                {step.id === 'd_mm' && (
-                                  <MarkerPoint x="50%" y="58%" label="Göz Hattı / Orta Yüz" onValueChange={(v) => setMeasurements(p => ({...p, d_mm: v}))} value={measurements.d_mm} dragEnabled={dragEnabled} />
-                                )}
-                                {step.id === 'e_mm' && (
-                                  <>
-                                    <MarkerPoint x="50%" y="78%" label="Alt Dudak" onValueChange={(v) => setMeasurements(p => ({...p, e_mm: v}))} value={measurements.e_mm} dragEnabled={dragEnabled} />
-                                    <MarkerPoint x="50%" y="90%" label="Çene" onValueChange={(v) => setMeasurements(p => ({...p, e_mm: v}))} value={measurements.e_mm} dragEnabled={dragEnabled} />
-                                  </>
-                                )}
-                                {step.id === 'f_mm' && (
-                                  <MarkerPoint x="50%" y="72.5%" label="Ağız Merkezi (Stomion)" onValueChange={(v) => setMeasurements(p => ({...p, f_mm: v}))} value={measurements.f_mm} dragEnabled={dragEnabled} />
-                                )}
-                                {step.id === 'g_mm' && (
+                                {step.id === 'onarka_bas_mm' && (
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="w-px h-[68%] bg-nexus-mint shadow-[0_0_10px_#10b981] relative">
-                                      <MarkerPoint x="50%" y="16%" label="Ön (OFD)" onValueChange={(v) => setMeasurements(p => ({...p, g_mm: v}))} value={measurements.g_mm} dragEnabled={dragEnabled} />
-                                      <MarkerPoint x="50%" y="84%" label="Arka (OFD)" onValueChange={(v) => setMeasurements(p => ({...p, g_mm: v}))} value={measurements.g_mm} dragEnabled={dragEnabled} />
+                                      <MarkerPoint x="50%" y="16%" label="Ön (Önarka baş)" onValueChange={(v) => setMeasurements(p => ({...p, onarka_bas_mm: v}))} value={measurements.onarka_bas_mm} dragEnabled={dragEnabled} />
+                                      <MarkerPoint x="50%" y="84%" label="Arka (Önarka baş)" onValueChange={(v) => setMeasurements(p => ({...p, onarka_bas_mm: v}))} value={measurements.onarka_bas_mm} dragEnabled={dragEnabled} />
                                     </div>
                                   </div>
                                 )}
-                                {step.id === 'h_mm' && (
+                                {step.id === 'bpd_mm' && (
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="w-[60%] h-px bg-nexus-mint shadow-[0_0_10px_#10b981] relative">
-                                      <MarkerPoint x="20%" y="50%" label="Sol (BPD)" onValueChange={(v) => setMeasurements(p => ({...p, h_mm: v}))} value={measurements.h_mm} dragEnabled={dragEnabled} />
-                                      <MarkerPoint x="80%" y="50%" label="Sağ (BPD)" onValueChange={(v) => setMeasurements(p => ({...p, h_mm: v}))} value={measurements.h_mm} dragEnabled={dragEnabled} />
+                                      <MarkerPoint x="20%" y="50%" label="Sol (BPD)" onValueChange={(v) => setMeasurements(p => ({...p, bpd_mm: v}))} value={measurements.bpd_mm} dragEnabled={dragEnabled} />
+                                      <MarkerPoint x="80%" y="50%" label="Sağ (BPD)" onValueChange={(v) => setMeasurements(p => ({...p, bpd_mm: v}))} value={measurements.bpd_mm} dragEnabled={dragEnabled} />
                                     </div>
                                   </div>
                                 )}
-                                {step.id === 'i_mm' && (
+                                {step.id === 'hc_mm' && (
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <div 
                                       className="absolute border-2 border-dashed border-nexus-mint rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.2)]"
                                       style={{ left: '50%', top: '50%', width: '60%', height: '68%', transform: 'translate(-50%, -50%)' }}
                                     >
-                                      <MarkerPoint x="50%" y="0%" label="HC (Baş Çevresi)" onValueChange={(v) => setMeasurements(p => ({...p, i_mm: v}))} value={measurements.i_mm} dragEnabled={dragEnabled} />
+                                      <MarkerPoint x="50%" y="0%" label="HC (Baş Çevresi)" onValueChange={(v) => setMeasurements(p => ({...p, hc_mm: v}))} value={measurements.hc_mm} dragEnabled={dragEnabled} />
                                     </div>
                                   </div>
+                                )}
+                                {step.id === 'goz_mm' && (
+                                  <>
+                                    <MarkerPoint x="40%" y="48%" label="Göz (Sol)" onValueChange={(v) => setMeasurements(p => ({...p, goz_mm: v}))} value={measurements.goz_mm} dragEnabled={dragEnabled} />
+                                    <MarkerPoint x="60%" y="48%" label="Göz (Sağ)" onValueChange={(v) => setMeasurements(p => ({...p, goz_mm: v}))} value={measurements.goz_mm} dragEnabled={dragEnabled} />
+                                  </>
                                 )}
                               </div>
                             );
@@ -566,7 +559,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                       <div className="w-8 h-8 rounded-xl bg-black flex items-center justify-center">
                         <Activity className="w-4 h-4 text-white" />
                       </div>
-                      <p className="text-[11px] font-black text-black uppercase tracking-[0.25em]">Data Entry Panel</p>
+                      <p className="text-[11px] font-black text-black uppercase tracking-[0.25em]">Biyometrik Veri Girişi</p>
                     </div>
                     
                     <div className="space-y-10">
@@ -628,22 +621,22 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                       </div>
                     </div>
 
-                    <div className="p-10 bg-text-primary rounded-[48px] border border-white/5 space-y-6 relative overflow-hidden group">
-                      <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <div className="flex items-center gap-4 relative z-10">
-                        <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 shadow-inner">
-                          <Settings2 className="w-6 h-6 text-primary" />
-                        </div>
-                        <p className="text-[12px] font-black text-white uppercase tracking-[0.25em]">Kılavuz</p>
+                  <div className="p-10 bg-text-primary rounded-[48px] border border-white/5 space-y-6 relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="flex items-center gap-4 relative z-10">
+                      <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 shadow-inner">
+                        <Settings2 className="w-6 h-6 text-primary" />
                       </div>
-                      <p className="text-[12px] leading-relaxed text-white/40 font-medium relative z-10">
-                        Ölçüm yapmak için model üzerindeki hedef noktaları kullanın. Sürükleme modu aktifken noktaları dikey yönde hareket ettirerek <span className="text-primary font-black">0.1mm</span> hassasiyetle ayar yapabilirsiniz.
-                      </p>
-                      <div className="pt-4 flex items-center gap-3 relative z-10">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
-                        <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">AI Assistant Ready</span>
-                      </div>
+                      <p className="text-[12px] font-black text-white uppercase tracking-[0.25em]">Klinik Kılavuz</p>
                     </div>
+                    <p className="text-[12px] leading-relaxed text-white/40 font-medium relative z-10">
+                      Yüz rekonstrüksiyonu için medikal rapordaki biyometrik ölçümleri girin. Sürükleme modu aktifken noktaları dikey yönde hareket ettirerek <span className="text-primary font-black">0.1mm</span> hassasiyetle ayar yapabilirsiniz.
+                    </p>
+                    <div className="pt-4 flex items-center gap-3 relative z-10">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
+                      <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">Biyometrik Analiz Hazır</span>
+                    </div>
+                  </div>
                   </div>
                 </div>
             </div>
@@ -797,7 +790,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                           setLastGeneratedScan(null); 
                           setPreviewUrl(null); 
                           setMeasurements({
-                            a_mm: null, b_mm: null, c_mm: null, d_mm: null, e_mm: null, f_mm: null, g_mm: null, h_mm: null, i_mm: null,
+                            fromen_mm: null, burun_mm: null, goztepe_mm: null, bioccap_mm: null, cene_mm: null, agizcapi_mm: null, onarka_bas_mm: null, bpd_mm: null, hc_mm: null, goz_mm: null,
                             unit: 'mm',
                             createdAt: null
                           });
@@ -1026,10 +1019,10 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                       </div>
 
                       {/* Secondary Action: 3D Measurements */}
-                      <div className={`p-6 rounded-[32px] border transition-all flex flex-col gap-6 ${measurements.a_mm ? 'bg-primary/10 border-primary/20 shadow-[0_0_30px_rgba(16,185,129,0.05)]' : 'bg-white/5 border-white/5'}`}>
+                      <div className={`p-6 rounded-[32px] border transition-all flex flex-col gap-6 ${measurements.fromen_mm ? 'bg-primary/10 border-primary/20 shadow-[0_0_30px_rgba(16,185,129,0.05)]' : 'bg-white/5 border-white/5'}`}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${measurements.a_mm ? 'bg-primary text-white shadow-md shadow-primary/10' : 'bg-white/10 text-white/20'}`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${measurements.fromen_mm ? 'bg-primary text-white shadow-md shadow-primary/10' : 'bg-white/10 text-white/20'}`}>
                               <Activity className="w-5 h-5" />
                             </div>
                             <div className="text-left">
@@ -1040,14 +1033,14 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                           <div className="flex gap-2">
                             <button 
                               onClick={() => setShow3DModal(true)}
-                              className={`px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${measurements.a_mm ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-white text-black hover:bg-slate-100'}`}
+                              className={`px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${measurements.fromen_mm ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-white text-black hover:bg-slate-100'}`}
                             >
-                              {measurements.a_mm ? 'DÜZENLE' : 'VERİ GİR'}
+                              {measurements.fromen_mm ? 'DÜZENLE' : 'VERİ GİR'}
                             </button>
-                            {measurements.a_mm && (
+                            {measurements.fromen_mm && (
                               <button 
                                 onClick={() => setMeasurements({
-                                  a_mm: null, b_mm: null, c_mm: null, d_mm: null, e_mm: null, f_mm: null, g_mm: null, h_mm: null, i_mm: null,
+                                  fromen_mm: null, burun_mm: null, goztepe_mm: null, bioccap_mm: null, cene_mm: null, agizcapi_mm: null, onarka_bas_mm: null, bpd_mm: null, hc_mm: null, goz_mm: null,
                                   unit: 'mm',
                                   createdAt: null
                                 })}
@@ -1060,7 +1053,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                           </div>
                         </div>
 
-                        {measurements.a_mm && !isGenerating && (
+                        {measurements.fromen_mm && !isGenerating && (
                           <button 
                             onClick={() => handleGenerate('measurements')}
                             className="w-full py-4 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all shadow-xl shadow-black/10 flex items-center justify-center gap-3"
@@ -1282,7 +1275,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                                 <div className="w-5 h-5 border-2 border-primary rounded-full bg-primary/20 shadow-[0_0_20px_#10b981]"></div>
                                 <div className="h-24 w-px bg-gradient-to-b from-primary to-transparent"></div>
                                 <div className="px-4 py-2 bg-primary text-white text-[10px] font-black rounded-xl shadow-xl border border-white/20">
-                                  VERTEX: {viewingProof.measurements?.a_mm}mm
+                                  FROMEN: {viewingProof.measurements?.fromen_mm}mm
                                 </div>
                               </div>
 
