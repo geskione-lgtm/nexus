@@ -135,8 +135,8 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
               </div>
             }
           >
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-[400px] w-full relative">
+              <ResponsiveContainer width="100%" height={400} minWidth={0}>
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorScans" x1="0" y1="0" x2="0" y2="1">
