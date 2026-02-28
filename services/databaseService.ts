@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient'
-import { User, Patient, ScanResult, UserRole } from '../types'
+import { User, Patient, ScanResult, UserRole, ReconstructionProof } from '../types'
 
 /**
  * Converts various date inputs to an ISO date string (YYYY-MM-DD) suitable for Postgres DATE columns.
@@ -277,7 +277,7 @@ export const DatabaseService = {
       patientId: s.patient_id,
       ultrasoundUrl: s.ultrasound_url,
       babyFaceUrl: s.baby_face_url,
-
+      scale_mm_per_px: s.scale_mm_per_px,
       // UI formatting only
       createdAt: s.created_at ? toTRDateString(s.created_at) || '' : ''
     }))
@@ -292,12 +292,64 @@ export const DatabaseService = {
         {
           patient_id: scan.patientId,
           ultrasound_url: scan.ultrasoundUrl,
-          baby_face_url: scan.babyFaceUrl
+          baby_face_url: scan.babyFaceUrl,
+          scale_mm_per_px: scan.scale_mm_per_px
         }
       ])
       .select()
+      .single()
 
     if (error) throw error
-    return data ? data[0] : null
+    return data
+  },
+
+  async saveReconstructionProof(proof: Omit<ReconstructionProof, 'id' | 'created_at'>): Promise<any> {
+    if (!isSupabaseConfigured()) throw new Error('Supabase yapılandırılmamış.')
+
+    try {
+      const { data, error } = await supabase
+        .from('reconstruction_proofs')
+        .insert([
+          {
+            patient_id: proof.patient_id,
+            clinic_id: proof.clinic_id,
+            scan_result_id: proof.scan_result_id,
+            model_version: proof.model_version,
+            landmarks: proof.landmarks,
+            deviations_px: proof.deviations_px,
+            deviations_mm: proof.deviations_mm,
+            scale_mm_per_px: proof.scale_mm_per_px,
+            scores: proof.scores
+          }
+        ])
+        .select()
+        .single()
+
+      if (error) {
+        console.warn('Reconstruction proof save failed (non-critical):', error.message);
+        return null;
+      }
+      return data
+    } catch (err) {
+      console.warn('Reconstruction proof save error (non-critical):', err);
+      return null;
+    }
+  },
+
+  async getReconstructionProof(scanId: string): Promise<ReconstructionProof | null> {
+    if (!isSupabaseConfigured()) return null
+
+    const { data, error } = await supabase
+      .from('reconstruction_proofs')
+      .select('*')
+      .eq('scan_result_id', scanId)
+      .maybeSingle()
+
+    if (error) {
+      console.error('Error fetching reconstruction proof:', error)
+      return null
+    }
+
+    return data
   }
 }

@@ -38,4 +38,29 @@ export interface ScanResult {
   babyFaceUrl: string;
   measurements?: any;
   createdAt: string;
+  isDualView?: boolean;
+  scale_mm_per_px?: number | null;
+}
+
+export interface ReconstructionProof {
+  id: string;
+  created_at: string;
+  clinic_id?: string;
+  patient_id: string;
+  scan_result_id: string;
+  model_version: string;
+  landmarks: {
+    ultrasound: Record<string, { x: number; y: number }>;
+    generated: Record<string, { x: number; y: number }>;
+  };
+  deviations_px: Record<string, number>;
+  deviations_mm?: Record<string, number>;
+  scale_mm_per_px?: number | null;
+  scores: {
+    final: number;
+    landmark: number;
+    contour: number;
+    angle: number;
+  };
+  input_measurements: any;
 }

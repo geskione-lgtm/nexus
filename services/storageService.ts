@@ -36,12 +36,17 @@ export const StorageService = {
             const response = await fetch(proxyUrl);
             if (!response.ok) {
               const errorText = await response.text();
+              console.error("Proxy fetch failed:", response.status, errorText);
               throw new Error(`Proxy fetch failed (${response.status}): ${errorText || response.statusText}`);
             }
             blob = await response.blob();
             mime = blob.type || 'image/png';
+            console.log("Proxy fetch successful. Mime:", mime);
           } catch (fetchErr: any) {
             console.error("StorageService: Proxy fetch error:", fetchErr);
+            if (fetchErr.message === 'Failed to fetch') {
+              throw new Error(`Görsel indirilemedi (Sunucu Hatası: Failed to fetch). Lütfen sunucunun çalıştığından emin olun.`);
+            }
             throw new Error(`Görsel indirilemedi (Proxy Hatası): ${fetchErr.message}`);
           }
         } else {

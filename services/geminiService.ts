@@ -24,6 +24,8 @@ export async function generateBabyFace(
   if (mode === 'ultrasound' && ultrasoundBase64) {
     analysisPrompt = `
       You are a world-class medical imaging expert and portrait artist. 
+      ${options?.dualView ? 'CRITICAL INSTRUCTION: You MUST generate a prompt for a SIDE-BY-SIDE DUAL VIEW (SPLIT-SCREEN) showing the SAME baby from TWO angles: one full frontal and one profile. This is mandatory.' : ''}
+      
       Analyze this ultrasound image to create a HIGHLY DETAILED, ARTISTIC DESCRIPTION of how this baby's face would look in real life.
       
       Focus on the visual features visible in the scan: facial proportions, nose shape, mouth position, and forehead contour.
@@ -35,13 +37,16 @@ export async function generateBabyFace(
       
       TASK:
       Write a 3-sentence master prompt for an AI image generator (like Flux). 
-      Focus on facial features, skin texture, lighting, and anatomical accuracy. 
+      ${options?.dualView ? 'The prompt MUST start with "A side-by-side split-view composition showing two angles of the same baby: one full frontal portrait and one sharp profile view." followed by details.' : 'Focus on facial features, skin texture, lighting, and anatomical accuracy.'}
       Avoid medical jargon. Make it sound like a professional photography description.
       DO NOT mention it's an ultrasound. Describe a real baby.
+      ${options?.dualView ? 'REMINDER: The final image MUST be a dual-view split screen.' : ''}
     `;
   } else if (mode === 'measurements' && measurements) {
     analysisPrompt = `
       You are a world-class medical imaging expert and portrait artist. 
+      ${options?.dualView ? 'CRITICAL INSTRUCTION: You MUST generate a prompt for a SIDE-BY-SIDE DUAL VIEW (SPLIT-SCREEN) showing the SAME baby from TWO angles: one full frontal and one profile. This is mandatory.' : ''}
+      
       Based on the following biometric measurements, create a HIGHLY DETAILED, ARTISTIC DESCRIPTION of how this baby's face would look in real life.
       
       Measurements (Anatomical Constraints):
@@ -63,9 +68,10 @@ export async function generateBabyFace(
       
       TASK:
       Write a 3-sentence master prompt for an AI image generator (like Flux). 
-      Focus on facial features, skin texture, lighting, and anatomical accuracy strictly following the measurements. 
+      ${options?.dualView ? 'The prompt MUST start with "A side-by-side split-view composition showing two angles of the same baby: one full frontal portrait and one sharp profile view." followed by details.' : 'Focus on facial features, skin texture, lighting, and anatomical accuracy strictly following the measurements.'}
       Avoid medical jargon. Make it sound like a professional photography description.
       Describe a real baby.
+      ${options?.dualView ? 'REMINDER: The final image MUST be a dual-view split screen.' : ''}
     `;
   } else {
     throw new Error("Invalid generation mode or missing data");
@@ -124,20 +130,30 @@ export async function generateBabyFace(
   // 2. PHASE: Send Master Prompt to Replicate
   console.log("Phase 3: Sending Master Prompt to Replicate (Flux)...");
   
-  const response = await fetch('/api/generate-baby', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      prompt: masterPrompt,
-      image: mode === 'ultrasound' ? ultrasoundBase64 : null
-    })
-  });
+  try {
+    const response = await fetch('/api/generate-baby', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: masterPrompt,
+        image: mode === 'ultrasound' ? ultrasoundBase64 : null
+      })
+    });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Replicate generation failed');
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Replicate API Error:", error);
+      throw new Error(error.error || 'Replicate generation failed');
+    }
+
+    const data = await response.json();
+    console.log("Phase 3 complete. Image received.");
+    return data.image;
+  } catch (err: any) {
+    console.error("Fetch error in Phase 3:", err);
+    if (err.message === 'Failed to fetch') {
+      throw new Error('Sunucuya bağlanılamadı (Failed to fetch). Lütfen internet bağlantınızı kontrol edin veya sunucunun çalıştığından emin olun.');
+    }
+    throw err;
   }
-
-  const data = await response.json();
-  return data.image;
 }

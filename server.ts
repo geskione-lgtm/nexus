@@ -17,14 +17,17 @@ async function startServer() {
 
   // Replicate Proxy Endpoint
   app.post("/api/generate-baby", async (req, res) => {
+    console.log("POST /api/generate-baby - Request received");
     try {
       const { prompt, image } = req.body;
 
       if (!process.env.REPLICATE_API_TOKEN) {
+        console.error("REPLICATE_API_TOKEN is missing in environment");
         return res.status(500).json({ error: "REPLICATE_API_TOKEN is missing" });
       }
 
       console.log("Calling Replicate with prompt:", prompt);
+      const startTime = Date.now();
 
       // Using Flux-Dev or similar high-quality model
       // Note: Removed image_prompt as it's not supported by the base flux-dev model
@@ -41,7 +44,7 @@ async function startServer() {
         }
       );
 
-      console.log("Replicate output received. Type:", typeof output, "IsArray:", Array.isArray(output));
+      console.log("Replicate output received in", (Date.now() - startTime) / 1000, "seconds. Type:", typeof output, "IsArray:", Array.isArray(output));
       if (output) {
         console.log("Output keys:", Object.keys(output));
       }

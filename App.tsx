@@ -166,8 +166,14 @@ const App: React.FC = () => {
               setIsSyncing(false);
             }}
             onAddScan={async (s) => {
+              // Scan is already saved in BabyFaceGenerator
+              // We just need to refresh the data
               setIsSyncing(true);
-              try { await DatabaseService.saveScan(s); checkUserStatus(); } catch(e: any) { alert(e.message); }
+              try { 
+                await checkUserStatus(); 
+              } catch(e: any) { 
+                console.error("Refresh error:", e);
+              }
               setIsSyncing(false);
             }}
             scanHistory={scanHistory}
