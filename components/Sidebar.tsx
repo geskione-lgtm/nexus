@@ -1,33 +1,55 @@
 
 import React from 'react';
-import { HeartPulse, LayoutDashboard, Users, Package, TrendingUp, UserCircle, Microscope, LogOut } from 'lucide-react';
+import { HeartPulse, LayoutDashboard, Users, Package, TrendingUp, UserCircle, Microscope, LogOut, X } from 'lucide-react';
 import { User, UserRole } from '../types';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface SidebarProps { 
   user: User; 
   activeTab: string; 
   onTabChange: (tab: string) => void; 
-  onLogout: () => void; 
+  onLogout: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogout, isOpen, onClose }) => {
   const isAdmin = user.role === UserRole.SUPER_ADMIN;
 
   return (
-    <aside className="w-72 h-full bg-surface border-r border-border-subtle flex flex-col z-50">
-      {/* Brand */}
-      <div className="p-8 mb-4">
-        <div className="flex items-center gap-3 group cursor-pointer">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-300">
-            <HeartPulse className="w-6 h-6 text-white" />
+    <>
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 w-72 h-full bg-surface border-r border-border-subtle flex flex-col z-[70] transition-transform duration-500 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        {/* Brand */}
+        <div className="p-8 mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-3 group cursor-pointer">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-300">
+              <HeartPulse className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold tracking-tight text-text-primary leading-none">NeoBreed</span>
+              <span className="text-[10px] font-semibold text-primary uppercase tracking-wider mt-1">Intelligence</span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight text-text-primary leading-none">NeoBreed</span>
-            <span className="text-[10px] font-semibold text-primary uppercase tracking-wider mt-1">Intelligence</span>
-          </div>
+          <button onClick={onClose} className="lg:hidden p-2 hover:bg-slate-100 rounded-full">
+            <X className="w-5 h-5 text-text-secondary" />
+          </button>
         </div>
-      </div>
 
       {/* Nav Groups */}
       <div className="flex-1 px-4 space-y-8">
@@ -111,6 +133,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogou
         </div>
       </div>
     </aside>
+    </>
   );
 };
 

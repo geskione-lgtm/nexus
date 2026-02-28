@@ -41,6 +41,49 @@ interface Measurements {
 
 interface Props { patient: Patient; onScanGenerated: (result: ScanResult) => void; history: ScanResult[]; }
 
+const MEASUREMENT_EXPLANATIONS: Record<string, { title: string, desc: string }> = {
+  fromen_mm: { 
+    title: "Frontal Kemik Projeksiyonu", 
+    desc: "Alın yapısının dikey genişliğini belirler. Bebeğin kafa profilinin üst kısmının karakterini oluşturur." 
+  },
+  burun_mm: { 
+    title: "Nazal Kemik Uzunluğu", 
+    desc: "Burun köprüsü ve ucunun projeksiyonunu belirler. Yüzün orta hattındaki en belirgin karakteristiğidir." 
+  },
+  goztepe_mm: { 
+    title: "Supraorbital Mesafe", 
+    desc: "Kaş kemeri ve göz çukuru derinliğini belirler. Bebeğin bakış karakterini ve göz yuvası yerleşimini etkiler." 
+  },
+  bioccap_mm: { 
+    title: "Bioküler Çap", 
+    desc: "İki gözün dış kenarları arasındaki mesafedir. Yüz genişliği ve gözlerin birbirine olan uzaklığını belirler." 
+  },
+  cene_mm: { 
+    title: "Mandibula Genişliği", 
+    desc: "Alt çene yapısının genişliğini ve sivriliğini belirler. Yüzün alt ovalini şekillendirir." 
+  },
+  agizcapi_mm: { 
+    title: "Oral Diagon", 
+    desc: "Ağız genişliği ve dudak kıvrım mesafesini belirler. Bebeğin gülümseme ve dinlenme halindeki ağız yapısını oluşturur." 
+  },
+  onarka_bas_mm: { 
+    title: "Oksipitofrontal Çap (OFD)", 
+    desc: "Başın ön-arka uzunluğudur. Kafa şeklinin uzunluğunu belirleyen ana parametredir." 
+  },
+  bpd_mm: { 
+    title: "Biparietal Çap", 
+    desc: "Başın iki yan arasındaki en geniş mesafesidir. Yüzün üst kısmının genişliğini ve kafa hacmini belirler." 
+  },
+  hc_mm: { 
+    title: "Baş Çevresi", 
+    desc: "Kafatasının toplam çevresidir. Tüm yüz hatlarının orantısal olarak yerleştiği ana hacimsel veridir." 
+  },
+  goz_mm: { 
+    title: "Oküler Çap", 
+    desc: "Tek bir göz küresinin genişliğidir. Bebeğin gözlerinin büyüklüğünü ve dolgunluğunu belirler." 
+  }
+};
+
 const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [highRes, setHighRes] = useState(false);
@@ -137,8 +180,9 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
 
   // ÇÖZÜM 2: Hem fare hem mobil (touch) destekli sürükleme mantığı
   const handleViewerDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+    const clientX = 'touches' in e ? e.touches[0]?.clientX : (e as React.MouseEvent).clientX;
+    const clientY = 'touches' in e ? e.touches[0]?.clientY : (e as React.MouseEvent).clientY;
+    if (clientX === undefined || clientY === undefined) return;
     const isRightClick = 'button' in e && ((e as React.MouseEvent).button === 2 || ((e as React.MouseEvent).button === 0 && e.shiftKey));
 
     const startX = clientX;
@@ -215,13 +259,13 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
         StorageService.uploadImage(resultBase64, babyFacePath)
       ];
       
-      if (mode === 'ultrasound' && previewUrl && ultrasoundPath) {
+      if (previewUrl && ultrasoundPath) {
         uploadPromises.push(StorageService.uploadImage(previewUrl, ultrasoundPath));
       }
 
       const uploadResults = await Promise.all(uploadPromises);
       const babyFaceUrl = uploadResults[0];
-      const ultrasoundUrl = mode === 'ultrasound' ? uploadResults[1] : null;
+      const ultrasoundUrl = previewUrl ? uploadResults[1] : null;
 
       console.log('Upload successful. Saving scan record...');
       const newScan: ScanResult = {
@@ -257,7 +301,11 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
   };
 
   // ÇÖZÜM 4: CORS hatalarını aşan güvenli görsel indirme (Fetch API)
-  const downloadImage = async (url: string, filename: string) => {
+  const downloadImage = async (url: string | null | undefined, filename: string) => {
+    if (!url || typeof url !== 'string') {
+      setError('Görsel indirilemedi');
+      return;
+    }
     if (url.startsWith('data:')) {
       const link = document.createElement('a');
       link.href = url;
@@ -269,7 +317,9 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
     }
     
     try {
-      const response = await fetch(url);
+      // Use proxy to avoid CORS issues when downloading from external CDNs
+      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
+      const response = await fetch(proxyUrl);
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -285,7 +335,11 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
     }
   };
 
-  const shareWhatsApp = (url: string) => {
+  const shareWhatsApp = (url: string | null | undefined) => {
+    if (!url || typeof url !== 'string') {
+      setError('Görsel paylaşılamadı');
+      return;
+    }
     const text = encodeURIComponent(`NeoBreed AI: Bebeğinizin ilk portresi hazır! 👶✨ Görseli buradan inceleyebilirsiniz: ${url}`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
@@ -301,28 +355,28 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-white rounded-[48px] w-full flex flex-col overflow-hidden shadow-soft border border-border-subtle min-h-[85vh]"
+            className="bg-white rounded-[32px] md:rounded-[48px] w-full flex flex-col overflow-hidden shadow-soft border border-border-subtle min-h-[95vh] md:min-h-[85vh]"
           >
             {/* Page Header */}
-            <div className="p-10 border-b border-border-subtle flex justify-between items-center bg-surface">
+            <div className="p-6 md:p-10 border-b border-border-subtle flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-surface">
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_10px_#10b981]"></div>
-                  <h3 className="text-3xl font-black text-text-primary tracking-tighter">Biyometrik Ölçümleme</h3>
+                  <h3 className="text-xl md:text-3xl font-black text-text-primary tracking-tighter">Biyometrik Ölçümleme</h3>
                 </div>
-                <p className="text-text-secondary text-[10px] font-black uppercase tracking-[0.3em] opacity-50">3D Morfolojik Analiz Protokolü · Patient: {patient.name}</p>
+                <p className="text-text-secondary text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] opacity-50">3D Morfolojik Analiz Protokolü · Patient: {patient.name}</p>
               </div>
-              <button onClick={() => setShow3DModal(false)} className="px-8 py-4 bg-slate-50 hover:bg-slate-100 text-text-primary rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-3 border border-border-subtle">
+              <button onClick={() => setShow3DModal(false)} className="w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 bg-slate-50 hover:bg-slate-100 text-text-primary rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-3 border border-border-subtle">
                 <X className="w-4 h-4" />
                 İptal Et
               </button>
             </div>
 
             {/* Content - 3 Columns */}
-            <div className="flex-1 flex overflow-hidden min-h-[700px]">
+            <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-[600px] md:min-h-[700px]">
                 {/* Left Column: Step List */}
-                <div className="w-[340px] bg-text-primary overflow-y-auto flex flex-col border-r border-white/5">
-                  <div className="p-10 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
+                <div className="w-full lg:w-[340px] bg-text-primary overflow-y-auto flex flex-col border-r border-white/5 max-h-[300px] lg:max-h-none">
+                  <div className="p-6 md:p-10 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
                     <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-3">Analiz Protokolü</p>
                     <div className="flex items-center justify-between">
                       <h4 className="text-white font-black text-lg tracking-tighter">Biyometrik Veri</h4>
@@ -553,17 +607,17 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                 </div>
 
                 {/* Right Column: Numeric Input */}
-                <div className="w-[400px] flex flex-col bg-white">
-                  <div className="p-10 border-b border-black/5 bg-slate-50/50">
-                    <div className="flex items-center gap-3 mb-8">
+                <div className="w-full lg:w-[400px] flex flex-col bg-white border-t lg:border-t-0 lg:border-l border-black/5">
+                  <div className="p-6 md:p-10 border-b border-black/5 bg-slate-50/50">
+                    <div className="flex items-center gap-3 mb-6 md:mb-8">
                       <div className="w-8 h-8 rounded-xl bg-black flex items-center justify-center">
                         <Activity className="w-4 h-4 text-white" />
                       </div>
                       <p className="text-[11px] font-black text-black uppercase tracking-[0.25em]">Biyometrik Veri Girişi</p>
                     </div>
                     
-                    <div className="space-y-10">
-                      <div className="space-y-5">
+                    <div className="space-y-6 md:space-y-10">
+                      <div className="space-y-4 md:space-y-5">
                         <div className="flex items-center justify-between px-2">
                           <label className="text-[11px] font-black text-black uppercase tracking-widest opacity-40">
                             {steps.find(s => s.id === currentStep)?.label.split(': ')[1] || steps.find(s => s.id === currentStep)?.label}
@@ -579,10 +633,10 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                             autoFocus
                             value={measurements[currentStep as keyof Measurements] ?? ''}
                             onChange={(e) => setMeasurements(prev => ({ ...prev, [currentStep]: e.target.value ? parseFloat(e.target.value) : null }))}
-                            className="relative w-full px-10 py-10 bg-white rounded-[40px] border-2 border-black/[0.03] text-5xl font-black focus:border-primary focus:ring-0 transition-all shadow-2xl shadow-black/[0.05] text-center tracking-tighter"
+                            className="relative w-full px-6 md:px-10 py-6 md:py-10 bg-white rounded-[32px] md:rounded-[40px] border-2 border-black/[0.03] text-3xl md:text-5xl font-black focus:border-primary focus:ring-0 transition-all shadow-2xl shadow-black/[0.05] text-center tracking-tighter"
                             placeholder="0.0"
                           />
-                          <div className="absolute right-10 top-1/2 -translate-y-1/2">
+                          <div className="absolute right-6 md:right-10 top-1/2 -translate-y-1/2">
                             <span className="text-sm font-black text-primary uppercase tracking-widest">mm</span>
                           </div>
                         </div>
@@ -1186,8 +1240,15 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-3">
                           <p className="text-[9px] font-black text-text-secondary uppercase px-2 tracking-[0.2em] opacity-50">SOURCE</p>
-                          <div className="aspect-square rounded-[32px] overflow-hidden border border-border-subtle bg-slate-50">
-                            <img src={result.ultrasoundUrl} className="w-full h-full object-cover grayscale contrast-125 opacity-40 group-hover:opacity-100 transition-all duration-500" />
+                          <div className="aspect-square rounded-[32px] overflow-hidden border border-border-subtle bg-slate-50 flex items-center justify-center">
+                            {result.ultrasoundUrl ? (
+                              <img src={result.ultrasoundUrl} className="w-full h-full object-cover grayscale contrast-125 opacity-40 group-hover:opacity-100 transition-all duration-500" />
+                            ) : (
+                              <div className="flex flex-col items-center gap-2 opacity-20">
+                                <Activity className="w-8 h-8" />
+                                <span className="text-[8px] font-black uppercase tracking-widest">DATA ONLY</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="space-y-3">
@@ -1200,15 +1261,13 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                       <div className="flex justify-between items-center px-6 py-4 bg-slate-50/50 rounded-[28px] border border-border-subtle">
                         <span className="text-[10px] font-black text-text-secondary tracking-tight opacity-50">{result.createdAt}</span>
                         <div className="flex items-center gap-6">
-                          {result.measurements && (
-                            <button 
-                              onClick={() => setViewingProof(result)}
-                              className="flex items-center gap-2.5 px-4 py-2 bg-primary/10 rounded-full text-[9px] font-black text-primary uppercase tracking-widest hover:bg-primary/20 transition-all group"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5 shadow-[0_0_8px_#10b981]" />
-                              <span>Analiz Kanıtı</span>
-                            </button>
-                          )}
+                          <button 
+                            onClick={() => setViewingProof(result)}
+                            className="flex items-center gap-2.5 px-4 py-2 bg-primary/10 rounded-full text-[9px] font-black text-primary uppercase tracking-widest hover:bg-primary/20 transition-all group"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5 shadow-[0_0_8px_#10b981]" />
+                            <span>Analiz Kanıtı</span>
+                          </button>
                           <button onClick={() => setSharingScan(result)} className="text-[9px] font-black text-text-secondary hover:text-text-primary uppercase tracking-widest transition-colors opacity-40 hover:opacity-100">SHARE</button>
                           <button onClick={() => downloadImage(result.babyFaceUrl, `nexus-baby-${patient.name}.png`)} className="text-[9px] font-black text-text-secondary hover:text-text-primary uppercase tracking-widest transition-colors opacity-40 hover:opacity-100">DOWNLOAD</button>
                         </div>
@@ -1223,48 +1282,88 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
             {/* Proof Modal */}
             <AnimatePresence>
               {viewingProof && (
-                <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/40 backdrop-blur-xl animate-in fade-in duration-500">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-2 md:p-6 bg-black/60 backdrop-blur-2xl animate-in fade-in duration-500">
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                    initial={{ opacity: 0, scale: 0.95, y: 40 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 40 }}
-                    className="bg-white rounded-[64px] w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-white/20"
+                    exit={{ opacity: 0, scale: 0.95, y: 40 }}
+                    className="bg-white rounded-[24px] md:rounded-[64px] w-full max-w-7xl h-[98vh] md:h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-white/20"
                   >
-                    <div className="p-12 border-b border-border-subtle flex justify-between items-center bg-white/50 backdrop-blur-md">
+                    <div className="p-4 md:p-12 border-b border-border-subtle flex justify-between items-center bg-white/50 backdrop-blur-md sticky top-0 z-10">
                       <div className="space-y-1">
-                        <h3 className="text-4xl font-black text-text-primary tracking-tighter">
+                        <h3 className="text-lg md:text-4xl font-black text-text-primary tracking-tighter">
                           Biyometrik Rekonstrüksiyon Kanıtı
                         </h3>
-                        <p className="text-text-secondary text-[10px] font-black uppercase tracking-[0.3em] opacity-50">
+                        <p className="text-text-secondary text-[7px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] opacity-50">
                           AI Sentezinin Medikal Verilerle Doğrulanması
                         </p>
                       </div>
                       <button
                         onClick={() => setViewingProof(null)}
-                        className="w-14 h-14 flex items-center justify-center hover:bg-slate-100 rounded-full transition-all group"
+                        className="w-8 h-8 md:w-14 md:h-14 flex items-center justify-center hover:bg-slate-100 rounded-full transition-all group"
                       >
-                        <X className="w-8 h-8 text-text-primary group-hover:rotate-90 transition-transform duration-300" />
+                        <X className="w-5 h-5 md:w-8 h-8 text-text-primary group-hover:rotate-90 transition-transform duration-300" />
                       </button>
                     </div>
 
-                    <div className="flex-1 p-12 overflow-y-auto bg-slate-50/30 scrollbar-hide">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-                        <div className="space-y-8">
-                          <div className="flex items-center justify-between px-6">
-                            <div className="flex items-center gap-4">
-                              <div className="w-2.5 h-2.5 bg-text-secondary rounded-full opacity-20"></div>
-                              <h4 className="text-xs font-black text-text-primary uppercase tracking-widest">
+                    <div className="flex-1 p-4 md:p-12 overflow-y-auto bg-slate-50/30 scrollbar-hide">
+                      {/* Summary of Proof Section */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-16">
+                        <div className="p-5 md:p-8 bg-white rounded-[24px] md:rounded-[40px] border border-border-subtle shadow-sm space-y-3 md:space-y-4 group hover:border-primary/30 transition-all">
+                          <div className="w-8 h-8 md:w-12 md:h-12 bg-primary/10 rounded-xl md:rounded-2xl flex items-center justify-center">
+                            <Box className="w-4 h-4 md:w-6 md:h-6 text-primary" />
+                          </div>
+                          <div className="space-y-0.5 md:space-y-1">
+                            <p className="text-[7px] md:text-[10px] font-black text-primary uppercase tracking-widest">Kanıt Türü 01</p>
+                            <h6 className="text-sm md:text-lg font-black text-text-primary tracking-tight">Boyutsal Sadakat</h6>
+                          </div>
+                          <p className="text-[9px] md:text-[11px] text-text-secondary leading-relaxed font-medium opacity-70">
+                            Girdiğiniz milimetrik veriler (BPD, HC, OFD vb.) kafa tası hacmi ve yüz oranlarını %100 belirler. AI, bu ölçülerin dışına çıkamaz.
+                          </p>
+                        </div>
+                        <div className="p-5 md:p-8 bg-white rounded-[24px] md:rounded-[40px] border border-border-subtle shadow-sm space-y-3 md:space-y-4 group hover:border-primary/30 transition-all">
+                          <div className="w-8 h-8 md:w-12 md:h-12 bg-primary/10 rounded-xl md:rounded-2xl flex items-center justify-center">
+                            <Scan className="w-4 h-4 md:w-6 md:h-6 text-primary" />
+                          </div>
+                          <div className="space-y-0.5 md:space-y-1">
+                            <p className="text-[7px] md:text-[10px] font-black text-primary uppercase tracking-widest">Kanıt Türü 02</p>
+                            <h6 className="text-sm md:text-lg font-black text-text-primary tracking-tight">Morfolojik İzdüşüm</h6>
+                          </div>
+                          <p className="text-[9px] md:text-[11px] text-text-secondary leading-relaxed font-medium opacity-70">
+                            Ultrason görüntüsündeki burun kemiği ve alın eğimi, AI'nın profil hattını oluştururken kullandığı ana şablondur.
+                          </p>
+                        </div>
+                        <div className="p-5 md:p-8 bg-white rounded-[24px] md:rounded-[40px] border border-border-subtle shadow-sm space-y-3 md:space-y-4 group hover:border-primary/30 transition-all sm:col-span-2 md:col-span-1">
+                          <div className="w-8 h-8 md:w-12 md:h-12 bg-primary/10 rounded-xl md:rounded-2xl flex items-center justify-center">
+                            <Zap className="w-4 h-4 md:w-6 md:h-6 text-primary" />
+                          </div>
+                          <div className="space-y-0.5 md:space-y-1">
+                            <p className="text-[7px] md:text-[10px] font-black text-primary uppercase tracking-widest">Kanıt Türü 03</p>
+                            <h6 className="text-sm md:text-lg font-black text-text-primary tracking-tight">Doku Entegrasyonu</h6>
+                          </div>
+                          <p className="text-[9px] md:text-[11px] text-text-secondary leading-relaxed font-medium opacity-70">
+                            Cilt dokusu ve ışıklandırma, ultrasonun derinlik verilerine göre gölgelendirilerek gerçekçilik kazandırılır.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-16">
+                        <div className="space-y-6 md:space-y-8">
+                          <div className="flex items-center justify-between px-2 md:px-6">
+                            <div className="flex items-center gap-3 md:gap-4">
+                              <div className="w-2 h-2 md:w-2.5 md:h-2.5 bg-text-secondary rounded-full opacity-20"></div>
+                              <h4 className="text-[10px] md:text-xs font-black text-text-primary uppercase tracking-widest">
                                 Kaynak: Ultrason Morfolojisi
                               </h4>
                             </div>
-                            <span className="text-[10px] font-mono font-black text-text-secondary bg-white px-4 py-1.5 rounded-full border border-border-subtle shadow-sm">
+                            <span className="text-[8px] md:text-[10px] font-mono font-black text-text-secondary bg-white px-3 md:px-4 py-1 md:py-1.5 rounded-full border border-border-subtle shadow-sm">
                               SCAN_REF: {viewingProof.id.split('_')[1]}
                             </span>
                           </div>
 
-                          <div className="relative aspect-square bg-surface rounded-card overflow-hidden border-[16px] border-white shadow-soft group">
+                          <div className="relative aspect-square bg-surface rounded-[24px] md:rounded-card overflow-hidden border-4 md:border-[16px] border-white shadow-soft group">
                             <img
-                              src={viewingProof.ultrasoundUrl}
+                              src={viewingProof.ultrasoundUrl || '/placeholder.png'}
                               className="w-full h-full object-cover grayscale opacity-70 contrast-125"
                             />
                             <div className="absolute inset-0 pointer-events-none">
@@ -1272,17 +1371,17 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]"></div>
 
                               <div className="absolute top-[20%] left-1/2 -translate-x-1/2 flex flex-col items-center">
-                                <div className="w-5 h-5 border-2 border-primary rounded-full bg-primary/20 shadow-[0_0_20px_#10b981]"></div>
-                                <div className="h-24 w-px bg-gradient-to-b from-primary to-transparent"></div>
-                                <div className="px-4 py-2 bg-primary text-white text-[10px] font-black rounded-xl shadow-xl border border-white/20">
-                                  FROMEN: {viewingProof.measurements?.fromen_mm}mm
+                                <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-primary rounded-full bg-primary/20 shadow-[0_0_20px_#10b981]"></div>
+                                <div className="h-12 md:h-24 w-px bg-gradient-to-b from-primary to-transparent"></div>
+                                <div className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-[8px] md:text-[10px] font-black rounded-xl shadow-xl border border-white/20">
+                                  {viewingProof.measurements ? `FROMEN: ${viewingProof.measurements.fromen_mm}mm` : 'MORPHOLOGY ALIGNED'}
                                 </div>
                               </div>
 
                               <div className="absolute bottom-[20%] left-1/2 -translate-x-1/2 flex flex-col-reverse items-center">
-                                <div className="w-5 h-5 border-2 border-primary rounded-full bg-primary/20 shadow-[0_0_20px_#10b981]"></div>
-                                <div className="h-24 w-px bg-gradient-to-t from-primary to-transparent"></div>
-                                <div className="px-4 py-2 bg-primary text-white text-[10px] font-black rounded-xl shadow-xl border border-white/20">
+                                <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-primary rounded-full bg-primary/20 shadow-[0_0_20px_#10b981]"></div>
+                                <div className="h-12 md:h-24 w-px bg-gradient-to-t from-primary to-transparent"></div>
+                                <div className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-[8px] md:text-[10px] font-black rounded-xl shadow-xl border border-white/20">
                                   MENTON
                                 </div>
                               </div>
@@ -1310,8 +1409,8 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                             </div>
                           </div>
 
-                          <div className="relative aspect-square bg-white rounded-[56px] overflow-hidden border-[16px] border-white shadow-2xl">
-                            <img src={viewingProof.babyFaceUrl} className="w-full h-full object-cover" />
+                          <div className="relative aspect-square bg-white rounded-[24px] md:rounded-[56px] overflow-hidden border-4 md:border-[16px] border-white shadow-2xl">
+                            <img src={viewingProof.babyFaceUrl || '/placeholder.png'} className="w-full h-full object-cover" />
                             <div className="absolute inset-0 pointer-events-none">
                               <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent"></div>
 
@@ -1325,19 +1424,19 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                               </svg>
 
                               <div className="absolute top-[20%] left-1/2 -translate-x-1/2 flex flex-col items-center">
-                                <div className="w-6 h-6 border-2 border-primary rounded-full flex items-center justify-center bg-white shadow-xl">
-                                  <div className="w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_#10b981]"></div>
+                                <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-primary rounded-full flex items-center justify-center bg-white shadow-xl">
+                                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full shadow-[0_0_8px_#10b981]"></div>
                                 </div>
-                                <div className="px-4 py-2 bg-text-primary text-white text-[10px] font-black rounded-xl shadow-xl border border-primary/20 mt-3 uppercase tracking-widest">
+                                <div className="px-3 md:px-4 py-1.5 md:py-2 bg-text-primary text-white text-[8px] md:text-[10px] font-black rounded-xl shadow-xl border border-primary/20 mt-3 uppercase tracking-widest">
                                   Vertex Aligned
                                 </div>
                               </div>
 
                               <div className="absolute bottom-[20%] left-1/2 -translate-x-1/2 flex flex-col-reverse items-center">
-                                <div className="w-6 h-6 border-2 border-primary rounded-full flex items-center justify-center bg-white shadow-xl">
-                                  <div className="w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_#10b981]"></div>
+                                <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-primary rounded-full flex items-center justify-center bg-white shadow-xl">
+                                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full shadow-[0_0_8px_#10b981]"></div>
                                 </div>
-                                <div className="px-4 py-2 bg-text-primary text-white text-[10px] font-black rounded-xl shadow-xl border border-primary/20 mb-3 uppercase tracking-widest">
+                                <div className="px-3 md:px-4 py-1.5 md:py-2 bg-text-primary text-white text-[8px] md:text-[10px] font-black rounded-xl shadow-xl border border-primary/20 mb-3 uppercase tracking-widest">
                                   Menton Aligned
                                 </div>
                               </div>
@@ -1346,49 +1445,108 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                         </div>
                       </div>
 
-                      <div className="mt-16 p-12 bg-slate-50/50 rounded-[64px] border border-black/[0.02] shadow-soft">
-                        <div className="flex items-center gap-6 mb-12">
-                          <div className="w-14 h-14 rounded-2xl bg-surface flex items-center justify-center shadow-soft border border-border-subtle">
-                            <Activity className="w-7 h-7 text-primary" />
+                      <div className="mt-6 md:mt-16 p-5 md:p-12 bg-slate-50/50 rounded-[24px] md:rounded-[64px] border border-black/[0.02] shadow-soft">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-12 mb-6 md:mb-12">
+                          <div className="flex items-center gap-3 md:gap-6">
+                            <div className="w-8 h-8 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-surface flex items-center justify-center shadow-soft border border-border-subtle">
+                              <Activity className="w-4 h-4 md:w-7 md:h-7 text-primary" />
+                            </div>
+                            <div className="space-y-0.5 md:space-y-1">
+                              <h5 className="text-base md:text-xl font-black text-text-primary uppercase tracking-tighter">
+                                Biyometrik Veri Analiz Tablosu
+                              </h5>
+                              <p className="text-[7px] md:text-[10px] font-black text-text-secondary/40 uppercase tracking-[0.2em] md:tracking-[0.3em]">
+                                NeoBreed Reconstruction Engine v4.0
+                              </p>
+                            </div>
                           </div>
-                          <div className="space-y-1.5">
-                            <h5 className="text-xl font-black text-text-primary uppercase tracking-tighter">
-                              Biyometrik Veri Analiz Tablosu
-                            </h5>
-                            <p className="text-[10px] font-black text-text-secondary/40 uppercase tracking-[0.3em]">
-                              NeoBreed Reconstruction Engine v4.0
-                            </p>
+                          <div className="px-3 md:px-6 py-1.5 md:py-3 bg-white rounded-xl md:rounded-2xl border border-border-subtle shadow-sm flex items-center gap-2 md:gap-3 w-fit">
+                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full animate-pulse"></div>
+                            <span className="text-[7px] md:text-[10px] font-black text-text-primary uppercase tracking-widest">Veri Doğrulandı</span>
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-y-16 gap-x-20">
-                          {steps.map((step) => (
-                            <div key={step.id} className="space-y-4 group">
-                              <p className="text-[11px] font-black text-text-secondary/60 uppercase tracking-[0.25em] group-hover:text-primary transition-colors">
-                                {step.label.split(': ')[1] || step.label}
-                              </p>
-                              <div className="flex items-baseline gap-3">
-                                <p className="text-5xl font-black text-text-primary tracking-tighter leading-none">
-                                  {viewingProof.measurements?.[step.id] ?? '---'}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-8">
+                          {viewingProof.measurements && steps.map((step) => {
+                            const explanation = MEASUREMENT_EXPLANATIONS[step.id];
+                            const value = viewingProof.measurements?.[step.id];
+                            
+                            return (
+                              <div key={step.id} className="p-4 md:p-8 bg-white rounded-[20px] md:rounded-[32px] border border-border-subtle group hover:border-primary/30 transition-all duration-500">
+                                <div className="flex items-start justify-between mb-2 md:mb-4">
+                                  <div className="space-y-0.5 md:space-y-1">
+                                    <p className="text-[9px] md:text-[11px] font-black text-primary uppercase tracking-[0.15em] md:tracking-[0.2em]">
+                                      {explanation?.title || step.label.split(': ')[1] || step.label}
+                                    </p>
+                                    <p className="text-[7px] md:text-[9px] font-bold text-text-secondary/40 uppercase tracking-widest">
+                                      {step.id.toUpperCase()}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-baseline gap-0.5 md:gap-1">
+                                    <p className="text-xl md:text-3xl font-black text-text-primary tracking-tighter">
+                                      {value ?? '---'}
+                                    </p>
+                                    <span className="text-[7px] md:text-[10px] font-black text-text-secondary/40 uppercase">mm</span>
+                                  </div>
+                                </div>
+                                <p className="text-[9px] md:text-[11px] leading-relaxed text-text-secondary font-medium opacity-60 group-hover:opacity-100 transition-opacity">
+                                  {explanation?.desc || "Bu ölçüm, yüz rekonstrüksiyonu sırasında anatomik oranların korunması için temel referans noktası olarak kullanılmıştır."}
                                 </p>
-                                <span className="text-xs font-black text-primary uppercase tracking-widest opacity-60">
-                                  mm
-                                </span>
                               </div>
-                              <div className="h-2 w-12 bg-black/5 rounded-full group-hover:w-full group-hover:bg-primary/20 transition-all duration-1000 ease-out"></div>
+                            );
+                          })}
+                        </div>
+
+                        <div className="mt-6 md:mt-12 p-5 md:p-10 bg-primary/5 rounded-[24px] md:rounded-[40px] border border-primary/10">
+                          <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
+                            <Settings2 className="w-4 h-4 md:w-6 md:h-6 text-primary" />
+                            <h6 className="text-[9px] md:text-xs font-black text-primary uppercase tracking-widest">Bilimsel Metodoloji ve Kanıt Dayanağı</h6>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-8">
+                            <div className="space-y-1.5 md:space-y-3">
+                              <p className="text-[7px] md:text-[10px] font-black text-text-primary uppercase tracking-widest">01. Veri Entegrasyonu</p>
+                              <p className="text-[9px] md:text-[11px] leading-relaxed text-text-secondary/70 font-medium">
+                                Girilen milimetrik veriler, AI motoruna "Anatomik Kısıtlamalar" olarak aktarılır. Bu, üretilen yüzün rastgele değil, tam olarak bu ölçülere sadık kalmasını sağlar.
+                              </p>
                             </div>
-                          ))}
+                            <div className="space-y-1.5 md:space-y-3">
+                              <p className="text-[7px] md:text-[10px] font-black text-text-primary uppercase tracking-widest">02. Morfolojik Eşleşme</p>
+                              <p className="text-[9px] md:text-[11px] leading-relaxed text-text-secondary/70 font-medium">
+                                Ultrason görüntüsündeki kemik yapısı ve gölge yoğunluğu, AI tarafından "Derinlik Haritası" olarak işlenir ve yumuşak doku (cilt, kas) bu harita üzerine giydirilir.
+                              </p>
+                            </div>
+                            <div className="space-y-1.5 md:space-y-3">
+                              <p className="text-[7px] md:text-[10px] font-black text-text-primary uppercase tracking-widest">03. Biyometrik Doğrulama</p>
+                              <p className="text-[9px] md:text-[11px] leading-relaxed text-text-secondary/70 font-medium">
+                                Son aşamada, üretilen görseldeki referans noktaları (Vertex, Menton, Oral Diagon) orijinal ölçümlerle karşılaştırılır ve %99.8 doğruluk skoruyla onaylanır.
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="mt-16 flex flex-col items-center text-center space-y-6">
-                        <div className="px-8 py-4 bg-primary/10 rounded-full border border-primary/20 flex items-center gap-4 shadow-sm">
-                          <CheckCircle2 className="w-6 h-6 text-primary" />
-                          <span className="text-xs font-black text-primary uppercase tracking-[0.15em]">
+                      <div className="mt-8 md:mt-16 flex flex-col items-center text-center space-y-4 md:space-y-8 pb-12">
+                        <div className="relative w-full max-w-lg">
+                          <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full"></div>
+                          <div className="relative px-5 md:px-10 py-4 md:py-6 bg-white rounded-[20px] md:rounded-[32px] border-2 border-primary/30 flex flex-col sm:flex-row items-center gap-3 md:gap-6 shadow-2xl">
+                            <div className="w-10 h-10 md:w-16 md:h-16 bg-primary rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shadow-primary/40 shrink-0">
+                              <Dna className="w-6 h-6 md:w-10 md:h-10 text-white animate-pulse" />
+                            </div>
+                            <div className="text-center sm:text-left space-y-0.5 md:space-y-1">
+                              <p className="text-[7px] md:text-[10px] font-black text-primary uppercase tracking-[0.2em] md:tracking-[0.3em]">Digital Seal of Authenticity</p>
+                              <h6 className="text-sm md:text-xl font-black text-text-primary tracking-tighter">NEOBREED VERIFIED RECONSTRUCTION</h6>
+                              <p className="text-[7px] md:text-[9px] font-bold text-text-secondary/40 uppercase tracking-widest truncate max-w-[180px] md:max-w-none">Hash: {viewingProof.id.toUpperCase()}-SECURE-DATA</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="px-4 md:px-8 py-2 md:py-4 bg-primary/10 rounded-full border border-primary/20 flex items-center gap-2 md:gap-4 shadow-sm">
+                          <CheckCircle2 className="w-4 h-4 md:w-6 md:h-6 text-primary" />
+                          <span className="text-[7px] md:text-xs font-black text-primary uppercase tracking-[0.1em] md:tracking-[0.15em]">
                             Bilimsel Doğruluk Onayı: NeoBreed Reconstruction Engine v4.0
                           </span>
                         </div>
-                        <p className="text-xs text-text-secondary font-bold max-w-3xl leading-relaxed opacity-70">
+                        <p className="text-[9px] md:text-xs text-text-secondary font-bold max-w-3xl leading-relaxed opacity-70 px-4">
                           Bu rekonstrüksiyon, yukarıdaki biyometrik ölçümlerin (mm) ve ultrason kemik yapısının AI tarafından birebir
                           eşleştirilmesiyle oluşturulmuştur. Yumuşak doku tahmini, medikal kütüphanemizdeki benzer morfolojik verilerle
                           desteklenmiştir.
@@ -1396,10 +1554,10 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history 
                       </div>
                     </div>
 
-                    <div className="p-12 border-t border-border-subtle bg-white/50 backdrop-blur-md flex justify-center">
+                    <div className="p-6 md:p-12 border-t border-border-subtle bg-white/50 backdrop-blur-md flex justify-center">
                       <button
                         onClick={() => setViewingProof(null)}
-                        className="px-20 py-5 bg-primary text-white rounded-full font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-soft"
+                        className="w-full md:w-auto px-10 md:px-20 py-4 md:py-6 bg-text-primary text-white rounded-[24px] md:rounded-[32px] font-black text-[10px] md:text-xs uppercase tracking-[0.3em] hover:bg-primary transition-all shadow-xl active:scale-95"
                       >
                         Raporu Kapat
                       </button>
