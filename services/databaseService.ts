@@ -300,7 +300,16 @@ export const DatabaseService = {
       .single()
 
     if (error) throw error
-    return data
+    
+    // Ensure the returned object matches our ScanResult interface
+    return {
+      id: data.id,
+      patientId: data.patient_id,
+      ultrasoundUrl: data.ultrasound_url,
+      babyFaceUrl: data.baby_face_url,
+      scale_mm_per_px: data.scale_mm_per_px,
+      createdAt: data.created_at ? toTRDateString(data.created_at) || '' : ''
+    }
   },
 
   async saveReconstructionProof(proof: Omit<ReconstructionProof, 'id' | 'created_at'>): Promise<any> {

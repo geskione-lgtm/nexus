@@ -22,7 +22,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({ title, items, onItem
   return (
     <SoftCard className="flex flex-col h-full" noPadding>
       <div className="p-6 flex justify-between items-center border-b border-border-subtle">
-        <h3 className="text-sm font-semibold text-text-primary tracking-tight">
+        <h3 className="text-sm font-medium text-text-primary tracking-tight">
           {title}
         </h3>
         <button className="w-8 h-8 rounded-lg hover:bg-surface-hover border border-border-subtle flex items-center justify-center text-text-secondary transition-all active:scale-95">
@@ -48,7 +48,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({ title, items, onItem
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-text-primary truncate">
+                  <p className="text-sm font-medium text-text-primary truncate">
                     {item.title}
                   </p>
                   <p className="text-xs text-text-secondary truncate mt-0.5">

@@ -23,7 +23,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({ label, value, delta, icon, col
           {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
         </div>
         {delta && (
-          <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold ${
+          <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium ${
             delta.isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
           }`}>
             {delta.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
@@ -36,7 +36,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({ label, value, delta, icon, col
         <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-1">
           {label}
         </p>
-        <h3 className="text-3xl font-bold tracking-tight text-text-primary">
+        <h3 className="text-3xl font-medium tracking-tight text-text-primary">
           {value}
         </h3>
       </div>

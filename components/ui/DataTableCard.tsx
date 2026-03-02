@@ -16,7 +16,7 @@ export const DataTableCard: React.FC<DataTableCardProps> = ({ title, subtitle, c
     <SoftCard className="flex flex-col" noPadding>
       <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-subtle">
         <div>
-          <h3 className="text-sm font-semibold text-text-primary tracking-tight">
+          <h3 className="text-sm font-medium text-text-primary tracking-tight">
             {title}
           </h3>
           {subtitle && (
@@ -40,10 +40,10 @@ export const DataTableCard: React.FC<DataTableCardProps> = ({ title, subtitle, c
           )}
           
           <div className="flex items-center gap-2">
-            <button className="p-2 hover:bg-surface-hover border border-border-subtle rounded-lg text-text-secondary transition-all active:scale-95">
+            <button className="p-2 bg-[#2563eb] text-white rounded-lg transition-all active:scale-95 shadow-sm">
               <Filter className="w-4 h-4" />
             </button>
-            <button className="p-2 hover:bg-surface-hover border border-border-subtle rounded-lg text-text-secondary transition-all active:scale-95">
+            <button className="p-2 bg-[#2563eb] text-white rounded-lg transition-all active:scale-95 shadow-sm">
               <MoreHorizontal className="w-4 h-4" />
             </button>
           </div>

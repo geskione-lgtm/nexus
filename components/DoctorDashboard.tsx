@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { User, Patient, ScanResult } from '../types';
 import BabyFaceGenerator from './BabyFaceGenerator';
+import FetalGenerator from './FetalGenerator';
+import BiometrikFCS from './BiometrikFCS';
 import { 
   Users, 
   Activity, 
@@ -52,6 +54,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
   const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
   const [newPatient, setNewPatient] = useState({ name: '', weeksPregnant: 20, phone: '', email: '' });
   const [searchQuery, setSearchQuery] = useState('');
+  const [pendingMeasurements, setPendingMeasurements] = useState<any>(null);
 
   const chartData = [
     { name: 'Pzt', scans: 4 },
@@ -130,7 +133,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
               <div className="flex gap-4">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Analizler</span>
+                  <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wider">Analizler</span>
                 </div>
               </div>
             }
@@ -203,7 +206,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
               <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-primary shadow-sm group-hover:scale-110 transition-transform">
                 <Plus className="w-6 h-6" />
               </div>
-              <span className="text-[10px] font-bold text-primary uppercase tracking-wider group-hover:text-white">Yeni Hasta</span>
+              <span className="text-[10px] font-medium text-primary uppercase tracking-wider group-hover:text-white">Yeni Hasta</span>
             </button>
             <button 
               onClick={() => setActiveTab('studio')}
@@ -212,7 +215,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
               <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm group-hover:scale-110 transition-transform">
                 <Microscope className="w-6 h-6" />
               </div>
-              <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider group-hover:text-white">AI Stüdyo</span>
+              <span className="text-[10px] font-medium text-indigo-500 uppercase tracking-wider group-hover:text-white">AI Stüdyo</span>
             </button>
             <button 
               onClick={() => setActiveTab('reports')}
@@ -221,7 +224,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
               <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition-transform">
                 <FileText className="w-6 h-6" />
               </div>
-              <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider group-hover:text-white">Raporlar</span>
+              <span className="text-[10px] font-medium text-amber-500 uppercase tracking-wider group-hover:text-white">Raporlar</span>
             </button>
             <button 
               onClick={() => setActiveTab('settings')}
@@ -230,7 +233,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
               <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-text-primary shadow-sm group-hover:scale-110 transition-transform">
                 <Settings className="w-6 h-6" />
               </div>
-              <span className="text-[10px] font-bold text-text-primary uppercase tracking-wider group-hover:text-white">Ayarlar</span>
+              <span className="text-[10px] font-medium text-text-primary uppercase tracking-wider group-hover:text-white">Ayarlar</span>
             </button>
           </div>
         </div>
@@ -238,45 +241,111 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
     );
   }
 
-  if (activeTab === 'studio') {
+  if (activeTab === 'studio' || activeTab === 'fetal-studio' || activeTab === 'biometrik-fcs') {
+    const isFetal = activeTab === 'fetal-studio';
+    const isBiometric = activeTab === 'biometrik-fcs';
+    
     return (
       <div className="space-y-8">
         <div className="flex justify-between items-center">
            <button 
               onClick={() => { setActiveTab('dashboard'); setSelectedPatient(null); }}
-              className="px-8 py-3 bg-white border border-border-subtle text-text-primary rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
+              className="px-8 py-3 bg-[#2563eb] text-white rounded-full text-[10px] font-medium uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/20"
            >
               ← PANELİ DÖN
            </button>
            {selectedPatient && (
              <div className="flex items-center gap-4 px-6">
-                <p className="text-[10px] font-black text-text-primary uppercase tracking-[0.2em]">
-                  AKTİF OTURUM: <span className="text-primary">{selectedPatient.name}</span>
+                <p className="text-[10px] font-medium text-text-primary uppercase tracking-[0.2em]">
+                  AKTİF OTURUM: <span className="text-primary font-bold">{selectedPatient.name}</span>
                 </p>
+                <button 
+                  onClick={() => setSelectedPatient(null)}
+                  className="px-4 py-1.5 bg-[#2563eb] text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-[#1d4ed8] transition-all"
+                >
+                  DEĞİŞTİR
+                </button>
              </div>
            )}
         </div>
         
         {selectedPatient ? (
-          <BabyFaceGenerator 
-            patient={selectedPatient} 
-            onScanGenerated={onAddScan} 
-            history={scanHistory.filter(s => s.patientId === selectedPatient.id)}
-          />
+          isFetal ? (
+            <FetalGenerator 
+              patient={selectedPatient} 
+              onScanGenerated={onAddScan} 
+              history={scanHistory.filter(s => s.patientId === selectedPatient.id)}
+            />
+          ) : isBiometric ? (
+            <BiometrikFCS 
+              onProceedToStudio={(m) => {
+                setPendingMeasurements(m);
+                setActiveTab('studio');
+              }}
+              initialMeasurements={pendingMeasurements || { gebelikHaftasi: selectedPatient.weeksPregnant }}
+            />
+          ) : (
+            <BabyFaceGenerator 
+              patient={selectedPatient} 
+              onScanGenerated={onAddScan} 
+              history={scanHistory.filter(s => s.patientId === selectedPatient.id)}
+              initialMeasurements={pendingMeasurements}
+            />
+          )
         ) : (
-          <EmptyState 
-            title="AI Stüdyo için Hasta Seçin"
-            description="Yüz rekonstrüksiyonu başlatmak için önce hasta listesinden bir kayıt seçmelisiniz."
-            action={
-              <button 
-                onClick={() => setActiveTab('patients')} 
-                className="px-10 py-4 bg-text-primary text-white rounded-full text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-black/20"
-              >
-                Hasta Listesine Git
-              </button>
-            }
-            icon={<Stethoscope className="w-10 h-10" />}
-          />
+          <div className="space-y-6">
+            <div className="bg-primary/5 border border-primary/10 rounded-[32px] p-8 flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <Users className="w-8 h-8 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-medium text-text-primary tracking-tight">
+                    {isFetal ? "Fetal Stüdyo" : isBiometric ? "Biometrik FCS" : "AI Stüdyo"} için Hasta Seçin
+                  </h3>
+                  <p className="text-xs text-text-secondary font-medium uppercase tracking-widest opacity-60 mt-1">
+                    İşleme devam etmek için aşağıdan bir hasta seçmelisiniz
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <DataTableCard 
+              title="Hasta Seçimi" 
+              subtitle={`${filteredPatients.length} Kayıtlı Hasta`}
+              onSearch={setSearchQuery}
+            >
+              <table className="w-full text-left">
+                <thead className="text-[10px] font-medium text-text-secondary uppercase tracking-widest border-b border-border-subtle">
+                  <tr>
+                    <th className="px-10 py-6">Hasta Adı</th>
+                    <th className="px-10 py-6">Hafta</th>
+                    <th className="px-10 py-6 text-right">İşlem</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border-subtle">
+                  {filteredPatients.map(p => (
+                    <tr key={p.id} className="hover:bg-slate-50/30 transition-colors group">
+                      <td className="px-10 py-8">
+                        <div className="font-medium text-text-primary text-base tracking-tight">{p.name}</div>
+                      </td>
+                      <td className="px-10 py-8">
+                        <span className="text-text-primary font-medium text-[10px] bg-slate-100 px-4 py-1.5 rounded-full uppercase tracking-widest">{p.weeksPregnant}. Hafta</span>
+                      </td>
+                      <td className="px-10 py-8 text-right">
+                        <button 
+                          onClick={() => setSelectedPatient(p)}
+                          className="px-8 py-3 bg-[#2563eb] text-white rounded-full text-[10px] font-medium uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/20 inline-flex items-center gap-2"
+                        >
+                          Seç ve Başlat <ArrowRight className="w-3 h-3" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </DataTableCard>
+          </div>
         )}
       </div>
     );
@@ -287,12 +356,12 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
       <div className="space-y-10">
         <div className="flex justify-between items-end">
           <div className="space-y-1">
-            <h2 className="text-4xl font-black tracking-tighter text-text-primary">Hasta Kayıtları</h2>
-            <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.25em]">Klinik Veri Yönetimi</p>
+            <h2 className="text-4xl font-medium tracking-tighter text-text-primary">Hasta Kayıtları</h2>
+            <p className="text-[10px] font-medium text-text-secondary uppercase tracking-[0.25em]">Klinik Veri Yönetimi</p>
           </div>
           <button 
             onClick={() => setShowPatientForm(!showPatientForm)}
-            className="px-10 py-4 bg-text-primary text-white rounded-full text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/20 flex items-center gap-3"
+            className="px-10 py-4 bg-[#2563eb] text-white rounded-full text-xs font-medium uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 flex items-center gap-3"
           >
             {showPatientForm ? 'Kapat' : <><Plus className="w-4 h-4" /> Yeni Hasta Ekle</>}
           </button>
@@ -302,22 +371,22 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
           <SoftCard className="animate-in slide-in-from-top-4 duration-500">
             <form onSubmit={handleSubmit} className="flex flex-wrap gap-8 items-end">
               <div className="flex-1 min-w-[300px] space-y-3">
-                <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-1">Hasta Adı Soyadı *</label>
-                <input required className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" value={newPatient.name} onChange={e => setNewPatient({...newPatient, name: e.target.value})} />
+                <label className="text-[10px] font-medium text-text-secondary uppercase tracking-widest ml-1">Hasta Adı Soyadı *</label>
+                <input required className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" value={newPatient.name} onChange={e => setNewPatient({...newPatient, name: e.target.value})} />
               </div>
               <div className="w-48 space-y-3">
-                <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-1">Telefon *</label>
-                <input required type="tel" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" value={newPatient.phone} onChange={e => setNewPatient({...newPatient, phone: e.target.value})} />
+                <label className="text-[10px] font-medium text-text-secondary uppercase tracking-widest ml-1">Telefon *</label>
+                <input required type="tel" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" value={newPatient.phone} onChange={e => setNewPatient({...newPatient, phone: e.target.value})} />
               </div>
               <div className="flex-1 min-w-[250px] space-y-3">
-                <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-1">E-posta (Opsiyonel)</label>
-                <input type="email" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" value={newPatient.email} onChange={e => setNewPatient({...newPatient, email: e.target.value})} />
+                <label className="text-[10px] font-medium text-text-secondary uppercase tracking-widest ml-1">E-posta (Opsiyonel)</label>
+                <input type="email" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" value={newPatient.email} onChange={e => setNewPatient({...newPatient, email: e.target.value})} />
               </div>
               <div className="w-32 space-y-3">
-                <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest ml-1">Hafta</label>
-                <input required type="number" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" value={newPatient.weeksPregnant} onChange={e => setNewPatient({...newPatient, weeksPregnant: parseInt(e.target.value)})} />
+                <label className="text-[10px] font-medium text-text-secondary uppercase tracking-widest ml-1">Hafta</label>
+                <input required type="number" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" value={newPatient.weeksPregnant} onChange={e => setNewPatient({...newPatient, weeksPregnant: parseInt(e.target.value)})} />
               </div>
-              <button type="submit" className="px-12 py-4 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all">
+              <button type="submit" className="px-12 py-4 bg-[#2563eb] text-white rounded-2xl font-medium text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all">
                 {editingPatientId ? 'Güncelle' : 'Kaydet'}
               </button>
             </form>
@@ -330,7 +399,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
           onSearch={setSearchQuery}
         >
           <table className="w-full text-left">
-            <thead className="text-[10px] font-black text-text-secondary uppercase tracking-widest border-b border-border-subtle">
+            <thead className="text-[10px] font-medium text-text-secondary uppercase tracking-widest border-b border-border-subtle">
               <tr>
                 <th className="px-10 py-6">Hasta Kimliği</th>
                 <th className="px-10 py-6">Gestasyonel Yaş</th>
@@ -342,28 +411,28 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
               {filteredPatients.map(p => (
                 <tr key={p.id} className="hover:bg-slate-50/30 transition-colors group">
                   <td className="px-10 py-8">
-                    <div className="font-black text-text-primary text-base tracking-tight">{p.name}</div>
-                    <div className="text-[10px] text-text-secondary font-bold uppercase tracking-widest mt-1 opacity-50">{p.phone}</div>
+                    <div className="font-medium text-text-primary text-base tracking-tight">{p.name}</div>
+                    <div className="text-[10px] text-text-secondary font-medium uppercase tracking-widest mt-1 opacity-50">{p.phone}</div>
                   </td>
                   <td className="px-10 py-8">
-                    <span className="text-text-primary font-black text-[10px] bg-slate-100 px-4 py-1.5 rounded-full uppercase tracking-widest">{p.weeksPregnant}. Hafta</span>
+                    <span className="text-text-primary font-medium text-[10px] bg-slate-100 px-4 py-1.5 rounded-full uppercase tracking-widest">{p.weeksPregnant}. Hafta</span>
                   </td>
                   <td className="px-10 py-8">
                      <div className="flex items-center gap-2.5">
-                        <div className="w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_#10b981]"></div>
-                        <span className="text-[10px] font-black text-text-primary uppercase tracking-widest">Aktif Takip</span>
+                        <div className="w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_#2563eb]"></div>
+                        <span className="text-[10px] font-medium text-text-primary uppercase tracking-widest">Aktif Takip</span>
                      </div>
                   </td>
                   <td className="px-10 py-8 text-right space-x-3">
                     <button 
                       onClick={() => handleEdit(p)}
-                      className="px-5 py-2.5 bg-slate-100 text-text-secondary rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                      className="px-5 py-2.5 bg-[#2563eb] text-white rounded-full text-[10px] font-medium uppercase tracking-widest hover:bg-[#1d4ed8] transition-all"
                     >
                       Düzenle
                     </button>
                     <button 
                       onClick={() => startStudio(p)}
-                      className="px-6 py-2.5 bg-[#10b981] text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-emerald-500/20 inline-flex items-center gap-2"
+                      className="px-6 py-2.5 bg-[#2563eb] text-white rounded-full text-[10px] font-medium uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/20 inline-flex items-center gap-2"
                     >
                       AI Stüdyo <ArrowRight className="w-3 h-3" />
                     </button>
@@ -391,11 +460,19 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
   if (activeTab === 'reports') {
     return (
       <div className="space-y-10">
-        <h2 className="text-4xl font-black tracking-tighter text-text-primary">Raporlar</h2>
+        <h2 className="text-4xl font-medium tracking-tighter text-text-primary">Raporlar</h2>
         <EmptyState 
           title="Henüz Rapor Bulunmuyor"
           description="Klinik raporlarınız ve analiz sonuçlarınız burada listelenecektir."
           icon={<FileText className="w-10 h-10" />}
+          action={
+            <button 
+              onClick={() => setActiveTab('dashboard')}
+              className="px-10 py-4 bg-[#2563eb] text-white rounded-full text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/20"
+            >
+              Panel'e Dön
+            </button>
+          }
         />
       </div>
     );
@@ -404,14 +481,26 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
   if (activeTab === 'settings') {
     return (
       <div className="space-y-10">
-        <h2 className="text-4xl font-black tracking-tighter text-text-primary">Ayarlar</h2>
+        <h2 className="text-4xl font-medium tracking-tighter text-text-primary">Ayarlar</h2>
         <EmptyState 
           title="Sistem Ayarları"
           description="Klinik profiliniz ve uygulama ayarlarınız yakında burada olacaktır."
           icon={<Settings className="w-10 h-10" />}
+          action={
+            <button 
+              onClick={() => setActiveTab('dashboard')}
+              className="px-10 py-4 bg-[#2563eb] text-white rounded-full text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/20"
+            >
+              Panel'e Dön
+            </button>
+          }
         />
       </div>
     );
+  }
+
+  if (activeTab === 'biometrik-fcs') {
+    return null; // Handled by the unified studio/fetal/biometric block above
   }
 
   return null;

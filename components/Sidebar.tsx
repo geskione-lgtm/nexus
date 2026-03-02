@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { HeartPulse, LayoutDashboard, Users, Package, TrendingUp, UserCircle, Microscope, LogOut, X } from 'lucide-react';
+import { HeartPulse, LayoutDashboard, Users, Package, TrendingUp, UserCircle, Microscope, LogOut, X, Box, Baby } from 'lucide-react';
 import { User, UserRole } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -42,8 +42,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogou
               <HeartPulse className="w-6 h-6 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-bold tracking-tight text-text-primary leading-none">NeoBreed</span>
-              <span className="text-[10px] font-semibold text-primary uppercase tracking-wider mt-1">Intelligence</span>
+              <span className="text-xl font-medium tracking-tight text-text-primary leading-none">NeoBreed</span>
+              <span className="text-[10px] font-medium text-primary uppercase tracking-wider mt-1">Intelligence</span>
             </div>
           </div>
           <button onClick={onClose} className="lg:hidden p-2 hover:bg-slate-100 rounded-full">
@@ -54,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogou
       {/* Nav Groups */}
       <div className="flex-1 px-4 space-y-8">
         <div>
-          <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-4 px-4 opacity-50">YÖNETİM PANELİ</p>
+          <p className="text-[10px] font-medium text-text-secondary uppercase tracking-widest mb-4 px-4 opacity-50">YÖNETİM PANELİ</p>
           <nav className="space-y-1">
             <NavItem 
               active={activeTab === 'dashboard'} 
@@ -103,6 +103,18 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogou
                   label="AI Stüdyo" 
                   icon={<Microscope className="w-5 h-5" />} 
                 />
+                <NavItem 
+                  active={activeTab === 'fetal-studio'} 
+                  onClick={() => onTabChange('fetal-studio')}
+                  label="Fetal Stüdyo" 
+                  icon={<Baby className="w-5 h-5" />} 
+                />
+                <NavItem 
+                  active={activeTab === 'biometrik-fcs'} 
+                  onClick={() => onTabChange('biometrik-fcs')}
+                  label="Biometrik FCS" 
+                  icon={<Box className="w-5 h-5" />} 
+                />
               </>
             )}
           </nav>
@@ -113,11 +125,11 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogou
       <div className="p-4 border-t border-border-subtle">
         <div className="p-4 rounded-xl hover:bg-surface-hover transition-colors group">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-medium">
               {user.name.charAt(0)}
             </div>
             <div className="overflow-hidden">
-              <p className="text-sm font-semibold text-text-primary truncate">{user.name}</p>
+              <p className="text-sm font-medium text-text-primary truncate">{user.name}</p>
               <p className="text-[10px] text-text-secondary font-medium uppercase tracking-wider truncate">
                 {user.role === UserRole.SUPER_ADMIN ? 'Süper Yönetici' : 'Uzman Doktor'}
               </p>
@@ -125,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogou
           </div>
           <button 
             onClick={onLogout}
-            className="w-full py-2.5 flex items-center justify-center gap-2 text-text-secondary hover:text-rose-600 hover:bg-rose-50 rounded-lg text-xs font-bold transition-all"
+            className="w-full py-3 flex items-center justify-center gap-2 bg-[#2563eb] text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 hover:bg-[#1d4ed8]"
           >
             <LogOut className="w-4 h-4" />
             <span>Sistemden Ayrıl</span>
@@ -140,16 +152,16 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogou
 const NavItem: React.FC<{ label: string; icon: React.ReactNode; active?: boolean; onClick: () => void }> = ({ label, icon, active, onClick }) => (
   <button 
     onClick={onClick}
-    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all group relative ${
+    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all group relative ${
       active 
-        ? 'bg-primary/5 text-primary' 
+        ? 'bg-[#2563eb] text-white shadow-lg shadow-primary/20' 
         : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
     }`}
   >
-    <div className={`${active ? 'text-primary' : 'text-text-secondary group-hover:text-text-primary'} transition-colors`}>
+    <div className={`${active ? 'text-white' : 'text-text-secondary group-hover:text-text-primary'} transition-colors`}>
       {icon}
     </div>
-    <span className="tracking-tight">{label}</span>
+    <span className="tracking-tight uppercase text-[10px] tracking-widest">{label}</span>
     {active && (
       <motion.div 
         layoutId="activeNavIndicator"

@@ -57,7 +57,7 @@ const Onboarding: React.FC<Props> = ({ onComplete }) => {
               <button 
                 disabled={!formData.name}
                 onClick={() => isSystemEmpty ? handleFinalize() : setStep(2)}
-                className="w-full py-4.5 bg-black text-white rounded-2xl font-bold text-sm uppercase tracking-widest mt-6 hover:scale-[1.02] transition-all shadow-xl shadow-black/10"
+                className="w-full py-4.5 bg-[#2563eb] text-white rounded-2xl font-bold text-sm uppercase tracking-widest mt-6 hover:scale-[1.02] transition-all shadow-xl shadow-primary/20 hover:bg-[#1d4ed8]"
               >
                 {isSystemEmpty ? 'Sistemi Başlat' : 'Paket Seçimine Geç'}
               </button>
@@ -83,12 +83,12 @@ const Onboarding: React.FC<Props> = ({ onComplete }) => {
                       </li>
                     ))}
                   </ul>
-                  <div className={`w-full py-3 rounded-full text-[10px] font-bold uppercase tracking-widest text-center transition-all ${formData.packageId === pkg.id ? 'bg-black text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100'}`}>Seçili</div>
+                  <div className={`w-full py-3 rounded-full text-[10px] font-bold uppercase tracking-widest text-center transition-all ${formData.packageId === pkg.id ? 'bg-[#2563eb] text-white shadow-md' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100'}`}>Seçili</div>
                 </div>
               ))}
             </div>
             <div className="text-center mt-12">
-              <button onClick={() => setStep(3)} className="px-12 py-4.5 bg-black text-white rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-2xl">Ödeme Adımına Geç</button>
+              <button onClick={() => setStep(3)} className="px-12 py-4.5 bg-[#2563eb] text-white rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-2xl hover:bg-[#1d4ed8]">Ödeme Adımına Geç</button>
             </div>
           </div>
         )}
@@ -121,7 +121,7 @@ const Onboarding: React.FC<Props> = ({ onComplete }) => {
             <button 
               disabled={loading}
               onClick={handleFinalize}
-              className="w-full py-5 bg-black text-white rounded-full font-bold text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-black/10"
+              className="w-full py-5 bg-[#2563eb] text-white rounded-full font-bold text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-primary/20 hover:bg-[#1d4ed8]"
             >
               {loading ? 'İşlem Onaylanıyor...' : 'Aboneliği Başlat'}
             </button>

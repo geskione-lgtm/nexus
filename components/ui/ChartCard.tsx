@@ -15,7 +15,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ title, subtitle, children,
     <SoftCard className="flex flex-col h-full relative group">
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h3 className="text-sm font-semibold text-text-primary tracking-tight">
+          <h3 className="text-sm font-medium text-text-primary tracking-tight">
             {title}
           </h3>
           {subtitle && (

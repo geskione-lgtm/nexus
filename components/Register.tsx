@@ -28,16 +28,16 @@ const Register: React.FC<RegisterProps> = ({ onBack, onSwitchToLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FBFBFD]">
+    <div className="min-h-screen flex items-center justify-center bg-surface">
       <div className="max-w-sm w-full p-10 text-center animate-in fade-in slide-in-from-bottom-10 duration-1000">
         <div className="mb-12">
-          <div className="w-16 h-16 bg-black rounded-[20px] flex items-center justify-center mx-auto mb-10 shadow-2xl">
+          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-10 shadow-floating">
             <div className="w-7 h-7 bg-white rounded-sm"></div>
           </div>
-          <h2 className="text-3xl font-bold text-black tracking-tight mb-3">
+          <h2 className="text-3xl font-bold text-text-primary tracking-tight mb-3">
             Klinik Kaydı Oluştur
           </h2>
-          <p className="text-apple-gray text-xs font-semibold uppercase tracking-widest leading-loose">
+          <p className="text-text-secondary text-xs font-semibold uppercase tracking-widest leading-loose">
             Yapay Zeka Destekli Fetal Görüntüleme
           </p>
         </div>
@@ -46,16 +46,16 @@ const Register: React.FC<RegisterProps> = ({ onBack, onSwitchToLogin }) => {
           <input 
             type="email" required value={email} onChange={e => setEmail(e.target.value)}
             placeholder="Kurumsal E-posta"
-            className="w-full px-6 py-4 bg-white border border-black/5 rounded-2xl text-sm font-medium focus:border-black/20 outline-none transition-all shadow-sm"
+            className="w-full px-6 py-4 bg-white border border-border-subtle rounded-2xl text-sm font-medium focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-sm"
           />
           <input 
             type="password" required value={password} onChange={e => setPassword(e.target.value)}
             placeholder="Şifre"
-            className="w-full px-6 py-4 bg-white border border-black/5 rounded-2xl text-sm font-medium focus:border-black/20 outline-none transition-all shadow-sm"
+            className="w-full px-6 py-4 bg-white border border-border-subtle rounded-2xl text-sm font-medium focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-sm"
           />
           <button 
             disabled={loading}
-            className="w-full py-4.5 bg-black text-white rounded-2xl font-bold text-sm uppercase tracking-widest mt-6 hover:scale-[1.01] active:scale-[0.98] transition-all shadow-xl shadow-black/10"
+            className="w-full py-4.5 bg-[#2563eb] text-white rounded-2xl font-bold text-sm uppercase tracking-widest mt-6 hover:bg-[#1d4ed8] hover:scale-[1.01] active:scale-[0.98] transition-all shadow-floating"
           >
             {loading ? 'İşlem Yapılıyor...' : 'Devam Et'}
           </button>
@@ -64,13 +64,13 @@ const Register: React.FC<RegisterProps> = ({ onBack, onSwitchToLogin }) => {
         <div className="mt-10">
           <button 
             onClick={onSwitchToLogin}
-            className="text-apple-gray text-[10px] font-bold uppercase tracking-widest hover:text-black transition-colors"
+            className="text-text-secondary text-[10px] font-bold uppercase tracking-widest hover:text-primary transition-colors"
           >
             Zaten bir hesabın mı var? Giriş yap
           </button>
         </div>
 
-        <button onClick={onBack} className="mt-16 text-black/20 text-[10px] font-bold uppercase tracking-widest hover:text-black transition-colors">
+        <button onClick={onBack} className="mt-16 text-text-secondary/30 text-[10px] font-bold uppercase tracking-widest hover:text-text-primary transition-colors">
           Ana Sayfaya Dön
         </button>
       </div>

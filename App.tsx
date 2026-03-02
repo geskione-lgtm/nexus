@@ -94,8 +94,8 @@ const App: React.FC = () => {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-6">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-[0_0_20px_rgba(16,185,129,0.2)]"></div>
-          <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.3em] animate-pulse">Sistem Yükleniyor...</p>
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-floating"></div>
+          <p className="text-xs font-medium text-text-secondary uppercase tracking-widest animate-pulse">Sistem Yükleniyor...</p>
         </div>
       </div>
     );
@@ -121,8 +121,8 @@ const App: React.FC = () => {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-6">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-[0_0_20px_rgba(16,185,129,0.2)]"></div>
-          <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.3em] animate-pulse">Oturum Doğrulanıyor...</p>
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-floating"></div>
+          <p className="text-xs font-medium text-text-secondary uppercase tracking-widest animate-pulse">Oturum Doğrulanıyor...</p>
         </div>
       </div>
     );
@@ -140,7 +140,7 @@ const App: React.FC = () => {
         onLogout={() => supabase.auth.signOut()} 
         onTabChange={setActiveTab}
         activeTab={activeTab}
-        title={activeTab === 'dashboard' ? 'Genel Bakış' : activeTab === 'studio' ? 'AI Stüdyo' : activeTab === 'patients' ? 'Hasta Kayıtları' : activeTab === 'packages' ? 'Lisans Paketleri' : activeTab === 'revenue' ? 'Finansal Analiz' : activeTab === 'reports' ? 'Raporlar' : activeTab === 'settings' ? 'Ayarlar' : activeTab.replace('_', ' ')}
+        title={activeTab === 'dashboard' ? 'Genel Bakış' : activeTab === 'studio' ? 'AI Stüdyo' : activeTab === 'fetal-studio' ? 'Fetal Stüdyo' : activeTab === 'biometrik-fcs' ? 'Biometrik FCS' : activeTab === 'patients' ? 'Hasta Kayıtları' : activeTab === 'packages' ? 'Lisans Paketleri' : activeTab === 'revenue' ? 'Finansal Analiz' : activeTab === 'reports' ? 'Raporlar' : activeTab === 'settings' ? 'Ayarlar' : activeTab.replace('_', ' ')}
       />
 
       {/* Dashboard Content */}

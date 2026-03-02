@@ -16,7 +16,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ title, description, acti
         {icon || <Inbox className="w-10 h-10" />}
       </div>
       
-      <h3 className="text-xl font-bold text-text-primary mb-2 tracking-tight">
+      <h3 className="text-xl font-medium text-text-primary mb-2 tracking-tight">
         {title}
       </h3>
       <p className="text-sm text-text-secondary max-w-xs mx-auto mb-8 leading-relaxed">
