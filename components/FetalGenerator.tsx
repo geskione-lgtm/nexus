@@ -14,8 +14,11 @@ import {
   RotateCcw,
   Box,
   ChevronRight,
-  Baby
+  Baby,
+  X,
+  Mail
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface Measurements {
   bpd: number | null;
@@ -37,6 +40,8 @@ const FetalGenerator: React.FC<Props> = ({ patient, onScanGenerated, history }) 
   const [error, setError] = useState<string | null>(null);
   const [lastGeneratedScan, setLastGeneratedScan] = useState<ScanResult | null>(null);
   const [generationStatus, setGenerationStatus] = useState<string>('');
+  const [sharingScan, setSharingScan] = useState<ScanResult | null>(null);
+  const [showQRCode, setShowQRCode] = useState(false);
   
   const [measurements, setMeasurements] = useState<Measurements>({
     bpd: null,
@@ -113,6 +118,26 @@ const FetalGenerator: React.FC<Props> = ({ patient, onScanGenerated, history }) 
     }
   };
 
+  const downloadImage = (url: string, filename: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const shareWhatsApp = (url: string) => {
+    const text = `NeoBreed Fetal Stüdyo Sonucu: ${url}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const shareEmail = (url: string) => {
+    const subject = `NeoBreed Fetal Stüdyo Sonucu - ${patient.name}`;
+    const body = `Merhaba,\n\n${patient.name} için oluşturulan fetal rekonstrüksiyon sonucunu aşağıda görebilirsiniz:\n\n${url}\n\nNeoBreed Intelligence`;
+    window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
@@ -121,7 +146,7 @@ const FetalGenerator: React.FC<Props> = ({ patient, onScanGenerated, history }) 
         <div className="xl:col-span-4 space-y-6">
           <div className="bg-white rounded-[32px] p-8 shadow-soft border border-border-subtle space-y-8">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-[#2563eb]/10 flex items-center justify-center">
                 <Baby className="w-6 h-6 text-primary" />
               </div>
               <div>
@@ -135,7 +160,7 @@ const FetalGenerator: React.FC<Props> = ({ patient, onScanGenerated, history }) 
               <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em] ml-2">Ultrason Görüntüsü</p>
               <div 
                 onClick={() => !isGenerating && fileInputRef.current?.click()}
-                className={`aspect-video rounded-3xl border-2 border-dashed transition-all flex flex-col items-center justify-center cursor-pointer group relative overflow-hidden ${previewUrl ? 'border-primary/40 bg-primary/5' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'}`}
+                className={`aspect-video rounded-3xl border-2 border-dashed transition-all flex flex-col items-center justify-center cursor-pointer group relative overflow-hidden ${previewUrl ? 'border-[#2563eb]/40 bg-[#2563eb]/5' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'}`}
               >
                 {previewUrl ? (
                   <img src={previewUrl} className="w-full h-full object-cover grayscale opacity-60" />
@@ -197,13 +222,13 @@ const FetalGenerator: React.FC<Props> = ({ patient, onScanGenerated, history }) 
           {lastGeneratedScan ? (
             <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-soft border border-border-subtle space-y-10 animate-in zoom-in-95 duration-700 relative overflow-hidden">
               {/* Decorative background glow - subtle */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#2563eb]/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
 
               <div className="flex justify-between items-start relative z-10">
                 <div className="space-y-2">
                   <h2 className="text-3xl font-medium text-text-primary tracking-tighter">Fetal Rekonstrüksiyon</h2>
                   <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest">
+                    <span className="px-3 py-1 bg-[#2563eb]/10 text-[#2563eb] rounded-full text-[10px] font-bold uppercase tracking-widest">
                       {patient.weeksPregnant}. Hafta
                     </span>
                     <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest opacity-40">
@@ -212,10 +237,16 @@ const FetalGenerator: React.FC<Props> = ({ patient, onScanGenerated, history }) 
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <button className="w-12 h-12 rounded-2xl bg-[#2563eb] text-white hover:bg-[#1d4ed8] flex items-center justify-center transition-all shadow-lg shadow-primary/20">
+                  <button 
+                    onClick={() => downloadImage(lastGeneratedScan.babyFaceUrl, `neobreed-fetal-${patient.name}.png`)}
+                    className="w-12 h-12 rounded-2xl bg-[#2563eb] text-white hover:bg-[#1d4ed8] flex items-center justify-center transition-all shadow-lg shadow-[#2563eb]/20"
+                  >
                     <Download className="w-5 h-5" />
                   </button>
-                  <button className="w-12 h-12 rounded-2xl bg-[#2563eb] text-white hover:bg-[#1d4ed8] flex items-center justify-center transition-all shadow-lg shadow-primary/20">
+                  <button 
+                    onClick={() => setSharingScan(lastGeneratedScan)}
+                    className="w-12 h-12 rounded-2xl bg-[#2563eb] text-white hover:bg-[#1d4ed8] flex items-center justify-center transition-all shadow-lg shadow-[#2563eb]/20"
+                  >
                     <Share2 className="w-5 h-5" />
                   </button>
                 </div>
@@ -232,7 +263,7 @@ const FetalGenerator: React.FC<Props> = ({ patient, onScanGenerated, history }) 
                 {/* Overlay info */}
                 <div className="absolute top-6 left-6 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 -translate-y-2 group-hover:translate-y-0">
                   <div className="bg-white/80 backdrop-blur-md border border-border-subtle px-3 py-1.5 rounded-full flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
+                    <div className="w-1.5 h-1.5 bg-[#2563eb] rounded-full animate-pulse"></div>
                     <span className="text-[9px] font-bold text-text-primary uppercase tracking-widest">Medical 3D Render</span>
                   </div>
                 </div>
@@ -313,6 +344,105 @@ const FetalGenerator: React.FC<Props> = ({ patient, onScanGenerated, history }) 
           )}
         </div>
       </div>
+
+      {/* Share Modal */}
+      <AnimatePresence>
+        {sharingScan && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-xl animate-in fade-in duration-500">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white rounded-[56px] p-12 max-w-md w-full shadow-2xl border border-white/20"
+            >
+              <div className="flex justify-between items-start mb-10">
+                <div className="space-y-1">
+                  <h3 className="text-3xl font-medium text-[#111827] tracking-tighter">Görseli Paylaş</h3>
+                  <p className="text-text-secondary text-[10px] font-medium uppercase tracking-[0.25em] opacity-50">Hasta: {patient.name}</p>
+                </div>
+                <button onClick={() => { setSharingScan(null); setShowQRCode(false); }} className="w-10 h-10 flex items-center justify-center hover:bg-slate-100 rounded-full transition-all">
+                  <X className="w-6 h-6 text-[#111827]" />
+                </button>
+              </div>
+
+              <div className="space-y-10">
+                <div className="bg-slate-50 p-8 rounded-[40px] flex flex-col items-center justify-center space-y-6 min-h-[280px] border border-border-subtle">
+                  {showQRCode ? (
+                    <div className="animate-in zoom-in duration-500 flex flex-col items-center">
+                      {!sharingScan.babyFaceUrl.startsWith('data:') ? (
+                        <>
+                          <div className="p-4 bg-white rounded-3xl shadow-xl">
+                            <QRCodeSVG value={sharingScan.babyFaceUrl} size={200} level="H" includeMargin={true} />
+                          </div>
+                          <p className="text-[10px] font-medium text-text-secondary uppercase tracking-[0.2em] text-center mt-6 opacity-60">
+                            Telefonunuzla okutarak<br/>görseli anında indirebilirsiniz.
+                          </p>
+                        </>
+                      ) : (
+                        <div className="text-center p-6">
+                          <div className="w-16 h-16 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-100">
+                            <AlertCircle className="w-8 h-8" />
+                          </div>
+                          <p className="text-[10px] font-medium text-text-secondary uppercase tracking-[0.2em] opacity-60">
+                            Bu yerel bir kayıt.<br/>
+                            QR kod sadece buluta<br/>yüklenmiş kayıtlar için çalışır.
+                          </p>
+                          <button onClick={() => setShowQRCode(false)} className="mt-6 text-[10px] font-medium text-[#111827] underline uppercase tracking-widest">Görsele Dön</button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="relative group">
+                        <img src={sharingScan.babyFaceUrl} className="w-48 h-48 object-cover rounded-[32px] shadow-2xl shadow-black/20" alt="Preview" />
+                        <div className="absolute inset-0 bg-[#2563eb]/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-[32px]"></div>
+                      </div>
+                      <p className="text-[10px] font-medium text-text-secondary uppercase tracking-[0.2em] text-center opacity-60">
+                        {sharingScan.babyFaceUrl.startsWith('data:') 
+                          ? 'Yerel Kayıt (Buluta yüklenmemiş)' 
+                          : 'Görsel buluta yüklendi.'}
+                        <br/>
+                        Paylaşım seçeneklerini kullanabilirsiniz.
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <button 
+                    onClick={() => shareWhatsApp(sharingScan.babyFaceUrl)}
+                    className="flex flex-col items-center justify-center gap-2 py-4 bg-[#25D366] text-white rounded-2xl font-bold text-[9px] uppercase tracking-widest hover:scale-[1.02] transition-all shadow-lg shadow-[#25D366]/20"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    WhatsApp
+                  </button>
+                  <button 
+                    onClick={() => shareEmail(sharingScan.babyFaceUrl)}
+                    className="flex flex-col items-center justify-center gap-2 py-4 bg-[#2563eb] text-white rounded-2xl font-bold text-[9px] uppercase tracking-widest hover:scale-[1.02] transition-all shadow-lg shadow-[#2563eb]/20"
+                  >
+                    <Mail className="w-4 h-4" />
+                    E-posta
+                  </button>
+                  <button 
+                    onClick={() => setShowQRCode(!showQRCode)}
+                    className={`flex flex-col items-center justify-center gap-2 py-4 rounded-2xl font-bold text-[9px] uppercase tracking-widest hover:scale-[1.02] transition-all ${showQRCode ? 'bg-slate-100 text-[#111827]' : 'bg-[#111827] text-white shadow-lg shadow-black/10'}`}
+                  >
+                    <Box className="w-4 h-4" />
+                    {showQRCode ? 'Görsel' : 'QR Kod'}
+                  </button>
+                </div>
+
+                <button 
+                  onClick={() => downloadImage(sharingScan.babyFaceUrl, `neobreed-fetal-${patient.name}.png`)}
+                  className="w-full py-4 bg-slate-100 text-[#111827] rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all"
+                >
+                  Cihaza İndir
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

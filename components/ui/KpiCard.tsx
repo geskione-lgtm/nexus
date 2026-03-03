@@ -15,7 +15,7 @@ interface KpiCardProps {
   color?: string;
 }
 
-export const KpiCard: React.FC<KpiCardProps> = ({ label, value, delta, icon, color = "bg-primary" }) => {
+export const KpiCard: React.FC<KpiCardProps> = ({ label, value, delta, icon, color = "bg-[#2563eb]" }) => {
   return (
     <SoftCard className="relative group flex flex-col justify-between min-h-[160px]">
       <div className="flex justify-between items-start">

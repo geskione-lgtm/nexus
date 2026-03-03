@@ -15,12 +15,12 @@ export const TopBar: React.FC<TopBarProps> = ({ user, onLogout, onTabChange, act
   return (
     <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
       <div className="space-y-1">
-        <h1 className="text-2xl font-medium tracking-tight text-text-primary">
-          Hoş Geldiniz, <span className="text-primary">{user.name.split(' ')[0]}</span>
+        <h1 className="text-2xl font-medium tracking-tight text-[#111827]">
+          Hoş Geldiniz, <span className="text-[#2563eb]">{user.name.split(' ')[0]}</span>
         </h1>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1 bg-surface border border-border-subtle rounded-full shadow-sm">
-            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+            <div className="w-1.5 h-1.5 bg-[#2563eb] rounded-full animate-pulse" />
             <p className="text-[10px] font-medium text-text-secondary uppercase tracking-wider">
               Sistem Aktif · {new Date().toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
             </p>
@@ -34,19 +34,19 @@ export const TopBar: React.FC<TopBarProps> = ({ user, onLogout, onTabChange, act
         <nav className="hidden xl:flex items-center bg-surface border border-border-subtle p-1 rounded-xl shadow-sm">
           <button 
             onClick={() => onTabChange('dashboard')}
-            className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'dashboard' ? 'bg-[#2563eb] text-white shadow-md' : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'}`}
+            className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'dashboard' ? 'bg-[#2563eb] text-white shadow-md' : 'text-text-secondary hover:text-[#111827] hover:bg-surface-hover'}`}
           >
             Panel
           </button>
           <button 
             onClick={() => onTabChange('reports')}
-            className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'reports' ? 'bg-[#2563eb] text-white shadow-md' : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'}`}
+            className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'reports' ? 'bg-[#2563eb] text-white shadow-md' : 'text-text-secondary hover:text-[#111827] hover:bg-surface-hover'}`}
           >
             Raporlar
           </button>
           <button 
             onClick={() => onTabChange('settings')}
-            className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'settings' ? 'bg-[#2563eb] text-white shadow-md' : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'}`}
+            className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'settings' ? 'bg-[#2563eb] text-white shadow-md' : 'text-text-secondary hover:text-[#111827] hover:bg-surface-hover'}`}
           >
             Ayarlar
           </button>
@@ -76,11 +76,11 @@ export const TopBar: React.FC<TopBarProps> = ({ user, onLogout, onTabChange, act
 
           {/* User Profile */}
           <div className="flex items-center gap-3 bg-surface border border-border-subtle pl-2 pr-4 py-2 rounded-xl shadow-sm hover:bg-surface-hover transition-all cursor-pointer group">
-            <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center text-xs font-medium">
+            <div className="w-8 h-8 rounded-lg bg-[#2563eb] text-white flex items-center justify-center text-xs font-medium">
               {user.name.charAt(0)}
             </div>
             <div className="hidden sm:block">
-              <p className="text-xs font-medium text-text-primary leading-none">
+              <p className="text-xs font-medium text-[#111827] leading-none">
                 {user.name}
               </p>
               <p className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mt-1">

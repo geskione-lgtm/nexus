@@ -333,11 +333,11 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                 <div className="bg-white rounded-[56px] p-12 max-w-md w-full shadow-2xl animate-in zoom-in duration-500 border border-white/20">
                   <div className="flex justify-between items-start mb-10">
                     <div className="space-y-1">
-                      <h3 className="text-3xl font-medium text-text-primary tracking-tighter">Görseli Paylaş</h3>
+                      <h3 className="text-3xl font-medium text-[#111827] tracking-tighter">Görseli Paylaş</h3>
                       <p className="text-text-secondary text-[10px] font-medium uppercase tracking-[0.25em] opacity-50">Hasta: {patient.name}</p>
                     </div>
                     <button onClick={() => { setSharingScan(null); setShowQRCode(false); }} className="w-10 h-10 flex items-center justify-center hover:bg-slate-100 rounded-full transition-all">
-                      <X className="w-6 h-6 text-text-primary" />
+                      <X className="w-6 h-6 text-[#111827]" />
                     </button>
                   </div>
 
@@ -363,7 +363,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                                 Bu eski bir kayıt.<br/>
                                 QR kod sadece yeni ve buluta<br/>yüklenmiş kayıtlar için çalışır.
                               </p>
-                              <button onClick={() => setShowQRCode(false)} className="mt-6 text-[10px] font-medium text-text-primary underline uppercase tracking-widest">Görsele Dön</button>
+                              <button onClick={() => setShowQRCode(false)} className="mt-6 text-[10px] font-medium text-[#111827] underline uppercase tracking-widest">Görsele Dön</button>
                             </div>
                           )}
                         </div>
@@ -371,7 +371,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                         <>
                           <div className="relative group">
                             <img src={sharingScan.babyFaceUrl} className="w-48 h-48 object-cover rounded-[32px] shadow-2xl shadow-black/20" alt="Preview" />
-                            <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-[32px]"></div>
+                            <div className="absolute inset-0 bg-[#2563eb]/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-[32px]"></div>
                           </div>
                           <p className="text-[10px] font-medium text-text-secondary uppercase tracking-[0.2em] text-center opacity-60">
                             {sharingScan.babyFaceUrl.startsWith('data:') 
@@ -393,7 +393,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                       </button>
                       <button 
                         onClick={() => setShowQRCode(!showQRCode)}
-                        className={`flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all ${showQRCode ? 'bg-slate-100 text-text-primary' : 'bg-text-primary text-white shadow-lg shadow-black/10'}`}
+                        className={`flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-all ${showQRCode ? 'bg-slate-100 text-[#111827]' : 'bg-[#111827] text-white shadow-lg shadow-black/10'}`}
                       >
                         {showQRCode ? 'Görsele Dön' : 'QR Kod Göster'}
                       </button>
@@ -424,11 +424,11 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                     <div className="space-y-8">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                            <CheckCircle2 className="w-6 h-6 text-primary" />
+                          <div className="w-12 h-12 rounded-2xl bg-[#2563eb]/10 flex items-center justify-center">
+                            <CheckCircle2 className="w-6 h-6 text-[#2563eb]" />
                           </div>
                           <div>
-                            <h1 className="text-text-primary uppercase">Sentez Tamamlandı</h1>
+                            <h1 className="text-[#111827] uppercase">Sentez Tamamlandı</h1>
                             <p className="text-xs font-medium text-text-secondary uppercase tracking-widest">ID: {lastGeneratedScan.id.split('-')[0]}</p>
                           </div>
                         </div>
@@ -459,7 +459,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                           ].map((field) => (
                             <div key={field.id} className="flex flex-col items-center text-center">
                               <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em] mb-1">{field.label}</p>
-                              <p className="text-sm font-black text-text-primary uppercase leading-tight">
+                              <p className="text-sm font-black text-[#111827] uppercase leading-tight">
                                 {lastGeneratedScan.measurements?.[field.id] ?? measurements[field.id as keyof Measurements] ?? 'N/A'}
                               </p>
                               <p className="text-[9px] font-bold text-text-secondary uppercase tracking-widest opacity-40">MM</p>
@@ -502,15 +502,15 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                         <div className="flex-1 space-y-10">
                           <div className="space-y-6">
                             <div className="flex items-center gap-4 mb-2">
-                              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                <Upload className="w-5 h-5 text-primary" />
+                              <div className="w-10 h-10 rounded-xl bg-[#2563eb]/10 flex items-center justify-center">
+                                <Upload className="w-5 h-5 text-[#2563eb]" />
                               </div>
-                              <h3 className="text-text-primary uppercase">1. Ultrason Görüntüsü</h3>
+                              <h3 className="text-[#111827] uppercase">1. Ultrason Görüntüsü</h3>
                             </div>
                             
                             <div 
                               onClick={() => !isGenerating && fileInputRef.current?.click()}
-                              className={`aspect-video rounded-[32px] border-2 border-dashed transition-all flex flex-col items-center justify-center cursor-pointer group relative overflow-hidden ${previewUrl ? 'border-primary/40 bg-primary/5' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-primary/20'}`}
+                              className={`aspect-video rounded-[32px] border-2 border-dashed transition-all flex flex-col items-center justify-center cursor-pointer group relative overflow-hidden ${previewUrl ? 'border-[#2563eb]/40 bg-[#2563eb]/5' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-[#2563eb]/20'}`}
                             >
                               {previewUrl ? (
                                 <>
@@ -520,7 +520,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                                   </div>
                                 </>
                               ) : (
-                                <div className="flex flex-col items-center gap-4 text-slate-400 group-hover:text-primary transition-colors">
+                                <div className="flex flex-col items-center gap-4 text-slate-400 group-hover:text-[#2563eb] transition-colors">
                                   <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-soft border border-slate-100 group-hover:scale-110 transition-transform">
                                     <Upload className="w-8 h-8" />
                                   </div>
@@ -539,7 +539,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                               <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em] ml-2">Anne Fotoğrafı</p>
                               <div 
                                 onClick={() => !isGenerating && motherPhotoRef.current?.click()}
-                                className={`aspect-square rounded-3xl border-2 border-dashed transition-all flex flex-col items-center justify-center cursor-pointer group relative overflow-hidden ${motherPhoto ? 'border-primary/40 bg-primary/5' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'}`}
+                                className={`aspect-square rounded-3xl border-2 border-dashed transition-all flex flex-col items-center justify-center cursor-pointer group relative overflow-hidden ${motherPhoto ? 'border-[#2563eb]/40 bg-[#2563eb]/5' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'}`}
                               >
                                 {motherPhoto ? (
                                   <img src={motherPhoto} className="w-full h-full object-cover" />
@@ -552,7 +552,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                               <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em] ml-2">Baba Fotoğrafı</p>
                               <div 
                                 onClick={() => !isGenerating && fatherPhotoRef.current?.click()}
-                                className={`aspect-square rounded-3xl border-2 border-dashed transition-all flex flex-col items-center justify-center cursor-pointer group relative overflow-hidden ${fatherPhoto ? 'border-primary/40 bg-primary/5' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'}`}
+                                className={`aspect-square rounded-3xl border-2 border-dashed transition-all flex flex-col items-center justify-center cursor-pointer group relative overflow-hidden ${fatherPhoto ? 'border-[#2563eb]/40 bg-[#2563eb]/5' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'}`}
                               >
                                 {fatherPhoto ? (
                                   <img src={fatherPhoto} className="w-full h-full object-cover" />
@@ -568,9 +568,9 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                         <div className="flex-1 space-y-6">
                           <div className="flex items-center gap-4 mb-2">
                             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                              <Activity className="w-5 h-5 text-primary" />
+                              <Activity className="w-5 h-5 text-[#2563eb]" />
                             </div>
-                            <h3 className="text-text-primary uppercase">2. Biyometrik Ölçümler</h3>
+                            <h3 className="text-[#111827] uppercase">2. Biyometrik Ölçümler</h3>
                           </div>
 
                           <div className="grid grid-cols-2 gap-4">
@@ -609,9 +609,9 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                         <div className="space-y-6">
                           <div className="flex items-center gap-4 mb-2">
                             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                              <Settings2 className="w-5 h-5 text-primary" />
+                              <Settings2 className="w-5 h-5 text-[#2563eb]" />
                             </div>
-                            <h3 className="text-text-primary uppercase">3. Sentez Ayarları</h3>
+                            <h3 className="text-[#111827] uppercase">3. Sentez Ayarları</h3>
                           </div>
                           
                           <div className="grid grid-cols-2 gap-4">
@@ -643,8 +643,8 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
 
                           <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-border-subtle">
                             <div className="flex items-center gap-3">
-                              <div className={`w-2 h-2 rounded-full ${options.dualView ? 'bg-primary animate-pulse' : 'bg-slate-300'}`}></div>
-                              <label className="text-text-primary uppercase tracking-widest">Çift Bakış Açısı (Ön + Profil)</label>
+                              <div className={`w-2 h-2 rounded-full ${options.dualView ? 'bg-[#2563eb] animate-pulse' : 'bg-slate-300'}`}></div>
+                              <label className="text-[#111827] uppercase tracking-widest">Çift Bakış Açısı (Ön + Profil)</label>
                             </div>
                             <input 
                               type="checkbox" 
@@ -658,9 +658,9 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                         <div className="space-y-6">
                           <div className="flex items-center gap-4 mb-2">
                             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                              <Maximize2 className="w-5 h-5 text-primary" />
+                              <Maximize2 className="w-5 h-5 text-[#2563eb]" />
                             </div>
-                            <h3 className="text-text-primary uppercase">4. Ölçek ve Notlar</h3>
+                            <h3 className="text-[#111827] uppercase">4. Ölçek ve Notlar</h3>
                           </div>
 
                           <div className="space-y-1.5">
@@ -731,7 +731,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
             <div className="lg:col-span-5 bg-white rounded-[32px] p-10 flex flex-col h-[calc(100vh-200px)] border border-border-subtle shadow-soft sticky top-8">
               <div className="flex justify-between items-center mb-10">
                 <div className="space-y-1">
-                  <h3 className="text-text-primary uppercase">Render Archives</h3>
+                  <h3 className="text-[#111827] uppercase">Render Archives</h3>
                   <p className="text-xs font-medium text-text-secondary uppercase tracking-widest opacity-50">{patient.name}</p>
                 </div>
                 <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center border border-border-subtle">
@@ -766,9 +766,9 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                         </div>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between px-2">
-                            <p className="text-[10px] font-semibold text-primary uppercase tracking-widest">AI SYNTHESIS</p>
+                            <p className="text-[10px] font-semibold text-[#2563eb] uppercase tracking-widest">AI SYNTHESIS</p>
                             {result.isDualView && (
-                              <span className="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase tracking-widest border border-primary/20">Ön + Profil</span>
+                              <span className="text-[10px] font-semibold bg-[#2563eb]/10 text-[#2563eb] px-2 py-0.5 rounded-full uppercase tracking-widest border border-[#2563eb]/20">Ön + Profil</span>
                             )}
                           </div>
                           <div className="aspect-square rounded-2xl overflow-hidden shadow-floating group-hover:scale-[1.02] transition-all duration-500">
@@ -776,7 +776,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                           </div>
                         </div>
                       </div>
-                      <div className="flex justify-between items-center px-6 py-4 bg-primary/5 rounded-2xl border border-primary/10">
+                      <div className="flex justify-between items-center px-6 py-4 bg-[#2563eb]/5 rounded-2xl border border-[#2563eb]/10">
                         <span className="text-xs font-medium text-text-secondary tracking-tight opacity-50">{result.createdAt}</span>
                         <div className="flex items-center gap-6">
                           <button 
@@ -809,7 +809,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                   >
                     <div className="p-4 md:p-6 border-b border-border-subtle flex justify-between items-center bg-white/50 backdrop-blur-md sticky top-0 z-10">
                       <div className="space-y-0.5">
-                        <h1 className="text-lg md:text-2xl font-medium text-text-primary tracking-tight">
+                        <h1 className="text-lg md:text-2xl font-medium text-[#111827] tracking-tight">
                           Biyometrik Rekonstrüksiyon Kanıtı
                         </h1>
                         <p className="text-text-secondary text-[9px] md:text-[10px] font-medium uppercase tracking-widest opacity-50">
@@ -822,7 +822,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                           <div className="hidden md:flex items-center gap-4 border-r border-slate-100 pr-6">
                             <div className="text-right">
                               <p className="text-[9px] font-bold text-text-secondary uppercase tracking-widest opacity-40">Uyum Skoru</p>
-                              <p className="text-3xl font-medium text-primary tracking-tighter leading-none">{activeProof.scores.final}</p>
+                              <p className="text-3xl font-medium text-[#2563eb] tracking-tighter leading-none">{activeProof.scores.final}</p>
                             </div>
                             <div className="flex flex-col gap-0.5 text-[8px] font-bold text-text-secondary/60 uppercase tracking-widest">
                               <span>Landmark: {activeProof.scores.landmark}</span>
@@ -845,7 +845,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                         onClick={() => setViewingProof(null)}
                         className="w-8 h-8 md:w-12 md:h-12 flex items-center justify-center hover:bg-slate-100 rounded-full transition-all group"
                       >
-                        <X className="w-5 h-5 md:w-6 h-6 text-text-primary group-hover:rotate-90 transition-transform duration-300" />
+                        <X className="w-5 h-5 md:w-6 h-6 text-[#111827] group-hover:rotate-90 transition-transform duration-300" />
                       </button>
                     </div>
 
@@ -866,7 +866,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                                 <button
                                   key={mode}
                                   onClick={() => setCompareMode(mode)}
-                                  className={`px-4 md:px-5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all ${compareMode === mode ? 'bg-white text-primary shadow-sm' : 'text-text-secondary hover:text-text-primary'}`}
+                                  className={`px-4 md:px-5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all ${compareMode === mode ? 'bg-white text-[#2563eb] shadow-sm' : 'text-text-secondary hover:text-[#111827]'}`}
                                 >
                                   {mode === 'side-by-side' ? 'Yan Yana' : mode === 'overlay' ? 'Üst Üste' : 'Kaydırmalı'}
                                 </button>
@@ -897,8 +897,8 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                                 </div>
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between px-2 md:px-4">
-                                    <h3 className="text-[10px] font-bold text-primary uppercase tracking-widest">Rekonstrüksiyon: AI Sentez</h3>
-                                    <span className="text-[9px] font-mono font-medium text-primary opacity-60">VERIFIED</span>
+                                    <h3 className="text-[10px] font-bold text-[#2563eb] uppercase tracking-widest">Rekonstrüksiyon: AI Sentez</h3>
+                                    <span className="text-[9px] font-mono font-medium text-[#2563eb] opacity-60">VERIFIED</span>
                                   </div>
                                   <div className="relative aspect-video bg-white rounded-xl overflow-hidden border border-slate-200 shadow-md">
                                     <img 
@@ -908,7 +908,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                                     />
                                     <LandmarkOverlay landmarks={activeProof.landmarks.generated} />
                                     {viewingProof.isDualView && (
-                                      <div className="absolute bottom-3 left-3 bg-primary/90 text-white px-2 py-1 rounded-md font-bold text-[8px] uppercase tracking-widest backdrop-blur-sm">
+                                      <div className="absolute bottom-3 left-3 bg-[#2563eb]/90 text-white px-2 py-1 rounded-md font-bold text-[8px] uppercase tracking-widest backdrop-blur-sm">
                                         Kanıt Analizi: Ön Görünüm
                                       </div>
                                     )}
@@ -947,7 +947,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                                   />
                                 </div>
                                 <div 
-                                  className="absolute inset-y-0 w-1 bg-primary cursor-ew-resize z-30"
+                                  className="absolute inset-y-0 w-1 bg-[#2563eb] cursor-ew-resize z-30"
                                   style={{ left: `${sliderPosition}%` }}
                                   onMouseDown={(e) => {
                                     const container = e.currentTarget.parentElement;
@@ -983,7 +983,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                                     window.addEventListener('touchend', handleEnd);
                                   }}
                                 >
-                                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-full shadow-xl flex items-center justify-center text-white">
+                                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-[#2563eb] rounded-full shadow-xl flex items-center justify-center text-white">
                                     <Maximize2 className="w-4 h-4 rotate-45" />
                                   </div>
                                 </div>
@@ -994,7 +994,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                           {/* Landmark and Measurements Grid */}
                           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
                             <div className="lg:col-span-1 bg-white rounded-2xl p-8 border border-border-subtle shadow-soft space-y-6">
-                              <h3 className="text-text-primary uppercase mb-4">Landmark Analizi</h3>
+                              <h3 className="text-[#111827] uppercase mb-4">Landmark Analizi</h3>
                               <div className="space-y-4">
                                 {[
                                   { id: 'vertex', label: 'Kafa Tepe (Vertex)' },
@@ -1005,9 +1005,9 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                                   <div key={point.id} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
                                     <div className="flex items-center gap-3">
                                       <div className={`w-2 h-2 rounded-full ${point.id === 'vertex' ? 'bg-red-500' : point.id === 'nasion' ? 'bg-blue-500' : point.id === 'subnasale' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                                      <span className="text-xs font-semibold text-text-primary uppercase tracking-tight">{point.label}</span>
+                                      <span className="text-xs font-semibold text-[#111827] uppercase tracking-tight">{point.label}</span>
                                     </div>
-                                    <span className="text-[10px] font-mono font-semibold text-primary">
+                                    <span className="text-[10px] font-mono font-semibold text-[#2563eb]">
                                       Sapma: Δ = {activeProof.deviations_px[point.id]} px 
                                       {activeProof.scale_mm_per_px ? ` • ${(activeProof.deviations_px[point.id] * activeProof.scale_mm_per_px).toFixed(1)} mm` : ' • mm: —'}
                                     </span>
@@ -1038,8 +1038,8 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                                 return (
                                   <div key={field.id} className="p-6 bg-white rounded-2xl border border-border-subtle shadow-soft flex flex-col justify-between">
                                     <div className="flex justify-between items-start mb-4">
-                                      <p className="text-xs font-semibold text-primary uppercase tracking-widest">{field.label}</p>
-                                      <span className="text-2xl font-medium text-text-primary tracking-tighter">{value ?? '---'} mm</span>
+                                      <p className="text-xs font-semibold text-[#2563eb] uppercase tracking-widest">{field.label}</p>
+                                      <span className="text-2xl font-medium text-[#111827] tracking-tighter">{value ?? '---'} mm</span>
                                     </div>
                                   </div>
                                 );
@@ -1047,22 +1047,22 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                             </div>
                           </div>
 
-                          <div className="p-10 bg-primary/5 rounded-2xl border border-primary/10 mb-12">
+                          <div className="p-10 bg-[#2563eb]/5 rounded-2xl border border-[#2563eb]/10 mb-12">
                             <div className="flex items-center gap-4 mb-6">
-                              <AlertCircle className="w-6 h-6 text-primary" />
-                              <h3 className="text-primary uppercase">Bilimsel Metodoloji ve Kanıt Dayanağı</h3>
+                              <AlertCircle className="w-6 h-6 text-[#2563eb]" />
+                              <h3 className="text-[#2563eb] uppercase">Bilimsel Metodoloji ve Kanıt Dayanağı</h3>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                               <div className="space-y-3">
-                                <p className="text-xs font-medium text-text-primary uppercase tracking-widest">01. Veri Entegrasyonu</p>
+                                <p className="text-xs font-medium text-[#111827] uppercase tracking-widest">01. Veri Entegrasyonu</p>
                                 <p className="text-sm leading-relaxed text-text-secondary font-medium">Girilen milimetrik veriler, AI motoruna "Anatomik Kısıtlamalar" olarak aktarılır.</p>
                               </div>
                               <div className="space-y-3">
-                                <p className="text-xs font-medium text-text-primary uppercase tracking-widest">02. Morfolojik Eşleşme</p>
+                                <p className="text-xs font-medium text-[#111827] uppercase tracking-widest">02. Morfolojik Eşleşme</p>
                                 <p className="text-sm leading-relaxed text-text-secondary font-medium">Ultrason görüntüsündeki kemik yapısı ve gölge yoğunluğu, AI tarafından "Derinlik Haritası" olarak işlenir.</p>
                               </div>
                               <div className="space-y-3">
-                                <p className="text-xs font-medium text-text-primary uppercase tracking-widest">03. Biyometrik Doğrulama</p>
+                                <p className="text-xs font-medium text-[#111827] uppercase tracking-widest">03. Biyometrik Doğrulama</p>
                                 <p className="text-sm leading-relaxed text-text-secondary font-medium">Vertex, Menton ve Nasion referans noktaları orijinal ölçümlerle karşılaştırılır.</p>
                               </div>
                             </div>
@@ -1070,8 +1070,8 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
 
                           <div className="flex flex-col items-center text-center space-y-6 pb-12">
                             <div className="px-8 py-4 bg-white rounded-full border border-border-subtle shadow-soft flex items-center gap-4">
-                              <FileText className="w-6 h-6 text-primary animate-pulse" />
-                              <span className="text-xs font-semibold text-text-primary uppercase tracking-widest">NEOBREED VERIFIED RECONSTRUCTION v4.2</span>
+                              <FileText className="w-6 h-6 text-[#2563eb] animate-pulse" />
+                              <span className="text-xs font-semibold text-[#111827] uppercase tracking-widest">NEOBREED VERIFIED RECONSTRUCTION v4.2</span>
                             </div>
                             <p className="text-[10px] font-medium text-text-secondary/40 uppercase tracking-widest max-w-md">
                               Bu rapor yapay zeka tarafından oluşturulmuş bir tahmindir. Tıbbi teşhis veya tedavi amaçlı kullanılamaz.
@@ -1084,7 +1084,7 @@ const BabyFaceGenerator: React.FC<Props> = ({ patient, onScanGenerated, history,
                     <div className="p-6 md:p-12 border-t border-border-subtle bg-white/50 backdrop-blur-md flex justify-center">
                       <button
                         onClick={() => setViewingProof(null)}
-                        className="w-full md:w-auto px-10 md:px-20 py-4 md:py-6 bg-text-primary text-white rounded-[24px] md:rounded-[32px] font-medium text-[10px] md:text-xs uppercase tracking-[0.3em] hover:bg-primary transition-all shadow-xl active:scale-95"
+                        className="w-full md:w-auto px-10 md:px-20 py-4 md:py-6 bg-[#111827] text-white rounded-[24px] md:rounded-[32px] font-medium text-[10px] md:text-xs uppercase tracking-[0.3em] hover:bg-[#2563eb] transition-all shadow-xl active:scale-95"
                       >
                         Raporu Kapat
                       </button>

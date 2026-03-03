@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState, useCallback } from 'react';
+import { motion } from 'motion/react';
 import { Upload, Microscope, ArrowRight, Info, AlertCircle, CheckCircle, RotateCcw } from 'lucide-react';
 import { SoftCard } from './ui/SoftCard';
 
@@ -115,217 +116,194 @@ const DynamicOverlay: React.FC<OverlayProps> = ({ measurements, isOutOfRange, bp
   const bpdScale = measurements.bpd ? (measurements.bpd / bpdRef) : 1;
   const hcScale = measurements.hc ? (measurements.hc / hcRef) : 1;
 
-  // Center positions (base model'ın yüz bölgesi)
+  // Center positions
   const cx = 250;
-  const cy = 200;
+  const cy = 220; // Slightly lower center for better vertical balance
 
-  // ============= GÖZLER =============
-  const eyeRadius = measurements.goz ? (measurements.goz / 8) * 10 : 0;
-  const eyeY = cy - 40 * hcScale;
-  const eyeSpacing = 60 * bpdScale;
+  // Feature positions
+  const eyeY = cy - 35 * hcScale;
+  const eyeSpacing = 55 * bpdScale;
+  const eyeSize = measurements.goz ? (measurements.goz / 10) * 12 : 12;
 
-  // ============= BURUN =============
-  const noseScale = measurements.burun ? (measurements.burun / 10) * 0.8 : 0;
-  const noseY = cy + 20 * hcScale;
+  const noseY = cy + 25 * hcScale;
+  const noseSize = measurements.burun ? (measurements.burun / 10) * 15 : 15;
 
-  // ============= DUDAKLAR =============
-  const mouthWidth = measurements.agizCapi ? (measurements.agizCapi / 30) : 0;
-  const mouthY = cy + 60 * hcScale;
-
-  // ============= ÇENE =============
-  const chinHeight = measurements.cene ? (measurements.cene / 8) * 15 : 0;
-
-  // ============= YANAKLAR =============
-  const cheekOpacity = measurements.goztepe ? clamp((measurements.goztepe / 30), 0, 1) : 0;
+  const mouthY = cy + 75 * hcScale;
+  const mouthWidth = measurements.agizCapi ? (measurements.agizCapi / 15) * 20 : 20;
 
   return (
     <svg viewBox="0 0 500 500" className="absolute inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
       <defs>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="1.5" result="blur" />
+        {/* Medical Glow */}
+        <filter id="medGlow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="3" result="blur" />
           <feComposite in="SourceGraphic" in2="blur" operator="over" />
         </filter>
-        <filter id="ultrasound-noise">
-          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise" />
-          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0" />
+
+        {/* Ultrasound Texture Filter */}
+        <filter id="ultrasoundTexture">
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch" result="noise" />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0" />
           <feComposite operator="in" in2="SourceGraphic" />
           <feBlend mode="overlay" in2="SourceGraphic" />
         </filter>
-        <radialGradient id="headGradient" cx="50%" cy="40%" r="60%">
-          <stop offset="0%" stopColor="#f5e6d3" />
-          <stop offset="70%" stopColor="#e8d5c0" />
+
+        {/* Anatomical Shading Gradient */}
+        <radialGradient id="anatomicalGradient" cx="45%" cy="35%" r="70%">
+          <stop offset="0%" stopColor="#fdf6ed" />
+          <stop offset="40%" stopColor="#f5e6d3" />
+          <stop offset="85%" stopColor="#e8d5c0" />
           <stop offset="100%" stopColor="#d4bfa8" />
         </radialGradient>
+
+        {/* HUD Line Pattern */}
+        <pattern id="hudGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(37, 99, 235, 0.05)" strokeWidth="0.5" />
+        </pattern>
       </defs>
 
-      {/* KAFA ŞEKLİ - BPD ve HC'ye göre şekillenir */}
-      <g filter="url(#ultrasound-noise)">
-        {/* Ana Kafa Kitlesi - Prominent Forehead & Full Occipital */}
-        <path
-          d={`
-            M ${cx} ${cy - 130 * hcScale}
-            C ${cx + 110 * bpdScale} ${cy - 130 * hcScale}, ${cx + 120 * bpdScale} ${cy - 20 * hcScale}, ${cx + 100 * bpdScale} ${cy + 70 * hcScale}
-            C ${cx + 80 * bpdScale} ${cy + 130 * hcScale}, ${cx - 80 * bpdScale} ${cy + 130 * hcScale}, ${cx - 100 * bpdScale} ${cy + 70 * hcScale}
-            C ${cx - 120 * bpdScale} ${cy - 20 * hcScale}, ${cx - 110 * bpdScale} ${cy - 130 * hcScale}, ${cx} ${cy - 130 * hcScale}
-          `}
-          fill="url(#headGradient)"
-          stroke="#c4a792"
-          strokeWidth="1.2"
-          opacity="0.95"
+      {/* Background HUD Layer */}
+      <rect width="500" height="500" fill="url(#hudGrid)" />
+      
+      {/* Technical Calipers (Visualizing BPD/HC) */}
+      <g opacity="0.4">
+        {/* BPD Caliper Line */}
+        <line 
+          x1={cx - 120 * bpdScale} y1={cy} x2={cx + 120 * bpdScale} y2={cy} 
+          stroke="#2563eb" strokeWidth="0.5" strokeDasharray="4 2" 
         />
-        
-        {/* Alın Bölgesi (Prominent Forehead Highlight) */}
-        <path
-          d={`M ${cx - 80 * bpdScale} ${cy - 90 * hcScale} Q ${cx} ${cy - 125 * hcScale} ${cx + 80 * bpdScale} ${cy - 90 * hcScale}`}
-          fill="none"
-          stroke="#ffffff"
-          strokeWidth="3"
-          opacity="0.1"
-          filter="url(#glow)"
+        <path d={`M ${cx - 120 * bpdScale} ${cy - 10} L ${cx - 120 * bpdScale} ${cy + 10}`} stroke="#2563eb" strokeWidth="1" />
+        <path d={`M ${cx + 120 * bpdScale} ${cy - 10} L ${cx + 120 * bpdScale} ${cy + 10}`} stroke="#2563eb" strokeWidth="1" />
+        <text x={cx} y={cy - 5} textAnchor="middle" className="text-[8px] font-mono fill-blue-600 font-bold">BPD AXIS</text>
+
+        {/* HC Caliper Circle (Subtle) */}
+        <ellipse 
+          cx={cx} cy={cy} rx={125 * bpdScale} ry={145 * hcScale} 
+          fill="none" stroke="#2563eb" strokeWidth="0.5" strokeDasharray="2 4" 
         />
       </g>
 
-      {/* GÖZLER - Sadece göz input girilmişse çiz */}
-      {measurements.goz && eyeRadius > 0 && (
-        <>
-          {/* Sol göz */}
-          <g>
-            <ellipse
-              cx={cx - eyeSpacing}
-              cy={eyeY}
-              rx={eyeRadius}
-              ry={eyeRadius * 1.15}
-              fill="#ffffff"
-              stroke="#c4a792"
-              strokeWidth="0.8"
-              opacity="0.85"
-              filter="url(#glow)"
-            />
-            <circle cx={cx - eyeSpacing - eyeRadius * 0.15} cy={eyeY} r={eyeRadius * 0.6} fill="#2d3748" />
-            <circle cx={cx - eyeSpacing - eyeRadius * 0.35} cy={eyeY - eyeRadius * 0.3} r={eyeRadius * 0.3} fill="white" opacity="0.7" />
+      {/* ANATOMICAL HEAD STRUCTURE */}
+      <g filter="url(#ultrasoundTexture)">
+        {/* Main Cranial Mass */}
+        <path
+          d={`
+            M ${cx} ${cy - 150 * hcScale}
+            C ${cx + 130 * bpdScale} ${cy - 150 * hcScale}, ${cx + 140 * bpdScale} ${cy - 20 * hcScale}, ${cx + 115 * bpdScale} ${cy + 90 * hcScale}
+            C ${cx + 90 * bpdScale} ${cy + 160 * hcScale}, ${cx - 90 * bpdScale} ${cy + 160 * hcScale}, ${cx - 115 * bpdScale} ${cy + 90 * hcScale}
+            C ${cx - 140 * bpdScale} ${cy - 20 * hcScale}, ${cx - 130 * bpdScale} ${cy - 150 * hcScale}, ${cx} ${cy - 150 * hcScale}
+          `}
+          fill="url(#anatomicalGradient)"
+          stroke="#c4a792"
+          strokeWidth="1.5"
+          className="transition-all duration-700 ease-in-out"
+        />
+
+        {/* Forehead Highlight (Anatomical Volume) */}
+        <path
+          d={`M ${cx - 90 * bpdScale} ${cy - 110 * hcScale} Q ${cx} ${cy - 145 * hcScale} ${cx + 90 * bpdScale} ${cy - 110 * hcScale}`}
+          fill="none"
+          stroke="#ffffff"
+          strokeWidth="4"
+          opacity="0.15"
+          filter="url(#medGlow)"
+        />
+
+        {/* Orbital Ridges (Kaş Üstü Kemikleri) */}
+        <path
+          d={`M ${cx - 80 * bpdScale} ${eyeY - 15} Q ${cx - 55 * bpdScale} ${eyeY - 25} ${cx - 30 * bpdScale} ${eyeY - 15}`}
+          fill="none"
+          stroke="#c4a792"
+          strokeWidth="1"
+          opacity="0.3"
+        />
+        <path
+          d={`M ${cx + 30 * bpdScale} ${eyeY - 15} Q ${cx + 55 * bpdScale} ${eyeY - 25} ${cx + 80 * bpdScale} ${eyeY - 15}`}
+          fill="none"
+          stroke="#c4a792"
+          strokeWidth="1"
+          opacity="0.3"
+        />
+      </g>
+
+      {/* EYES (Anatomical Rendering) */}
+      {measurements.goz && (
+        <g opacity="0.85">
+          {/* Left Eye */}
+          <g transform={`translate(${cx - eyeSpacing}, ${eyeY})`}>
+            <path d={`M -${eyeSize} 0 Q 0 -${eyeSize * 0.7} ${eyeSize} 0 Q 0 ${eyeSize * 0.7} -${eyeSize} 0`} fill="white" stroke="#c4a792" strokeWidth="0.5" />
+            <circle r={eyeSize * 0.4} fill="#2d3748" />
+            <circle cx={-eyeSize * 0.15} cy={-eyeSize * 0.15} r={eyeSize * 0.15} fill="white" opacity="0.8" />
           </g>
-
-          {/* Sağ göz */}
-          <g>
-            <ellipse
-              cx={cx + eyeSpacing}
-              cy={eyeY}
-              rx={eyeRadius}
-              ry={eyeRadius * 1.15}
-              fill="#ffffff"
-              stroke="#c4a792"
-              strokeWidth="0.8"
-              opacity="0.85"
-              filter="url(#glow)"
-            />
-            <circle cx={cx + eyeSpacing + eyeRadius * 0.15} cy={eyeY} r={eyeRadius * 0.6} fill="#2d3748" />
-            <circle cx={cx + eyeSpacing + eyeRadius * 0.35} cy={eyeY - eyeRadius * 0.3} r={eyeRadius * 0.3} fill="white" opacity="0.7" />
+          {/* Right Eye */}
+          <g transform={`translate(${cx + eyeSpacing}, ${eyeY})`}>
+            <path d={`M -${eyeSize} 0 Q 0 -${eyeSize * 0.7} ${eyeSize} 0 Q 0 ${eyeSize * 0.7} -${eyeSize} 0`} fill="white" stroke="#c4a792" strokeWidth="0.5" />
+            <circle r={eyeSize * 0.4} fill="#2d3748" />
+            <circle cx={-eyeSize * 0.15} cy={-eyeSize * 0.15} r={eyeSize * 0.15} fill="white" opacity="0.8" />
           </g>
-
-          {/* Kaşlar */}
-          <path
-            d={`M ${cx - eyeSpacing - eyeRadius * 1.3} ${eyeY - eyeRadius * 1.6} Q ${cx - eyeSpacing} ${eyeY - eyeRadius * 2.2} ${cx - eyeSpacing + eyeRadius * 0.9} ${eyeY - eyeRadius * 1.7}`}
-            stroke="#a89080"
-            strokeWidth="2"
-            fill="none"
-            strokeLinecap="round"
-            opacity="0.6"
-          />
-          <path
-            d={`M ${cx + eyeSpacing + eyeRadius * 1.3} ${eyeY - eyeRadius * 1.6} Q ${cx + eyeSpacing} ${eyeY - eyeRadius * 2.2} ${cx + eyeSpacing - eyeRadius * 0.9} ${eyeY - eyeRadius * 1.7}`}
-            stroke="#a89080"
-            strokeWidth="2"
-            fill="none"
-            strokeLinecap="round"
-            opacity="0.6"
-          />
-        </>
-      )}
-
-      {/* BURUN - Sadece burun input girilmişse çiz */}
-      {measurements.burun && noseScale > 0 && (
-        <g>
-          {/* Burun şekli */}
-          <path
-            d={`M ${cx} ${noseY - 15 * noseScale} L ${cx - 5 * noseScale} ${noseY + 12 * noseScale} L ${cx + 5 * noseScale} ${noseY + 12 * noseScale} Z`}
-            fill="#d9c5b0"
-            stroke="#c4a792"
-            strokeWidth="0.8"
-            opacity="0.7"
-          />
-          {/* Burun delikleri */}
-          <circle cx={cx - 3 * noseScale} cy={noseY + 8 * noseScale} r="1.8" fill="#9a8577" opacity="0.8" />
-          <circle cx={cx + 3 * noseScale} cy={noseY + 8 * noseScale} r="1.8" fill="#9a8577" opacity="0.8" />
         </g>
       )}
 
-      {/* DUDAKLAR / AĞIZ - Sadece ağız çapı girilmişse çiz */}
-      {measurements.agizCapi && mouthWidth > 0 && (
-        <>
-          {/* Üst dudak */}
-          <path
-            d={`M ${cx - mouthWidth} ${mouthY} Q ${cx} ${mouthY - 4} ${cx + mouthWidth} ${mouthY}`}
-            stroke="#d97070"
-            strokeWidth="2.5"
-            fill="none"
-            strokeLinecap="round"
-            opacity="0.6"
+      {/* NOSE (Anatomical Bridge & Tip) */}
+      {measurements.burun && (
+        <g transform={`translate(${cx}, ${noseY})`} opacity="0.6">
+          <path 
+            d={`M 0 -${noseSize * 0.8} Q -${noseSize * 0.2} 0 -${noseSize * 0.4} ${noseSize * 0.4} Q 0 ${noseSize * 0.6} ${noseSize * 0.4} ${noseSize * 0.4} Q ${noseSize * 0.2} 0 0 -${noseSize * 0.8}`}
+            fill="#d9c5b0"
+            stroke="#c4a792"
+            strokeWidth="0.8"
           />
-          {/* Alt dudak */}
-          <path
-            d={`M ${cx - mouthWidth} ${mouthY} Q ${cx} ${mouthY + 6} ${cx + mouthWidth} ${mouthY}`}
-            stroke="#c45a5a"
-            strokeWidth="2"
-            fill="none"
-            strokeLinecap="round"
-            opacity="0.5"
-          />
-        </>
+          <circle cx={-noseSize * 0.15} cy={noseSize * 0.3} r="1.5" fill="#9a8577" />
+          <circle cx={noseSize * 0.15} cy={noseSize * 0.3} r="1.5" fill="#9a8577" />
+        </g>
       )}
 
-      {/* ÇENE - Retrognathic Jaw (Small & Slightly Back) */}
-      {measurements.cene && chinHeight > 0 && (
-        <path
-          d={`M ${cx - 50 * bpdScale} ${cy + 105 * hcScale} Q ${cx} ${cy + 105 * hcScale + chinHeight * 0.6} ${cx + 50 * bpdScale} ${cy + 105 * hcScale}`}
-          stroke="#c4a792"
-          strokeWidth="1.5"
-          fill="none"
-          opacity="0.4"
-        />
+      {/* MOUTH (Soft Tissue Rendering) */}
+      {measurements.agizCapi && (
+        <g transform={`translate(${cx}, ${mouthY})`} opacity="0.7">
+          {/* Upper Lip (Cupid's Bow) */}
+          <path 
+            d={`M -${mouthWidth} 0 Q -${mouthWidth * 0.5} -5 0 -2 Q ${mouthWidth * 0.5} -5 ${mouthWidth} 0`}
+            fill="none" stroke="#d97070" strokeWidth="2" strokeLinecap="round"
+          />
+          {/* Lower Lip */}
+          <path 
+            d={`M -${mouthWidth} 0 Q 0 8 ${mouthWidth} 0`}
+            fill="none" stroke="#c45a5a" strokeWidth="1.5" strokeLinecap="round"
+          />
+        </g>
       )}
 
-      {/* YANAKLAR - Sadece göztepe girilmişse çiz */}
-      {measurements.goztepe && cheekOpacity > 0 && (
-        <>
-          <ellipse
-            cx={cx - 70 * bpdScale}
-            cy={cy + 20}
-            rx={50 * bpdScale}
-            ry={30 * hcScale}
-            fill="#f0d4c4"
-            opacity={cheekOpacity * 0.5}
-          />
-          <ellipse
-            cx={cx + 70 * bpdScale}
-            cy={cy + 20}
-            rx={50 * bpdScale}
-            ry={30 * hcScale}
-            fill="#f0d4c4"
-            opacity={cheekOpacity * 0.5}
-          />
-        </>
-      )}
+      {/* CHIN & JAWLINE */}
+      <path
+        d={`M ${cx - 60 * bpdScale} ${cy + 120 * hcScale} Q ${cx} ${cy + 135 * hcScale} ${cx + 60 * bpdScale} ${cy + 120 * hcScale}`}
+        stroke="#c4a792"
+        strokeWidth="1.5"
+        fill="none"
+        opacity="0.3"
+      />
 
-      {/* FROMEN ÇİZGİSİ - Sadece fromen girilmişse çiz */}
-      {measurements.fromen && (
-        <path
-          d={`M ${cx - 40 * bpdScale} ${cy - 80 * hcScale} Q ${cx} ${cy - 90 * hcScale} ${cx + 40 * bpdScale} ${cy - 80 * hcScale}`}
-          stroke="#c4a792"
-          strokeWidth="0.8"
-          fill="none"
-          opacity="0.2"
-        />
-      )}
+      {/* HUD LABELS & METRICS */}
+      <g className="text-[7px] font-mono fill-blue-500/60 font-bold">
+        <text x="40" y="40">SCAN_MODE: FCS_DYNAMIC</text>
+        <text x="40" y="52">SIGNAL_STRENGTH: 98.4%</text>
+        <text x="40" y="64">RENDER_ENGINE: NEOBREED_V4</text>
+        
+        <text x="400" y="40" textAnchor="end">GA: {measurements.ga || '--'} WEEKS</text>
+        <text x="400" y="52" textAnchor="end">BPD: {measurements.bpd || '--'} MM</text>
+        <text x="400" y="64" textAnchor="end">HC: {measurements.hc || '--'} MM</text>
+      </g>
+
+      {/* SCANNING LINE ANIMATION */}
+      <motion.line
+        x1="50" x2="450"
+        initial={{ y: 50 }}
+        animate={{ y: 450 }}
+        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+        stroke="rgba(37, 99, 235, 0.2)"
+        strokeWidth="1"
+        filter="url(#medGlow)"
+      />
     </svg>
   );
 };
@@ -412,7 +390,7 @@ const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialM
             <div className="p-8">
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="aspect-video rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group overflow-hidden"
+                className="aspect-video rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-[#2563eb]/50 hover:bg-[#2563eb]/5 transition-all group overflow-hidden"
               >
                 {image ? (
                   <img src={image} className="w-full h-full object-cover" alt="Ultrasound" />

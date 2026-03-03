@@ -108,7 +108,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
             label="Toplam Hasta" 
             value={patients.length} 
             icon={<Users />} 
-            color="bg-primary"
+            color="bg-[#2563eb]"
           />
           <KpiCard 
             label="Toplam Analiz" 
@@ -132,7 +132,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
             action={
               <div className="flex gap-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  <div className="w-2 h-2 bg-[#2563eb] rounded-full"></div>
                   <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wider">Analizler</span>
                 </div>
               </div>
@@ -201,12 +201,12 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
           <div className="grid grid-cols-2 gap-4">
             <button 
               onClick={() => setActiveTab('patients')}
-              className="aspect-square bg-emerald-50 rounded-3xl flex flex-col items-center justify-center gap-3 group hover:bg-primary transition-all shadow-sm active:scale-95"
+              className="aspect-square bg-emerald-50 rounded-3xl flex flex-col items-center justify-center gap-3 group hover:bg-[#2563eb] transition-all shadow-sm active:scale-95"
             >
-              <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-primary shadow-sm group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-[#2563eb] shadow-sm group-hover:scale-110 transition-transform">
                 <Plus className="w-6 h-6" />
               </div>
-              <span className="text-[10px] font-medium text-primary uppercase tracking-wider group-hover:text-white">Yeni Hasta</span>
+              <span className="text-[10px] font-medium text-[#2563eb] uppercase tracking-wider group-hover:text-white">Yeni Hasta</span>
             </button>
             <button 
               onClick={() => setActiveTab('studio')}
@@ -228,12 +228,12 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
             </button>
             <button 
               onClick={() => setActiveTab('settings')}
-              className="aspect-square bg-slate-100 rounded-3xl flex flex-col items-center justify-center gap-3 group hover:bg-text-primary transition-all shadow-sm active:scale-95"
+              className="aspect-square bg-slate-100 rounded-3xl flex flex-col items-center justify-center gap-3 group hover:bg-[#111827] transition-all shadow-sm active:scale-95"
             >
-              <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-text-primary shadow-sm group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-[#111827] shadow-sm group-hover:scale-110 transition-transform">
                 <Settings className="w-6 h-6" />
               </div>
-              <span className="text-[10px] font-medium text-text-primary uppercase tracking-wider group-hover:text-white">Ayarlar</span>
+              <span className="text-[10px] font-medium text-[#111827] uppercase tracking-wider group-hover:text-white">Ayarlar</span>
             </button>
           </div>
         </div>
@@ -294,13 +294,13 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
           )
         ) : (
           <div className="space-y-6">
-            <div className="bg-primary/5 border border-primary/10 rounded-[32px] p-8 flex items-center justify-between">
+            <div className="bg-[#2563eb]/5 border border-[#2563eb]/10 rounded-[32px] p-8 flex items-center justify-between">
               <div className="flex items-center gap-6">
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                  <Users className="w-8 h-8 text-primary" />
+                <div className="w-16 h-16 rounded-2xl bg-[#2563eb]/10 flex items-center justify-center">
+                  <Users className="w-8 h-8 text-[#2563eb]" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-medium text-text-primary tracking-tight">
+                  <h3 className="text-2xl font-medium text-[#111827] tracking-tight">
                     {isFetal ? "Fetal Stüdyo" : isBiometric ? "Biometrik FCS" : "AI Stüdyo"} için Hasta Seçin
                   </h3>
                   <p className="text-xs text-text-secondary font-medium uppercase tracking-widest opacity-60 mt-1">
@@ -327,10 +327,10 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
                   {filteredPatients.map(p => (
                     <tr key={p.id} className="hover:bg-slate-50/30 transition-colors group">
                       <td className="px-10 py-8">
-                        <div className="font-medium text-text-primary text-base tracking-tight">{p.name}</div>
+                        <div className="font-medium text-[#111827] text-base tracking-tight">{p.name}</div>
                       </td>
                       <td className="px-10 py-8">
-                        <span className="text-text-primary font-medium text-[10px] bg-slate-100 px-4 py-1.5 rounded-full uppercase tracking-widest">{p.weeksPregnant}. Hafta</span>
+                        <span className="text-[#111827] font-medium text-[10px] bg-slate-100 px-4 py-1.5 rounded-full uppercase tracking-widest">{p.weeksPregnant}. Hafta</span>
                       </td>
                       <td className="px-10 py-8 text-right">
                         <button 
@@ -356,12 +356,12 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
       <div className="space-y-10">
         <div className="flex justify-between items-end">
           <div className="space-y-1">
-            <h2 className="text-4xl font-medium tracking-tighter text-text-primary">Hasta Kayıtları</h2>
+            <h2 className="text-4xl font-medium tracking-tighter text-[#111827]">Hasta Kayıtları</h2>
             <p className="text-[10px] font-medium text-text-secondary uppercase tracking-[0.25em]">Klinik Veri Yönetimi</p>
           </div>
           <button 
             onClick={() => setShowPatientForm(!showPatientForm)}
-            className="px-10 py-4 bg-[#2563eb] text-white rounded-full text-xs font-medium uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 flex items-center gap-3"
+            className="px-10 py-4 bg-[#2563eb] text-white rounded-full text-xs font-medium uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#2563eb]/20 flex items-center gap-3"
           >
             {showPatientForm ? 'Kapat' : <><Plus className="w-4 h-4" /> Yeni Hasta Ekle</>}
           </button>
@@ -372,21 +372,21 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
             <form onSubmit={handleSubmit} className="flex flex-wrap gap-8 items-end">
               <div className="flex-1 min-w-[300px] space-y-3">
                 <label className="text-[10px] font-medium text-text-secondary uppercase tracking-widest ml-1">Hasta Adı Soyadı *</label>
-                <input required className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" value={newPatient.name} onChange={e => setNewPatient({...newPatient, name: e.target.value})} />
+                <input required className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-[#2563eb]/5 transition-all" value={newPatient.name} onChange={e => setNewPatient({...newPatient, name: e.target.value})} />
               </div>
               <div className="w-48 space-y-3">
                 <label className="text-[10px] font-medium text-text-secondary uppercase tracking-widest ml-1">Telefon *</label>
-                <input required type="tel" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" value={newPatient.phone} onChange={e => setNewPatient({...newPatient, phone: e.target.value})} />
+                <input required type="tel" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-[#2563eb]/5 transition-all" value={newPatient.phone} onChange={e => setNewPatient({...newPatient, phone: e.target.value})} />
               </div>
               <div className="flex-1 min-w-[250px] space-y-3">
                 <label className="text-[10px] font-medium text-text-secondary uppercase tracking-widest ml-1">E-posta (Opsiyonel)</label>
-                <input type="email" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" value={newPatient.email} onChange={e => setNewPatient({...newPatient, email: e.target.value})} />
+                <input type="email" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-[#2563eb]/5 transition-all" value={newPatient.email} onChange={e => setNewPatient({...newPatient, email: e.target.value})} />
               </div>
               <div className="w-32 space-y-3">
                 <label className="text-[10px] font-medium text-text-secondary uppercase tracking-widest ml-1">Hafta</label>
-                <input required type="number" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all" value={newPatient.weeksPregnant} onChange={e => setNewPatient({...newPatient, weeksPregnant: parseInt(e.target.value)})} />
+                <input required type="number" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-[#2563eb]/5 transition-all" value={newPatient.weeksPregnant} onChange={e => setNewPatient({...newPatient, weeksPregnant: parseInt(e.target.value)})} />
               </div>
-              <button type="submit" className="px-12 py-4 bg-[#2563eb] text-white rounded-2xl font-medium text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all">
+              <button type="submit" className="px-12 py-4 bg-[#2563eb] text-white rounded-2xl font-medium text-xs uppercase tracking-widest shadow-lg shadow-[#2563eb]/20 hover:scale-[1.02] transition-all">
                 {editingPatientId ? 'Güncelle' : 'Kaydet'}
               </button>
             </form>
@@ -411,16 +411,16 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
               {filteredPatients.map(p => (
                 <tr key={p.id} className="hover:bg-slate-50/30 transition-colors group">
                   <td className="px-10 py-8">
-                    <div className="font-medium text-text-primary text-base tracking-tight">{p.name}</div>
+                    <div className="font-medium text-[#111827] text-base tracking-tight">{p.name}</div>
                     <div className="text-[10px] text-text-secondary font-medium uppercase tracking-widest mt-1 opacity-50">{p.phone}</div>
                   </td>
                   <td className="px-10 py-8">
-                    <span className="text-text-primary font-medium text-[10px] bg-slate-100 px-4 py-1.5 rounded-full uppercase tracking-widest">{p.weeksPregnant}. Hafta</span>
+                    <span className="text-[#111827] font-medium text-[10px] bg-slate-100 px-4 py-1.5 rounded-full uppercase tracking-widest">{p.weeksPregnant}. Hafta</span>
                   </td>
                   <td className="px-10 py-8">
                      <div className="flex items-center gap-2.5">
-                        <div className="w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_#2563eb]"></div>
-                        <span className="text-[10px] font-medium text-text-primary uppercase tracking-widest">Aktif Takip</span>
+                        <div className="w-2 h-2 bg-[#2563eb] rounded-full shadow-[0_0_8px_#2563eb]"></div>
+                        <span className="text-[10px] font-medium text-[#111827] uppercase tracking-widest">Aktif Takip</span>
                      </div>
                   </td>
                   <td className="px-10 py-8 text-right space-x-3">
@@ -432,7 +432,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
                     </button>
                     <button 
                       onClick={() => startStudio(p)}
-                      className="px-6 py-2.5 bg-[#2563eb] text-white rounded-full text-[10px] font-medium uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/20 inline-flex items-center gap-2"
+                      className="px-6 py-2.5 bg-[#2563eb] text-white rounded-full text-[10px] font-medium uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-[#2563eb]/20 inline-flex items-center gap-2"
                     >
                       AI Stüdyo <ArrowRight className="w-3 h-3" />
                     </button>
@@ -460,7 +460,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
   if (activeTab === 'reports') {
     return (
       <div className="space-y-10">
-        <h2 className="text-4xl font-medium tracking-tighter text-text-primary">Raporlar</h2>
+        <h2 className="text-4xl font-medium tracking-tighter text-[#111827]">Raporlar</h2>
         <EmptyState 
           title="Henüz Rapor Bulunmuyor"
           description="Klinik raporlarınız ve analiz sonuçlarınız burada listelenecektir."
@@ -468,7 +468,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
           action={
             <button 
               onClick={() => setActiveTab('dashboard')}
-              className="px-10 py-4 bg-[#2563eb] text-white rounded-full text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/20"
+              className="px-10 py-4 bg-[#2563eb] text-white rounded-full text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-[#2563eb]/20"
             >
               Panel'e Dön
             </button>
@@ -481,7 +481,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
   if (activeTab === 'settings') {
     return (
       <div className="space-y-10">
-        <h2 className="text-4xl font-medium tracking-tighter text-text-primary">Ayarlar</h2>
+        <h2 className="text-4xl font-medium tracking-tighter text-[#111827]">Ayarlar</h2>
         <EmptyState 
           title="Sistem Ayarları"
           description="Klinik profiliniz ve uygulama ayarlarınız yakında burada olacaktır."
@@ -489,7 +489,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
           action={
             <button 
               onClick={() => setActiveTab('dashboard')}
-              className="px-10 py-4 bg-[#2563eb] text-white rounded-full text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/20"
+              className="px-10 py-4 bg-[#2563eb] text-white rounded-full text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-[#2563eb]/20"
             >
               Panel'e Dön
             </button>

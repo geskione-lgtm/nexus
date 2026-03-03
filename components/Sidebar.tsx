@@ -38,12 +38,12 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogou
         {/* Brand */}
         <div className="p-8 mb-4 flex items-center justify-between">
           <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-300">
+            <div className="w-10 h-10 bg-[#2563eb] rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-300">
               <HeartPulse className="w-6 h-6 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-medium tracking-tight text-text-primary leading-none">NeoBreed</span>
-              <span className="text-[10px] font-medium text-primary uppercase tracking-wider mt-1">Intelligence</span>
+              <span className="text-xl font-medium tracking-tight text-[#111827] leading-none">NeoBreed</span>
+              <span className="text-[10px] font-medium text-[#2563eb] uppercase tracking-wider mt-1">Intelligence</span>
             </div>
           </div>
           <button onClick={onClose} className="lg:hidden p-2 hover:bg-slate-100 rounded-full">
@@ -125,11 +125,11 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogou
       <div className="p-4 border-t border-border-subtle">
         <div className="p-4 rounded-xl hover:bg-surface-hover transition-colors group">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-medium">
+            <div className="w-10 h-10 rounded-lg bg-[#2563eb]/10 text-[#2563eb] flex items-center justify-center text-sm font-medium">
               {user.name.charAt(0)}
             </div>
             <div className="overflow-hidden">
-              <p className="text-sm font-medium text-text-primary truncate">{user.name}</p>
+              <p className="text-sm font-medium text-[#111827] truncate">{user.name}</p>
               <p className="text-[10px] text-text-secondary font-medium uppercase tracking-wider truncate">
                 {user.role === UserRole.SUPER_ADMIN ? 'Süper Yönetici' : 'Uzman Doktor'}
               </p>
@@ -137,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogou
           </div>
           <button 
             onClick={onLogout}
-            className="w-full py-3 flex items-center justify-center gap-2 bg-[#2563eb] text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-primary/20 hover:bg-[#1d4ed8]"
+            className="w-full py-3 flex items-center justify-center gap-2 bg-[#2563eb] text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-[#2563eb]/20 hover:bg-[#1d4ed8]"
           >
             <LogOut className="w-4 h-4" />
             <span>Sistemden Ayrıl</span>
@@ -154,18 +154,18 @@ const NavItem: React.FC<{ label: string; icon: React.ReactNode; active?: boolean
     onClick={onClick}
     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all group relative ${
       active 
-        ? 'bg-[#2563eb] text-white shadow-lg shadow-primary/20' 
-        : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+        ? 'bg-[#2563eb] text-white shadow-lg shadow-[#2563eb]/20' 
+        : 'text-text-secondary hover:bg-surface-hover hover:text-[#111827]'
     }`}
   >
-    <div className={`${active ? 'text-white' : 'text-text-secondary group-hover:text-text-primary'} transition-colors`}>
+    <div className={`${active ? 'text-white' : 'text-text-secondary group-hover:text-[#111827]'} transition-colors`}>
       {icon}
     </div>
     <span className="tracking-tight uppercase text-[10px] tracking-widest">{label}</span>
     {active && (
       <motion.div 
         layoutId="activeNavIndicator"
-        className="absolute left-0 w-1 h-5 bg-primary rounded-r-full"
+        className="absolute left-0 w-1 h-5 bg-[#2563eb] rounded-r-full"
       />
     )}
   </button>

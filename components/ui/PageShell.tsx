@@ -40,7 +40,7 @@ export const PageShell: React.FC<PageShellProps> = ({ children, user, activeTab,
         {/* Mobile Header */}
         <div className="lg:hidden flex items-center justify-between p-4 bg-surface border-b border-border-subtle sticky top-0 z-40">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-[#2563eb] rounded-lg flex items-center justify-center">
               <HeartPulse className="w-5 h-5 text-white" />
             </div>
             <span className="font-medium text-text-primary">NeoBreed</span>

@@ -15,13 +15,13 @@ const BrandWordmark: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' })
   return (
     <span className={`${sizeClass} tracking-tight select-none`}>
       {/* NEO (bold) */}
-      <span className="font-bold text-text-primary">
-        <span className="text-primary">N</span>eo
+      <span className="font-bold text-[#111827]">
+        <span className="text-[#2563eb]">N</span>eo
       </span>
 
       {/* BREED (lighter) */}
-      <span className="font-semibold text-text-primary">
-        <span className="text-primary">B</span>reed
+      <span className="font-semibold text-[#111827]">
+        <span className="text-[#2563eb]">B</span>reed
       </span>
     </span>
   );
@@ -75,21 +75,21 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-8 pt-52 pb-32">
-        <div className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-[11px] font-bold uppercase tracking-widest mb-8">
+        <div className="inline-block px-4 py-1.5 bg-[#2563eb]/10 text-[#2563eb] rounded-full text-[11px] font-bold uppercase tracking-widest mb-8">
           Gelişmiş Fetal Görüntüleme v3.0
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h1 className="text-[56px] md:text-[76px] leading-[0.95] font-bold tracking-[-0.02em] text-text-primary mb-10">
+            <h1 className="text-[56px] md:text-[76px] leading-[0.95] font-bold tracking-[-0.02em] text-[#111827] mb-10">
               Geleceği<br />
-              <span className="text-primary">İlk Nefesten</span><br />
+              <span className="text-[#2563eb]">İlk Nefesten</span><br />
               Önce Görün.
             </h1>
 
             <p className="max-w-xl text-lg text-text-secondary font-medium leading-relaxed mb-12">
               NeoBreed AI, kadın doğum uzmanlarını gerçek zamanlı 3D fetal görselleştirme ve akıllı tanı desteği ile güçlendirir.{' '}
-              <span className="text-text-primary font-bold">NeoBreed Intelligence Core</span> teknolojisiyle her piksel, bebeğinizin sağlığına dair derin bir anlam taşır.
+              <span className="text-[#111827] font-bold">NeoBreed Intelligence Core</span> teknolojisiyle her piksel, bebeğinizin sağlığına dair derin bir anlam taşır.
             </p>
 
             <div className="flex flex-wrap gap-4">
@@ -140,14 +140,14 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
                       initial={{ top: "-10%" }}
                       animate={{ top: "110%" }}
                       transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                      className="absolute left-0 right-0 h-[2px] bg-primary shadow-[0_0_30px_#2563eb] z-10"
+                      className="absolute left-0 right-0 h-[2px] bg-[#2563eb] shadow-[0_0_30px_#2563eb] z-10"
                     />
 
                     {/* HUD Elements */}
                     <div className="absolute top-8 left-8 flex flex-col gap-1">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                        <span className="text-[10px] font-mono text-primary uppercase tracking-widest">Live Signal</span>
+                        <div className="w-2 h-2 bg-[#2563eb] rounded-full animate-pulse"></div>
+                        <span className="text-[10px] font-mono text-[#2563eb] uppercase tracking-widest">Live Signal</span>
                       </div>
                       <span className="text-white/40 text-[9px] font-mono">FREQ: 12.4MHz</span>
                     </div>
@@ -165,7 +165,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
 
                     <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Processing</p>
+                        <p className="text-[10px] font-bold text-[#2563eb] uppercase tracking-widest">Processing</p>
                         <p className="text-white text-xs font-bold uppercase tracking-tight">Fetal Biometric Stream</p>
                       </div>
                       <div className="flex gap-1">
@@ -174,7 +174,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
                             key={i}
                             animate={{ height: [4, 12, 4] }}
                             transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.1 }}
-                            className="w-1 bg-primary/40 rounded-full"
+                            className="w-1 bg-[#2563eb]/40 rounded-full"
                           />
                         ))}
                       </div>
@@ -211,7 +211,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
                         className="px-8 py-3 bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl"
                       >
                         <div className="flex items-center gap-3">
-                          <Sparkles className="w-4 h-4 text-primary" />
+                          <Sparkles className="w-4 h-4 text-[#2563eb]" />
                           <span className="text-white text-[11px] font-bold uppercase tracking-[0.4em]">
                             Synthesis Complete
                           </span>
@@ -221,11 +221,11 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
 
                     <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Anatomical Map</p>
+                        <p className="text-[10px] font-bold text-[#2563eb] uppercase tracking-widest">Anatomical Map</p>
                         <p className="text-white text-xs font-bold uppercase tracking-tight">4K High-Fidelity Render</p>
                       </div>
                       <div className="text-right">
-                        <span className="text-primary text-[10px] font-mono block">ACCURACY: 99.9%</span>
+                        <span className="text-[#2563eb] text-[10px] font-mono block">ACCURACY: 99.9%</span>
                         <span className="text-white/40 text-[9px] font-mono block">ID: NB-882-X</span>
                       </div>
                     </div>
@@ -241,7 +241,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
       <section id="tech" className="bg-black py-32 text-white">
         <div className="max-w-7xl mx-auto px-8">
           <div className="text-center mb-24">
-            <p className="text-primary text-[10px] font-bold uppercase tracking-[0.4em] mb-4">
+            <p className="text-[#2563eb] text-[10px] font-bold uppercase tracking-[0.4em] mb-4">
               NEOBREED INTELLIGENCE CORE V4
             </p>
             <h2 className="text-5xl md:text-7xl font-bold tracking-tighter">GÖREMEDİĞİNİZİ GÖRÜN.</h2>
@@ -274,17 +274,17 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
       <section id="clinics" className="py-32 bg-white">
         <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center gap-20">
           <div className="flex-1 space-y-8">
-            <h2 className="text-6xl font-bold tracking-tighter text-text-primary">Modern Klinikler İçin<br />Teknoloji.</h2>
+            <h2 className="text-6xl font-bold tracking-tighter text-[#111827]">Modern Klinikler İçin<br />Teknoloji.</h2>
             <p className="text-text-secondary text-lg leading-relaxed">
               NeoBreed, klinik yönetiminizi hastalarınız için unutulmaz bir deneyime dönüştürür. Bekleme odasından muayene koltuğuna kadar her aşamada dijital dönüşüm ve duygusal bağ kuran teknolojiler.
             </p>
             <div className="grid grid-cols-2 gap-8 pt-8">
               <div>
-                <p className="text-4xl font-bold text-text-primary">2.500+</p>
+                <p className="text-4xl font-bold text-[#111827]">2.500+</p>
                 <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mt-2">Aktif Klinik</p>
               </div>
               <div>
-                <p className="text-4xl font-bold text-text-primary">1.2M+</p>
+                <p className="text-4xl font-bold text-[#111827]">1.2M+</p>
                 <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mt-2">Başarılı Analiz</p>
               </div>
             </div>
@@ -295,13 +295,13 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
               <div className="h-64 bg-surface rounded-[40px] flex items-center justify-center border border-border-subtle overflow-hidden">
                 <img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=400" className="object-cover h-full w-full" alt="Baby" />
               </div>
-              <div className="h-48 bg-primary rounded-[40px] flex items-center justify-center p-8">
+              <div className="h-48 bg-[#2563eb] rounded-[40px] flex items-center justify-center p-8">
                 <span className="text-white text-3xl font-bold tracking-tighter leading-none italic">#NEOBREED</span>
               </div>
             </div>
 
             <div className="flex flex-col gap-4">
-              <div className="h-48 bg-text-primary rounded-[40px] flex items-center justify-center p-8">
+              <div className="h-48 bg-[#111827] rounded-[40px] flex items-center justify-center p-8">
                 <span className="text-white text-xs font-bold tracking-[0.3em] uppercase">Trusted AI</span>
               </div>
               <div className="h-64 bg-surface rounded-[40px] flex items-center justify-center border border-border-subtle overflow-hidden">
@@ -316,7 +316,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
       <section id="pricing" className="py-32 bg-surface">
         <div className="max-w-7xl mx-auto px-8">
           <div className="text-center mb-24">
-            <h2 className="text-6xl font-bold tracking-tighter text-text-primary mb-6 uppercase">Lisans Paketleri</h2>
+            <h2 className="text-6xl font-bold tracking-tighter text-[#111827] mb-6 uppercase">Lisans Paketleri</h2>
             <p className="text-text-secondary max-w-xl mx-auto">
               İster butik bir klinik, ister büyük bir hastane zinciri olun; NeoBreed her ölçek için esnek çözümler sunar.
             </p>
@@ -327,13 +327,13 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
               <div key={pkg.id} className="bg-white p-12 rounded-[48px] border border-border-subtle shadow-soft hover:shadow-floating transition-all hover:-translate-y-2 group">
                 <p className="text-xs font-bold uppercase tracking-[0.3em] text-text-secondary mb-2">{pkg.name}</p>
                 <div className="flex items-baseline gap-1 mb-8">
-                  <span className="text-5xl font-bold text-text-primary tracking-tighter">${pkg.price}</span>
+                  <span className="text-5xl font-bold text-[#111827] tracking-tighter">${pkg.price}</span>
                   <span className="text-text-secondary font-bold uppercase text-[10px]">/ay</span>
                 </div>
                 <ul className="space-y-4 mb-12">
                   {pkg.features.map((feature, i) => (
                     <li key={i} className="flex items-center gap-3 text-sm font-semibold text-text-secondary">
-                      <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-[#2563eb]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                       </svg>
                       {feature}
@@ -375,7 +375,7 @@ const Landing: React.FC<Props> = ({ onLogin, onRegister }) => {
 
 const TechCard: React.FC<{ title: string; desc: string; icon: string }> = ({ title, desc, icon }) => (
   <div className="p-10 bg-white/5 border border-white/10 rounded-[40px] hover:bg-white/10 transition-colors group">
-    <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+    <div className="w-12 h-12 bg-[#2563eb] rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
       <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={icon} />
       </svg>

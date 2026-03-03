@@ -31,7 +31,7 @@ const Register: React.FC<RegisterProps> = ({ onBack, onSwitchToLogin }) => {
     <div className="min-h-screen flex items-center justify-center bg-surface">
       <div className="max-w-sm w-full p-10 text-center animate-in fade-in slide-in-from-bottom-10 duration-1000">
         <div className="mb-12">
-          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-10 shadow-floating">
+          <div className="w-16 h-16 bg-[#2563eb] rounded-2xl flex items-center justify-center mx-auto mb-10 shadow-floating">
             <div className="w-7 h-7 bg-white rounded-sm"></div>
           </div>
           <h2 className="text-3xl font-bold text-text-primary tracking-tight mb-3">
