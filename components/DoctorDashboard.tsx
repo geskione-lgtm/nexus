@@ -18,8 +18,13 @@ import {
   ChevronRight,
   Microscope,
   FileText,
-  Settings
+  Settings,
+  ChevronDown,
+  Baby,
+  Box,
+  UserCircle
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   AreaChart, 
   Area, 
@@ -52,6 +57,7 @@ interface Props {
 const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPatient, setSelectedPatient, doctor, patients, onAddPatient, onUpdatePatient, onAddScan, scanHistory }) => {
   const [showPatientForm, setShowPatientForm] = useState(false);
   const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [newPatient, setNewPatient] = useState({ name: '', weeksPregnant: 20, phone: '', email: '' });
   const [searchQuery, setSearchQuery] = useState('');
   const [pendingMeasurements, setPendingMeasurements] = useState<any>(null);
@@ -426,16 +432,72 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
                   <td className="px-10 py-8 text-right space-x-3">
                     <button 
                       onClick={() => handleEdit(p)}
-                      className="px-5 py-2.5 bg-[#2563eb] text-white rounded-full text-[10px] font-medium uppercase tracking-widest hover:bg-[#1d4ed8] transition-all"
+                      className="px-5 py-2.5 bg-slate-100 text-[#111827] rounded-full text-[10px] font-medium uppercase tracking-widest hover:bg-slate-200 transition-all"
                     >
                       Düzenle
                     </button>
-                    <button 
-                      onClick={() => startStudio(p)}
-                      className="px-6 py-2.5 bg-[#2563eb] text-white rounded-full text-[10px] font-medium uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-[#2563eb]/20 inline-flex items-center gap-2"
-                    >
-                      AI Stüdyo <ArrowRight className="w-3 h-3" />
-                    </button>
+                    
+                    <div className="relative inline-block text-left">
+                      <button 
+                        onClick={() => setOpenDropdownId(openDropdownId === p.id ? null : p.id)}
+                        className="px-6 py-2.5 bg-[#2563eb] text-white rounded-full text-[10px] font-medium uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-[#2563eb]/20 inline-flex items-center gap-2"
+                      >
+                        AI Stüdyo <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${openDropdownId === p.id ? 'rotate-180' : ''}`} />
+                      </button>
+
+                      <AnimatePresence>
+                        {openDropdownId === p.id && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-10" 
+                              onClick={() => setOpenDropdownId(null)}
+                            />
+                            <motion.div 
+                              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                              className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-border-subtle z-20 overflow-hidden"
+                            >
+                              <div className="p-2 space-y-1">
+                                <button 
+                                  onClick={() => {
+                                    setSelectedPatient(p);
+                                    setActiveTab('studio');
+                                    setOpenDropdownId(null);
+                                  }}
+                                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest text-[#111827] hover:bg-slate-50 transition-colors text-left"
+                                >
+                                  <UserCircle className="w-4 h-4 text-[#2563eb]" />
+                                  Yüz Sentezi
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    setSelectedPatient(p);
+                                    setActiveTab('fetal-studio');
+                                    setOpenDropdownId(null);
+                                  }}
+                                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest text-[#111827] hover:bg-slate-50 transition-colors text-left"
+                                >
+                                  <Baby className="w-4 h-4 text-[#2563eb]" />
+                                  Fetal Stüdyo
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    setSelectedPatient(p);
+                                    setActiveTab('biometrik-fcs');
+                                    setOpenDropdownId(null);
+                                  }}
+                                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest text-[#111827] hover:bg-slate-50 transition-colors text-left"
+                                >
+                                  <Box className="w-4 h-4 text-[#2563eb]" />
+                                  Biometrik FCS
+                                </button>
+                              </div>
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </td>
                 </tr>
               ))}

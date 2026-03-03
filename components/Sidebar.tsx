@@ -1,6 +1,20 @@
 
 import React from 'react';
-import { HeartPulse, LayoutDashboard, Users, Package, TrendingUp, UserCircle, Microscope, LogOut, X, Box, Baby } from 'lucide-react';
+import { 
+  HeartPulse, 
+  LayoutDashboard, 
+  Users, 
+  Package, 
+  TrendingUp, 
+  UserCircle, 
+  Microscope, 
+  LogOut, 
+  X, 
+  Box, 
+  Baby,
+  ChevronDown,
+  ChevronRight as ChevronRightIcon
+} from 'lucide-react';
 import { User, UserRole } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -15,6 +29,14 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogout, isOpen, onClose }) => {
   const isAdmin = user.role === UserRole.SUPER_ADMIN;
+  const [isStudioOpen, setIsStudioOpen] = React.useState(activeTab.includes('studio') || activeTab === 'biometrik-fcs');
+
+  const studioTabs = ['studio', 'fetal-studio', 'biometrik-fcs'];
+  const isStudioActive = studioTabs.includes(activeTab);
+
+  React.useEffect(() => {
+    if (isStudioActive) setIsStudioOpen(true);
+  }, [activeTab, isStudioActive]);
 
   return (
     <>
@@ -97,24 +119,67 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogou
                   label="Hasta Kayıtları" 
                   icon={<Users className="w-5 h-5" />} 
                 />
-                <NavItem 
-                  active={activeTab === 'studio'} 
-                  onClick={() => onTabChange('studio')}
-                  label="AI Stüdyo" 
-                  icon={<Microscope className="w-5 h-5" />} 
-                />
-                <NavItem 
-                  active={activeTab === 'fetal-studio'} 
-                  onClick={() => onTabChange('fetal-studio')}
-                  label="Fetal Stüdyo" 
-                  icon={<Baby className="w-5 h-5" />} 
-                />
-                <NavItem 
-                  active={activeTab === 'biometrik-fcs'} 
-                  onClick={() => onTabChange('biometrik-fcs')}
-                  label="Biometrik FCS" 
-                  icon={<Box className="w-5 h-5" />} 
-                />
+                
+                {/* Expandable AI Studio Group */}
+                <div className="space-y-1">
+                  <button 
+                    onClick={() => setIsStudioOpen(!isStudioOpen)}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all group relative ${
+                      isStudioActive && !isStudioOpen
+                        ? 'bg-[#2563eb] text-white shadow-lg shadow-[#2563eb]/20' 
+                        : 'text-text-secondary hover:bg-surface-hover hover:text-[#111827]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`${isStudioActive && !isStudioOpen ? 'text-white' : 'text-text-secondary group-hover:text-[#111827]'} transition-colors`}>
+                        <Microscope className="w-5 h-5" />
+                      </div>
+                      <span className="tracking-tight uppercase text-[10px] tracking-widest">AI Stüdyo</span>
+                    </div>
+                    <div className={`${isStudioActive && !isStudioOpen ? 'text-white' : 'text-text-secondary'} transition-transform duration-300 ${isStudioOpen ? 'rotate-180' : ''}`}>
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
+                    {isStudioActive && !isStudioOpen && (
+                      <motion.div 
+                        layoutId="activeNavIndicator"
+                        className="absolute left-0 w-1 h-5 bg-[#2563eb] rounded-r-full"
+                      />
+                    )}
+                  </button>
+
+                  <AnimatePresence>
+                    {isStudioOpen && (
+                      <motion.div 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden pl-4 space-y-1"
+                      >
+                        <NavItem 
+                          active={activeTab === 'studio'} 
+                          onClick={() => onTabChange('studio')}
+                          label="Yüz Sentezi" 
+                          icon={<UserCircle className="w-4 h-4" />} 
+                          isSubItem
+                        />
+                        <NavItem 
+                          active={activeTab === 'fetal-studio'} 
+                          onClick={() => onTabChange('fetal-studio')}
+                          label="Fetal Stüdyo" 
+                          icon={<Baby className="w-4 h-4" />} 
+                          isSubItem
+                        />
+                        <NavItem 
+                          active={activeTab === 'biometrik-fcs'} 
+                          onClick={() => onTabChange('biometrik-fcs')}
+                          label="Biometrik FCS" 
+                          icon={<Box className="w-4 h-4" />} 
+                          isSubItem
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </>
             )}
           </nav>
@@ -149,19 +214,19 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, onTabChange, onLogou
   );
 };
 
-const NavItem: React.FC<{ label: string; icon: React.ReactNode; active?: boolean; onClick: () => void }> = ({ label, icon, active, onClick }) => (
+const NavItem: React.FC<{ label: string; icon: React.ReactNode; active?: boolean; onClick: () => void; isSubItem?: boolean }> = ({ label, icon, active, onClick, isSubItem }) => (
   <button 
     onClick={onClick}
     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all group relative ${
       active 
         ? 'bg-[#2563eb] text-white shadow-lg shadow-[#2563eb]/20' 
         : 'text-text-secondary hover:bg-surface-hover hover:text-[#111827]'
-    }`}
+    } ${isSubItem ? 'py-2.5' : ''}`}
   >
-    <div className={`${active ? 'text-white' : 'text-text-secondary group-hover:text-[#111827]'} transition-colors`}>
+    <div className={`${active ? 'text-white' : 'text-text-secondary group-hover:text-[#111827]'} transition-colors ${isSubItem ? 'scale-90' : ''}`}>
       {icon}
     </div>
-    <span className="tracking-tight uppercase text-[10px] tracking-widest">{label}</span>
+    <span className={`tracking-tight uppercase tracking-widest ${isSubItem ? 'text-[9px]' : 'text-[10px]'}`}>{label}</span>
     {active && (
       <motion.div 
         layoutId="activeNavIndicator"
