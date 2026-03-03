@@ -41,6 +41,9 @@ import { DataTableCard } from './ui/DataTableCard';
 import { EmptyState } from './ui/EmptyState';
 import { SoftCard } from './ui/SoftCard';
 
+import { Modal } from './ui/Modal';
+import { parseGA, formatGA } from '../constants';
+
 interface Props { 
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -58,6 +61,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
   const [showPatientForm, setShowPatientForm] = useState(false);
   const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [gaInput, setGaInput] = useState('20w0d');
   const [newPatient, setNewPatient] = useState({ name: '', weeksPregnant: 20, phone: '', email: '' });
   const [searchQuery, setSearchQuery] = useState('');
   const [pendingMeasurements, setPendingMeasurements] = useState<any>(null);
@@ -84,24 +88,29 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
 
   const handleEdit = (p: Patient) => {
     setNewPatient({ name: p.name, weeksPregnant: p.weeksPregnant, phone: p.phone, email: p.email || '' });
+    setGaInput(formatGA(p.weeksPregnant));
     setEditingPatientId(p.id);
     setShowPatientForm(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const weeksDecimal = parseGA(gaInput);
+    const patientData = { ...newPatient, weeksPregnant: weeksDecimal };
+    
     if (editingPatientId) {
-      onUpdatePatient(editingPatientId, newPatient);
+      onUpdatePatient(editingPatientId, patientData);
       setEditingPatientId(null);
     } else {
       onAddPatient({
-        ...newPatient,
+        ...patientData,
         id: '',
         doctorId: doctor.id,
         lastScanDate: new Date().toISOString().split('T')[0]
       } as Patient);
     }
     setNewPatient({ name: '', weeksPregnant: 20, phone: '', email: '' });
+    setGaInput('20w0d');
     setShowPatientForm(false);
   };
 
@@ -366,38 +375,63 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
             <p className="text-[10px] font-medium text-text-secondary uppercase tracking-[0.25em]">Klinik Veri Yönetimi</p>
           </div>
           <button 
-            onClick={() => setShowPatientForm(!showPatientForm)}
+            onClick={() => {
+              setEditingPatientId(null);
+              setNewPatient({ name: '', weeksPregnant: 20, phone: '', email: '' });
+              setGaInput('20w0d');
+              setShowPatientForm(true);
+            }}
             className="px-10 py-4 bg-[#2563eb] text-white rounded-full text-xs font-medium uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#2563eb]/20 flex items-center gap-3"
           >
-            {showPatientForm ? 'Kapat' : <><Plus className="w-4 h-4" /> Yeni Hasta Ekle</>}
+            <Plus className="w-4 h-4" /> Yeni Hasta Ekle
           </button>
         </div>
 
-        {showPatientForm && (
-          <SoftCard className="animate-in slide-in-from-top-4 duration-500">
-            <form onSubmit={handleSubmit} className="flex flex-wrap gap-8 items-end">
-              <div className="flex-1 min-w-[300px] space-y-3">
+        <Modal
+          isOpen={showPatientForm}
+          onClose={() => setShowPatientForm(false)}
+          title={editingPatientId ? 'Hasta Bilgilerini Güncelle' : 'Yeni Hasta Kaydı'}
+        >
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-3">
                 <label className="text-[10px] font-medium text-text-secondary uppercase tracking-widest ml-1">Hasta Adı Soyadı *</label>
                 <input required className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-[#2563eb]/5 transition-all" value={newPatient.name} onChange={e => setNewPatient({...newPatient, name: e.target.value})} />
               </div>
-              <div className="w-48 space-y-3">
+              <div className="space-y-3">
                 <label className="text-[10px] font-medium text-text-secondary uppercase tracking-widest ml-1">Telefon *</label>
                 <input required type="tel" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-[#2563eb]/5 transition-all" value={newPatient.phone} onChange={e => setNewPatient({...newPatient, phone: e.target.value})} />
               </div>
-              <div className="flex-1 min-w-[250px] space-y-3">
+              <div className="space-y-3">
                 <label className="text-[10px] font-medium text-text-secondary uppercase tracking-widest ml-1">E-posta (Opsiyonel)</label>
                 <input type="email" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-[#2563eb]/5 transition-all" value={newPatient.email} onChange={e => setNewPatient({...newPatient, email: e.target.value})} />
               </div>
-              <div className="w-32 space-y-3">
-                <label className="text-[10px] font-medium text-text-secondary uppercase tracking-widest ml-1">Hafta</label>
-                <input required type="number" className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-[#2563eb]/5 transition-all" value={newPatient.weeksPregnant} onChange={e => setNewPatient({...newPatient, weeksPregnant: parseInt(e.target.value)})} />
+              <div className="space-y-3">
+                <label className="text-[10px] font-medium text-text-secondary uppercase tracking-widest ml-1">Gestasyonel Yaş (Örn: 21w6d)</label>
+                <div className="relative">
+                  <input 
+                    required 
+                    className="w-full px-6 py-4 bg-slate-50 rounded-2xl border-none text-sm font-medium focus:bg-white focus:ring-4 focus:ring-[#2563eb]/5 transition-all" 
+                    value={gaInput} 
+                    onChange={e => setGaInput(e.target.value)}
+                    placeholder="21w6d"
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#2563eb] bg-[#2563eb]/5 px-2 py-1 rounded-lg">
+                    {parseGA(gaInput).toFixed(1)} Hafta
+                  </div>
+                </div>
               </div>
-              <button type="submit" className="px-12 py-4 bg-[#2563eb] text-white rounded-2xl font-medium text-xs uppercase tracking-widest shadow-lg shadow-[#2563eb]/20 hover:scale-[1.02] transition-all">
+            </div>
+            <div className="flex gap-4 pt-4">
+              <button type="button" onClick={() => setShowPatientForm(false)} className="flex-1 py-4 bg-slate-100 text-[#111827] rounded-2xl font-medium text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">
+                İptal
+              </button>
+              <button type="submit" className="flex-[2] py-4 bg-[#2563eb] text-white rounded-2xl font-medium text-xs uppercase tracking-widest shadow-lg shadow-[#2563eb]/20 hover:scale-[1.02] transition-all">
                 {editingPatientId ? 'Güncelle' : 'Kaydet'}
               </button>
-            </form>
-          </SoftCard>
-        )}
+            </div>
+          </form>
+        </Modal>
 
         <DataTableCard 
           title="Hasta Listesi" 
@@ -421,7 +455,7 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
                     <div className="text-[10px] text-text-secondary font-medium uppercase tracking-widest mt-1 opacity-50">{p.phone}</div>
                   </td>
                   <td className="px-10 py-8">
-                    <span className="text-[#111827] font-medium text-[10px] bg-slate-100 px-4 py-1.5 rounded-full uppercase tracking-widest">{p.weeksPregnant}. Hafta</span>
+                    <span className="text-[#111827] font-medium text-[10px] bg-slate-100 px-4 py-1.5 rounded-full uppercase tracking-widest">{formatGA(p.weeksPregnant)}</span>
                   </td>
                   <td className="px-10 py-8">
                      <div className="flex items-center gap-2.5">

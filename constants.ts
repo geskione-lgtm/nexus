@@ -27,3 +27,21 @@ export const PACKAGES: Package[] = [
 
 export const INITIAL_DOCTORS: User[] = [];
 export const INITIAL_PATIENTS = [];
+
+export const parseGA = (ga: string): number => {
+  if (!ga) return 0;
+  const match = ga.match(/(\d+)\s*[wW]?\s*(\d+)?\s*[dD]?/);
+  if (match) {
+    const weeks = parseInt(match[1]);
+    const days = match[2] ? parseInt(match[2]) : 0;
+    return weeks + days / 7;
+  }
+  return parseFloat(ga) || 0;
+};
+
+export const formatGA = (ga: number): string => {
+  if (!ga) return '0w';
+  const weeks = Math.floor(ga);
+  const days = Math.round((ga - weeks) * 7);
+  return days > 0 ? `${weeks}w${days}d` : `${weeks}w`;
+};

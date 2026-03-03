@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Upload, Microscope, ArrowRight, Info, AlertCircle, CheckCircle, RotateCcw } from 'lucide-react';
 import { SoftCard } from './ui/SoftCard';
+import { parseGA, formatGA } from '../constants';
 
 interface BiometrikFCSProps {
   onProceedToStudio: (measurements: Partial<Measurements>) => void;
@@ -20,6 +21,7 @@ interface Measurements {
   bpd: number;
   hc: number;
   goz: number;
+  ustDudak: number;
 }
 
 type Percentiles = { p5: number; p50: number; p95: number };
@@ -128,8 +130,10 @@ const DynamicOverlay: React.FC<OverlayProps> = ({ measurements, isOutOfRange, bp
   const noseY = cy + 25 * hcScale;
   const noseSize = measurements.burun ? (measurements.burun / 10) * 15 : 15;
 
+  const upperLipY = measurements.ustDudak ? noseY + (measurements.ustDudak * 2) : noseY + 25;
+
   const mouthY = cy + 75 * hcScale;
-  const mouthWidth = measurements.agizCapi ? (measurements.agizCapi / 15) * 20 : 20;
+  const mouthWidth = measurements.agizcapi ? (measurements.agizcapi / 15) * 20 : 20;
 
   return (
     <svg viewBox="0 0 500 500" className="absolute inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
@@ -258,8 +262,18 @@ const DynamicOverlay: React.FC<OverlayProps> = ({ measurements, isOutOfRange, bp
         </g>
       )}
 
+      {/* UPPER LIP (New Feature) */}
+      {measurements.ustDudak && (
+        <g transform={`translate(${cx}, ${upperLipY})`} opacity="0.8">
+          <path 
+            d={`M -15 -2 Q -7 -5 0 -2 Q 7 -5 15 -2`}
+            fill="none" stroke="#d97070" strokeWidth="1.5" strokeLinecap="round"
+          />
+        </g>
+      )}
+
       {/* MOUTH (Soft Tissue Rendering) */}
-      {measurements.agizCapi && (
+      {measurements.agizcapi && (
         <g transform={`translate(${cx}, ${mouthY})`} opacity="0.7">
           {/* Upper Lip (Cupid's Bow) */}
           <path 
@@ -315,8 +329,13 @@ const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialM
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = useCallback((field: keyof Measurements, value: string) => {
-    const numValue = parseFloat(value);
-    setMeasurements(prev => ({ ...prev, [field]: isNaN(numValue) ? undefined : numValue }));
+    if (field === 'gebelikHaftasi') {
+      const numValue = parseGA(value);
+      setMeasurements(prev => ({ ...prev, [field]: numValue }));
+    } else {
+      const numValue = parseFloat(value);
+      setMeasurements(prev => ({ ...prev, [field]: isNaN(numValue) ? undefined : numValue }));
+    }
   }, []);
 
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -422,7 +441,7 @@ const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialM
                 <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                 <div className="text-xs space-y-1">
                   <p className="font-medium text-text-primary">{STANDARD_NOMOGRAM.label}</p>
-                  <p className="text-text-secondary">✓ Otomatik • {STANDARD_NOMOGRAM.rows.length} hafta</p>
+                  <p className="text-text-secondary">✓ Otomatik • {gaWeeks ? gaWeeks.toFixed(1) : '--'} hafta</p>
                 </div>
               </div>
             </div>
@@ -437,7 +456,23 @@ const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialM
             </div>
             <div className="p-8 space-y-6">
               <div className="grid grid-cols-2 gap-4">
-                <InputField label="GA (hafta)" value={measurements.gebelikHaftasi} onChange={(v) => handleInputChange('gebelikHaftasi', v)} />
+                <div className="space-y-1">
+                  <label className="text-[9px] font-medium text-slate-600 uppercase">GA (HAFTA/GÜN)</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={measurements.gebelikHaftasi !== undefined ? formatGA(measurements.gebelikHaftasi) : ''}
+                      onChange={(e) => handleInputChange('gebelikHaftasi', e.target.value)}
+                      placeholder="21w6d"
+                      className="w-full px-3 py-2 bg-slate-50 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
+                    />
+                    {measurements.gebelikHaftasi !== undefined && (
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-[#2563eb]">
+                        {measurements.gebelikHaftasi.toFixed(1)}
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <InputField label="BPD (mm)" value={measurements.bpd} onChange={(v) => handleInputChange('bpd', v)} />
                 <InputField label="HC (mm)" value={measurements.hc} onChange={(v) => handleInputChange('hc', v)} />
                 <InputField label="Fromen" value={measurements.fromen} onChange={(v) => handleInputChange('fromen', v)} />
@@ -448,6 +483,7 @@ const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialM
                 <InputField label="Ağız çapı (mm)" value={measurements.agizcapi} onChange={(v) => handleInputChange('agizcapi', v)} />
                 <InputField label="Ön-arka baş (AC)" value={measurements.onarka_bas} onChange={(v) => handleInputChange('onarka_bas', v)} />
                 <InputField label="Göz (mm)" value={measurements.goz} onChange={(v) => handleInputChange('goz', v)} />
+                <InputField label="Üst Dudak (mm)" value={measurements.ustDudak} onChange={(v) => handleInputChange('ustDudak', v)} />
               </div>
 
               {validationErrors.length > 0 && (

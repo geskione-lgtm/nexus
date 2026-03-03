@@ -4,7 +4,7 @@ import { generateBabyFace } from '../services/geminiService';
 import { StorageService } from '../services/storageService';
 import { DatabaseService } from '../services/databaseService';
 import { QRCodeSVG } from 'qrcode.react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence 0} from 'motion/react';
 import { 
   Cpu, 
   Activity, 
