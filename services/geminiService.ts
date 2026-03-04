@@ -8,22 +8,76 @@ function extractMimeType(dataUrl: string): string {
   return m?.[1] || "image/png";
 }
 
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+
+function clamp(val: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, val));
+}
+
+async function generateWithRetry(params: any, retries = 3, delay = 2000): Promise<any> {
+  try {
+    return await ai.models.generateContent(params);
+  } catch (err: any) {
+    const errorMessage = err.message?.toLowerCase() || '';
+    const isRetryable = errorMessage.includes('503') || 
+                        errorMessage.includes('high demand') || 
+                        errorMessage.includes('quota exceeded') ||
+                        errorMessage.includes('429') ||
+                        errorMessage.includes('unavailable') ||
+                        errorMessage.includes('deadline exceeded');
+    
+    if (isRetryable && retries > 0) {
+      console.warn(`Gemini API busy or quota hit, retrying in ${delay}ms... (${retries} attempts left). Error: ${err.message}`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return generateWithRetry(params, retries - 1, delay * 2);
+    }
+    
+    if (errorMessage.includes('quota exceeded') || errorMessage.includes('429')) {
+      throw new Error('Gemini API kullanım kotası doldu. Lütfen bir süre sonra tekrar deneyin.');
+    }
+    
+    if (errorMessage.includes('503') || errorMessage.includes('high demand')) {
+      throw new Error('Gemini API şu anda çok yoğun. Lütfen birkaç dakika sonra tekrar deneyin.');
+    }
+
+    throw err;
+  }
+}
+
 export async function generateBabyFace(
   mode: GenerationMode,
   ultrasoundBase64: string | null,
   measurements: any | null,
-  options?: any
+  options?: any,
+  landmarks?: Record<string, {x: number, y: number}>,
+  guideImage?: string
 ): Promise<string> {
   // 1. PHASE: Gemini Analyzes the Input
   console.log(`Phase 1: Gemini is analyzing...`);
-  
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
   
   let analysisPrompt = `
     You are a world-class medical imaging expert and portrait artist. 
     ${options?.dualView ? 'CRITICAL INSTRUCTION: You MUST generate a prompt for a SIDE-BY-SIDE DUAL VIEW (SPLIT-SCREEN) showing the SAME baby from TWO angles: one full frontal and one profile. This is mandatory.' : ''}
     
     Analyze the provided ultrasound image AND/OR biometric measurements to create a HIGHLY DETAILED, ARTISTIC DESCRIPTION of how this baby's face would look in real life.
+    
+    SPATIAL ALIGNMENT (CRITICAL):
+    - Identify the orientation of the fetus in the ultrasound (e.g., Profile, Frontal, 3/4 View).
+    - The generated baby MUST have the EXACT SAME orientation as the ultrasound.
+    - If the fetus is in profile, the generated baby MUST be in profile.
+    - If the fetus is facing left, the generated baby MUST face left.
+    - Map the anatomical features (nose, chin, forehead) to the same spatial coordinates as seen in the ultrasound.
+    
+    ${landmarks ? `
+    ANATOMICAL LANDMARKS (EXACT COORDINATES):
+    The doctor has marked the following points on the ultrasound (0-100 scale):
+    - Vertex (Top of Head): (${landmarks.vertex?.x.toFixed(1)}%, ${landmarks.vertex?.y.toFixed(1)}%)
+    - Nasion (Nose Bridge): (${landmarks.nasion?.x.toFixed(1)}%, ${landmarks.nasion?.y.toFixed(1)}%)
+    - Subnasale (Under Nose): (${landmarks.subnasale?.x.toFixed(1)}%, ${landmarks.subnasale?.y.toFixed(1)}%)
+    - Menton (Chin): (${landmarks.menton?.x.toFixed(1)}%, ${landmarks.menton?.y.toFixed(1)}%)
+    
+    You MUST ensure the generated baby's features align EXACTLY with these coordinates. For example, if the Nasion is at y=${landmarks.nasion?.y.toFixed(1)}%, the baby's nose bridge MUST be at that vertical level.
+    ` : ''}
     
     CRITICAL STYLE INSTRUCTIONS:
     - The baby MUST look like a NEWBORN (approximately 1 week old).
@@ -110,16 +164,22 @@ export async function generateBabyFace(
   let masterPrompt = "A beautiful, realistic newborn baby portrait with soft lighting and natural features.";
   
   try {
-    const analysisResponse = await ai.models.generateContent({
+    const analysisResponse = await generateWithRetry({
       model: "gemini-3-flash-preview",
       contents: contents
     });
     masterPrompt = analysisResponse.text || masterPrompt;
   } catch (err: any) {
     console.error("Gemini analysis failed:", err);
-    if (err.message?.toLowerCase().includes("quota exceeded")) {
-      console.warn("Gemini quota exceeded. Falling back to default prompt for Replicate.");
-      // We continue with the default masterPrompt
+    const msg = err.message?.toLowerCase() || '';
+    if (msg.includes("quota exceeded") || msg.includes("yoğun") || msg.includes("503") || msg.includes("demand")) {
+      console.warn("Gemini is busy or quota exceeded. Using fallback prompt to ensure generation continues.");
+      
+      // Create a decent fallback prompt based on measurements if available
+      if (measurements) {
+        masterPrompt = `A professional newborn baby portrait, realistic features, newborn aesthetic, closed eyes, soft lighting, based on biometric data: nose ${measurements.burun}mm, chin ${measurements.cene}mm, head ${measurements.hc}mm.`;
+      }
+      // Continue without throwing
     } else {
       throw err;
     }
@@ -127,34 +187,60 @@ export async function generateBabyFace(
 
   console.log("Phase 2: Master Prompt:", masterPrompt);
 
-  // 2. PHASE: Send Master Prompt to Replicate
-  console.log("Phase 3: Sending Master Prompt to Replicate (Flux)...");
+  // 2. PHASE: Send Master Prompt to Gemini Image Generation
+  console.log("Phase 3: Generating image with Gemini (gemini-2.5-flash-image)...");
   
   try {
-    const response = await fetch('/api/generate-baby', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt: masterPrompt,
-        image: mode === 'ultrasound' ? ultrasoundBase64 : null
-      })
+    const genParts: any[] = [{ text: masterPrompt }];
+    
+    // Add ultrasound as context if available
+    if (ultrasoundBase64) {
+      genParts.push({
+        inlineData: {
+          mimeType: extractMimeType(ultrasoundBase64),
+          data: ultrasoundBase64.includes(',') ? ultrasoundBase64.split(',')[1] : ultrasoundBase64
+        }
+      });
+    }
+
+    // Add guide image (scribble) if available for better anatomical control
+    if (guideImage) {
+      genParts.push({
+        inlineData: {
+          mimeType: extractMimeType(guideImage),
+          data: guideImage.includes(',') ? guideImage.split(',')[1] : guideImage
+        }
+      });
+    }
+
+    const imageResponse = await ai.models.generateContent({
+      model: "gemini-2.5-flash-image",
+      contents: [{ parts: genParts }],
+      config: {
+        imageConfig: {
+          aspectRatio: options?.dualView ? "16:9" : "1:1"
+        }
+      }
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error("Replicate API Error:", error);
-      throw new Error(error.error || 'Replicate generation failed');
+    // Find the image part in the response
+    let resultBase64 = "";
+    for (const part of imageResponse.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData?.data) {
+        resultBase64 = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+        break;
+      }
     }
 
-    const data = await response.json();
-    console.log("Phase 3 complete. Image received.");
-    return data.image;
-  } catch (err: any) {
-    console.error("Fetch error in Phase 3:", err);
-    if (err.message === 'Failed to fetch') {
-      throw new Error('Sunucuya bağlanılamadı (Failed to fetch). Lütfen internet bağlantınızı kontrol edin veya sunucunun çalıştığından emin olun.');
+    if (!resultBase64) {
+      throw new Error("Gemini image generation failed to return an image.");
     }
-    throw err;
+
+    console.log("Phase 3 complete. Image generated by Gemini.");
+    return resultBase64;
+  } catch (err: any) {
+    console.error("Gemini Image Generation Error:", err);
+    throw new Error(`Gemini Image Generation failed: ${err.message}`);
   }
 }
 
@@ -163,8 +249,6 @@ export async function generateFetalImage(
   measurements: any | null,
   ultrasoundBase64: string | null
 ): Promise<string> {
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-  
   const prompt = `
     You are a world-class medical illustrator specialized in embryology. 
     Create a highly realistic, cinematic 3D medical render of a fetus at exactly ${weeks} weeks of gestation.
@@ -177,14 +261,14 @@ export async function generateFetalImage(
     - SKIN TEXTURE: Soft, matte, biological texture. Translucent skin with very subtle visible veins. No plastic or glossy reflections.
     - Lighting: Soft, high-key, diffused studio lighting. Clean and professional.
     - Background: Pure white or a very soft, clean neutral gradient.
-    - Quality: High-end medical 3D illustration, photorealistic, clean, and professional (like a premium medical textbook or Flo app).
+    - Quality: High-end medical 3D illustration, photorealistic, clean, and professional.
     
     Anatomical Accuracy for ${weeks} weeks:
     ${measurements ? `- Use these biometric constraints: ${JSON.stringify(measurements)}` : ''}
     - Ensure the development stage (limbs, facial features, size) matches exactly ${weeks} weeks.
     
     TASK:
-    Write a 3-sentence master prompt for an AI image generator (like Flux) to create this specific, high-end medical visualization. 
+    Write a 3-sentence master prompt for an AI image generator to create this specific, high-end medical visualization. 
     The prompt should describe the fetus, the umbilical cord, the translucent sac, and the cinematic lighting. 
     DO NOT use medical jargon in the final prompt; describe it as a masterpiece of 3D digital art.
   `;
@@ -200,26 +284,126 @@ export async function generateFetalImage(
     });
   }
 
-  const analysisResponse = await ai.models.generateContent({
+  const analysisResponse = await generateWithRetry({
     model: "gemini-3-flash-preview",
     contents: [{ parts }]
   });
 
   const masterPrompt = analysisResponse.text || `A realistic 3D medical illustration of a ${weeks}-week-old fetus in the womb, soft lighting, anatomical detail.`;
 
-  const response = await fetch('/api/generate-baby', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      prompt: masterPrompt,
-      image: ultrasoundBase64
-    })
-  });
+  console.log("Fetal Master Prompt:", masterPrompt);
 
-  if (!response.ok) {
-    throw new Error('Fetal generation failed');
+  try {
+    const genParts: any[] = [{ text: masterPrompt }];
+    if (ultrasoundBase64) {
+      genParts.push({
+        inlineData: {
+          mimeType: extractMimeType(ultrasoundBase64),
+          data: ultrasoundBase64.includes(',') ? ultrasoundBase64.split(',')[1] : ultrasoundBase64
+        }
+      });
+    }
+
+    const imageResponse = await ai.models.generateContent({
+      model: "gemini-2.5-flash-image",
+      contents: [{ parts: genParts }],
+      config: {
+        imageConfig: {
+          aspectRatio: "1:1"
+        }
+      }
+    });
+
+    let resultBase64 = "";
+    for (const part of imageResponse.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData?.data) {
+        resultBase64 = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+        break;
+      }
+    }
+
+    if (!resultBase64) throw new Error("Gemini fetal image generation failed.");
+    return resultBase64;
+  } catch (err: any) {
+    console.error("Gemini Fetal Generation Error:", err);
+    throw new Error(`Gemini Fetal Generation failed: ${err.message}`);
   }
+}
 
-  const data = await response.json();
-  return data.image;
+export async function detectLandmarksOnGeneratedImage(imageUrlOrBase64: string): Promise<{
+  landmarks: Record<string, {x: number, y: number} | null>;
+  confidence: number;
+}> {
+  console.log("Detecting landmarks on generated image...");
+  
+  const prompt = `
+    Analyze this newborn baby portrait and identify the EXACT coordinates of these 4 anatomical landmarks:
+    1. vertex: The very top of the head/forehead.
+    2. nasion: The bridge of the nose, between the eyes.
+    3. subnasale: The point directly under the nose, above the upper lip.
+    4. menton: The lowest point of the chin.
+
+    Return ONLY a JSON object in this format:
+    {
+      "vertex": {"x": number, "y": number} | null,
+      "nasion": {"x": number, "y": number} | null,
+      "subnasale": {"x": number, "y": number} | null,
+      "menton": {"x": number, "y": number} | null,
+      "confidence": number
+    }
+    
+    RULES:
+    - Coordinates must be normalized 0-100 relative to the image width and height.
+    - If a landmark is NOT clearly visible or identifiable, return null for that landmark.
+    - DO NOT estimate or guess positions if they are not visible.
+    - confidence must be a number between 0 and 1 representing your certainty.
+  `;
+
+  const imageData = imageUrlOrBase64.includes(',') 
+    ? imageUrlOrBase64.split(',')[1] 
+    : imageUrlOrBase64;
+
+  const contents = [{
+    parts: [
+      { text: prompt },
+      {
+        inlineData: {
+          mimeType: extractMimeType(imageUrlOrBase64),
+          data: imageData
+        }
+      }
+    ]
+  }];
+
+  try {
+    const response = await generateWithRetry({
+      model: "gemini-3-flash-preview",
+      contents: contents,
+      config: { responseMimeType: "application/json" }
+    });
+
+    const result = JSON.parse(response.text || '{}');
+    
+    // Validation
+    const required = ['vertex', 'nasion', 'subnasale', 'menton'];
+    const landmarks: Record<string, {x: number, y: number} | null> = {};
+    
+    for (const key of required) {
+      if (result[key] && typeof result[key].x === 'number' && typeof result[key].y === 'number') {
+        landmarks[key] = {
+          x: clamp(result[key].x, 0, 100),
+          y: clamp(result[key].y, 0, 100)
+        };
+      } else {
+        landmarks[key] = null;
+      }
+    }
+
+    const confidence = typeof result.confidence === 'number' ? clamp(result.confidence, 0, 1) : 0;
+
+    return { landmarks, confidence };
+  } catch (err) {
+    console.error("Landmark detection failed:", err);
+    throw new Error("Landmark detection failed on generated image.");
+  }
 }

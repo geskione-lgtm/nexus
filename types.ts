@@ -54,7 +54,9 @@ export interface ReconstructionProof {
     generated: Record<string, { x: number; y: number }>;
   };
   deviations_px: Record<string, number>;
-  deviations_mm?: Record<string, number>;
+  deviations_pct: Record<string, number>;
+  deviations_mm: Record<string, number> | null;
+  mmAvailable: boolean;
   scale_mm_per_px?: number | null;
   scores: {
     final: number;

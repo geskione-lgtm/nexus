@@ -293,8 +293,8 @@ const DoctorDashboard: React.FC<Props> = ({ activeTab, setActiveTab, selectedPat
             />
           ) : isBiometric ? (
             <BiometrikFCS 
-              onProceedToStudio={(m) => {
-                setPendingMeasurements(m);
+              onProceedToStudio={(m, landmarks, guideImage) => {
+                setPendingMeasurements({ ...m, landmarks, guideImage });
                 setActiveTab('studio');
               }}
               initialMeasurements={pendingMeasurements || { gebelikHaftasi: selectedPatient.weeksPregnant }}

@@ -19,7 +19,7 @@ async function startServer() {
   app.post("/api/generate-baby", async (req, res) => {
     console.log("POST /api/generate-baby - Request received");
     try {
-      const { prompt, image } = req.body;
+      const { prompt, image, guideImage, landmarks } = req.body;
 
       if (!process.env.REPLICATE_API_TOKEN) {
         console.error("REPLICATE_API_TOKEN is missing in environment");
@@ -29,94 +29,131 @@ async function startServer() {
       console.log("Calling Replicate with prompt:", prompt);
       const startTime = Date.now();
 
-      // Using Flux-Dev or similar high-quality model
-      // Note: Removed image_prompt as it's not supported by the base flux-dev model
-      const output = await replicate.run(
-        "black-forest-labs/flux-dev",
-        {
-          input: {
-            prompt: prompt,
-            aspect_ratio: "1:1",
-            guidance_scale: 3.5,
-            num_outputs: 1,
-            output_format: "png"
-          }
+      if (guideImage) {
+        console.log("Guide image detected, switching to ControlNet Scribble...");
+        const primaryScribble = "jagilley/controlnet-scribble:435061a1b5a4c1e26727f030c779659f20cc967fb3652a651b9a2c03bb0728f3";
+        const fallbackScribble = "lucataco/controlnet-scribble:435061a1b5a4c1e26727f030c779659f20cc967fb3652a651b9a2c03bb0728f3"; // Just a placeholder, usually they share versions if cloned
+        
+        const scribbleInput = {
+          image: guideImage,
+          prompt: prompt + ", high quality, realistic newborn baby face, medical photography",
+          num_samples: 1,
+          image_resolution: "512",
+          ddim_steps: 20,
+          scale: 9,
+          eta: 0,
+          a_prompt: "best quality, extremely detailed",
+          n_prompt: "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality"
+        };
+        
+        let output;
+        try {
+          output = await replicate.run(primaryScribble as `${string}/${string}:${string}`, { input: scribbleInput });
+        } catch (err: any) {
+          console.warn("Primary scribble failed, attempting fallback...");
+          output = await replicate.run("jagilley/controlnet-scribble:435061a1b5a4c1e26727f030c779659f20cc967fb3652a651b9a2c03bb0728f3" as `${string}/${string}:${string}`, { input: scribbleInput });
         }
-      );
-
-      console.log("Replicate output received in", (Date.now() - startTime) / 1000, "seconds. Type:", typeof output, "IsArray:", Array.isArray(output));
-      if (output) {
-        console.log("Output keys:", Object.keys(output));
+        return handleOutput(output, res, startTime);
       }
+
+      // Primary model: fofr/flux-dev-img2img
+      const primaryModel = "fofr/flux-dev-img2img:ef90e2908f902641755100088825f77839353995f03704250269041269389279";
+      // Fallback model: lucataco/flux-dev-img2img (different version)
+      const fallbackModel = "lucataco/flux-dev-img2img:965584857444760037385966779426f03d6d5f7560867a1498616335f992226a";
       
-      let imageUrl = "";
-
-      const processOutputValue = async (val: any): Promise<string> => {
-        if (!val) return "";
-        console.log("Processing value of type:", typeof val);
-        
-        if (typeof val === 'string' && val.startsWith('http')) return val;
-        if (typeof val === 'string' && val.startsWith('data:')) return val;
-        
-        if (val instanceof ReadableStream) {
-          console.log("Processing ReadableStream output...");
-          const reader = val.getReader();
-          const chunks = [];
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            chunks.push(value);
-          }
-          const blob = new Blob(chunks, { type: 'image/png' });
-          const buffer = Buffer.from(await blob.arrayBuffer());
-          return `data:image/png;base64,${buffer.toString('base64')}`;
-        }
-
-        if (typeof val === 'object') {
-          if (val.url && typeof val.url === 'string') return val.url;
-          // Replicate FileOutput often has a toString that returns the URL
-          if (typeof val.toString === 'function') {
-            try {
-              const str = val.toString();
-              if (str && typeof str === 'string' && str.startsWith('http')) return str;
-            } catch (e) {
-              console.log("toString() failed on object");
-            }
-          }
-        }
-        
-        return "";
+      const fluxInput = {
+        image: image,
+        prompt: prompt,
+        strength: 0.8,
+        guidance_scale: 3.5,
+        num_inference_steps: 28,
+        output_format: "png",
+        aspect_ratio: "1:1"
       };
 
-      if (Array.isArray(output)) {
-        console.log("Output is an array of length:", output.length);
-        for (const item of output) {
-          const url = await processOutputValue(item);
-          if (url) {
-            imageUrl = url;
-            break;
+      const runWithRetry = async (model: string, input: any, maxRetries = 2) => {
+        for (let i = 0; i <= maxRetries; i++) {
+          try {
+            return await replicate.run(model as `${string}/${string}:${string}`, { input });
+          } catch (err: any) {
+            if (err.message?.includes("429") && i < maxRetries) {
+              const waitTime = (i + 1) * 5000; // Wait 5s, then 10s
+              console.warn(`Rate limited (429). Waiting ${waitTime}ms before retry ${i + 1}...`);
+              await new Promise(resolve => setTimeout(resolve, waitTime));
+              continue;
+            }
+            throw err;
           }
         }
-      } else {
-        imageUrl = await processOutputValue(output);
-      }
+      };
 
-      if (!imageUrl) {
-        console.error("Failed to extract image URL. Full output structure:", JSON.stringify(output, (key, value) => {
-          if (value instanceof ReadableStream) return '[ReadableStream]';
-          if (value && value.constructor && value.constructor.name === 'FileOutput') return `[FileOutput: ${value.toString()}]`;
-          return value;
-        }, 2));
-        return res.status(500).json({ error: "AI model failed to return a valid image URL string" });
+      let output;
+      try {
+        console.log("Attempting generation with primary model...");
+        output = await runWithRetry(primaryModel, fluxInput);
+      } catch (err: any) {
+        console.warn("Primary model failed, attempting fallback...", err.message);
+        if (err.message?.includes("422") || err.message?.includes("version") || err.message?.includes("404")) {
+          output = await runWithRetry(fallbackModel, fluxInput);
+        } else {
+          throw err;
+        }
       }
-
-      console.log("Successfully extracted image URL:", imageUrl.substring(0, 100) + "...");
-      res.json({ image: imageUrl });
+      
+      return handleOutput(output, res, startTime);
     } catch (error: any) {
       console.error("Replicate Error:", error);
+      // If it's a 422, it might be the version. 
+      if (error.message?.includes("422") || error.message?.includes("version")) {
+         return res.status(422).json({ 
+           error: "AI Model version error. Please check if the Replicate model versions are still active.",
+           details: error.message 
+         });
+      }
       res.status(500).json({ error: error.message || "Failed to generate image" });
     }
   });
+
+  async function handleOutput(output: any, res: any, startTime: number) {
+    console.log("Replicate output received in", (Date.now() - startTime) / 1000, "seconds.");
+    
+    let imageUrl = "";
+    const processOutputValue = async (val: any): Promise<string> => {
+      if (!val) return "";
+      if (typeof val === 'string' && val.startsWith('http')) return val;
+      if (typeof val === 'string' && val.startsWith('data:')) return val;
+      if (val instanceof ReadableStream) {
+        const reader = val.getReader();
+        const chunks = [];
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+        }
+        const blob = new Blob(chunks, { type: 'image/png' });
+        const buffer = Buffer.from(await blob.arrayBuffer());
+        return `data:image/png;base64,${buffer.toString('base64')}`;
+      }
+      if (typeof val === 'object' && val.url) return val.url;
+      if (typeof val?.toString === 'function') {
+        const str = val.toString();
+        if (str.startsWith('http')) return str;
+      }
+      return "";
+    };
+
+    if (Array.isArray(output)) {
+      imageUrl = await processOutputValue(output[0]);
+    } else {
+      imageUrl = await processOutputValue(output);
+    }
+
+    if (!imageUrl) {
+      return res.status(500).json({ error: "AI model failed to return a valid image" });
+    }
+
+    res.json({ image: imageUrl });
+  }
 
   // Image Proxy to bypass CORS
   app.get("/api/proxy-image", async (req, res) => {

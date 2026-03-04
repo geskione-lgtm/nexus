@@ -29,7 +29,19 @@ const App: React.FC = () => {
   const checkUserStatus = async () => {
     setIsSyncing(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error) {
+        if (error.message?.includes('Refresh Token Not Found') || error.message?.includes('Invalid Refresh Token')) {
+          console.warn("Session expired or invalid, signing out...");
+          await supabase.auth.signOut();
+          setCurrentUser(null);
+          setCurrentPage('landing');
+          setAuthChecked(true);
+          setIsSyncing(false);
+          return;
+        }
+      }
       
       if (user) {
         const profile = await DatabaseService.getCurrentProfile();

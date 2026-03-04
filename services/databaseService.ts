@@ -52,17 +52,26 @@ export const DatabaseService = {
     if (!isSupabaseConfigured()) return null
     try {
       const {
-        data: { user }
+        data: { user },
+        error: authError
       } = await supabase.auth.getUser()
+      
+      if (authError) {
+        if (authError.message?.includes('Refresh Token Not Found') || authError.message?.includes('Invalid Refresh Token')) {
+          await supabase.auth.signOut();
+        }
+        return null;
+      }
+
       if (!user) return null
 
-      const { data, error } = await supabase
+      const { data, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .maybeSingle()
 
-      if (error || !data) return null
+      if (profileError || !data) return null
 
       return {
         id: data.id,

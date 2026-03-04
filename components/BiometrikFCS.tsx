@@ -4,11 +4,6 @@ import { Upload, Microscope, ArrowRight, Info, AlertCircle, CheckCircle, RotateC
 import { SoftCard } from './ui/SoftCard';
 import { parseGA, formatGA } from '../constants';
 
-interface BiometrikFCSProps {
-  onProceedToStudio: (measurements: Partial<Measurements>) => void;
-  initialMeasurements?: Partial<Measurements>;
-}
-
 interface Measurements {
   gebelikHaftasi: number;
   fromen: number;
@@ -24,10 +19,21 @@ interface Measurements {
   ustDudak: number;
 }
 
+interface Landmark {
+  x: number;
+  y: number;
+  label: string;
+}
+
 type Percentiles = { p5: number; p50: number; p95: number };
 type RefRow = { gaWeeks: number; bpd?: Percentiles; hc?: Percentiles; ac?: Percentiles; fl?: Percentiles; efw?: Percentiles };
 type ReferenceSet = { id: string; label: string; rows: RefRow[]; meta?: any };
 type ValidationError = { field: keyof Measurements; message: string; severity: 'warning' | 'error' };
+
+interface BiometrikFCSProps {
+  onProceedToStudio: (measurements: Partial<Measurements>, landmarks?: Record<string, {x: number, y: number}>, guideImage?: string) => void;
+  initialMeasurements?: Partial<Measurements>;
+}
 
 // ============= STANDAR REFERANS VERISI =============
 const STANDARD_NOMOGRAM: ReferenceSet = {
@@ -111,28 +117,35 @@ interface OverlayProps {
   isOutOfRange: boolean;
   bpdRef: number;
   hcRef: number;
+  landmarks?: Record<string, {x: number, y: number}>;
 }
 
-const DynamicOverlay: React.FC<OverlayProps> = ({ measurements, isOutOfRange, bpdRef, hcRef }) => {
+const DynamicOverlay: React.FC<OverlayProps> = ({ measurements, isOutOfRange, bpdRef, hcRef, landmarks }) => {
   // Scale factors
   const bpdScale = measurements.bpd ? (measurements.bpd / bpdRef) : 1;
   const hcScale = measurements.hc ? (measurements.hc / hcRef) : 1;
 
-  // Center positions
-  const cx = 250;
-  const cy = 220; // Slightly lower center for better vertical balance
+  // Use landmarks if available, otherwise use defaults
+  const v = landmarks?.vertex || { x: 250, y: 70 };
+  const n = landmarks?.nasion || { x: 250, y: 185 };
+  const s = landmarks?.subnasale || { x: 250, y: 240 };
+  const m = landmarks?.menton || { x: 250, y: 350 };
 
-  // Feature positions
-  const eyeY = cy - 35 * hcScale;
+  // Calculate center and rotation based on landmarks
+  const cx = (v.x + m.x) / 2;
+  const cy = (v.y + m.y) / 2;
+  
+  // Feature positions (relative to landmarks)
+  const eyeY = n.y - 20 * hcScale;
   const eyeSpacing = 55 * bpdScale;
   const eyeSize = measurements.goz ? (measurements.goz / 10) * 12 : 12;
 
-  const noseY = cy + 25 * hcScale;
+  const noseY = n.y + (s.y - n.y) / 2;
   const noseSize = measurements.burun ? (measurements.burun / 10) * 15 : 15;
 
-  const upperLipY = measurements.ustDudak ? noseY + (measurements.ustDudak * 2) : noseY + 25;
+  const upperLipY = measurements.ustDudak ? s.y + (measurements.ustDudak * 2) : s.y + 15;
 
-  const mouthY = cy + 75 * hcScale;
+  const mouthY = s.y + (m.y - s.y) / 2;
   const mouthWidth = measurements.agizcapi ? (measurements.agizcapi / 15) * 20 : 20;
 
   return (
@@ -192,10 +205,10 @@ const DynamicOverlay: React.FC<OverlayProps> = ({ measurements, isOutOfRange, bp
         {/* Main Cranial Mass */}
         <path
           d={`
-            M ${cx} ${cy - 150 * hcScale}
-            C ${cx + 130 * bpdScale} ${cy - 150 * hcScale}, ${cx + 140 * bpdScale} ${cy - 20 * hcScale}, ${cx + 115 * bpdScale} ${cy + 90 * hcScale}
-            C ${cx + 90 * bpdScale} ${cy + 160 * hcScale}, ${cx - 90 * bpdScale} ${cy + 160 * hcScale}, ${cx - 115 * bpdScale} ${cy + 90 * hcScale}
-            C ${cx - 140 * bpdScale} ${cy - 20 * hcScale}, ${cx - 130 * bpdScale} ${cy - 150 * hcScale}, ${cx} ${cy - 150 * hcScale}
+            M ${v.x} ${v.y}
+            C ${v.x + 130 * bpdScale} ${v.y}, ${m.x + 140 * bpdScale} ${m.y - 100 * hcScale}, ${m.x + 115 * bpdScale} ${m.y}
+            C ${m.x + 90 * bpdScale} ${m.y + 50 * hcScale}, ${m.x - 90 * bpdScale} ${m.y + 50 * hcScale}, ${m.x - 115 * bpdScale} ${m.y}
+            C ${m.x - 140 * bpdScale} ${m.y - 100 * hcScale}, ${v.x - 130 * bpdScale} ${v.y}, ${v.x} ${v.y}
           `}
           fill="url(#anatomicalGradient)"
           stroke="#c4a792"
@@ -322,11 +335,170 @@ const DynamicOverlay: React.FC<OverlayProps> = ({ measurements, isOutOfRange, bp
   );
 };
 
+const createGuideImage = (landmarks: Record<string, {x: number, y: number}>, measurements: Partial<Measurements>): string => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return '';
+
+  // Black background
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, 512, 512);
+
+  // White dots and lines
+  ctx.strokeStyle = 'white';
+  ctx.fillStyle = 'white';
+  ctx.lineWidth = 3;
+
+  const points = {
+    vertex: landmarks.vertex ? { x: landmarks.vertex.x * 5.12, y: landmarks.vertex.y * 5.12 } : null,
+    nasion: landmarks.nasion ? { x: landmarks.nasion.x * 5.12, y: landmarks.nasion.y * 5.12 } : null,
+    subnasale: landmarks.subnasale ? { x: landmarks.subnasale.x * 5.12, y: landmarks.subnasale.y * 5.12 } : null,
+    menton: landmarks.menton ? { x: landmarks.menton.x * 5.12, y: landmarks.menton.y * 5.12 } : null,
+  };
+
+  // Draw skull oval
+  if (points.vertex && points.menton) {
+    const cx = (points.vertex.x + points.menton.x) / 2;
+    const cy = (points.vertex.y + points.menton.y) / 2;
+    const rx = Math.abs(points.vertex.y - points.menton.y) * 0.45;
+    const ry = Math.abs(points.vertex.y - points.menton.y) * 0.55;
+    
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Axis
+    ctx.beginPath();
+    ctx.moveTo(points.vertex.x, points.vertex.y);
+    ctx.lineTo(points.menton.x, points.menton.y);
+    ctx.stroke();
+  }
+
+  if (points.nasion && points.subnasale) {
+    ctx.beginPath();
+    ctx.moveTo(points.nasion.x, points.nasion.y);
+    ctx.lineTo(points.nasion.x + 25, (points.nasion.y + points.subnasale.y) / 2);
+    ctx.lineTo(points.subnasale.x, points.subnasale.y);
+    ctx.stroke();
+  }
+
+  // Dots
+  Object.values(points).forEach(p => {
+    if (p) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+
+  return canvas.toDataURL('image/png');
+};
+
+const FetalHeadMorphPreview: React.FC<OverlayProps> = ({ measurements, isOutOfRange, bpdRef, hcRef, landmarks }) => {
+  const bpdScale = measurements.bpd ? (measurements.bpd / bpdRef) : 1;
+  const hcScale = measurements.hc ? (measurements.hc / hcRef) : 1;
+
+  const v = landmarks?.vertex || { x: 250, y: 70 };
+  const n = landmarks?.nasion || { x: 250, y: 185 };
+  const s = landmarks?.subnasale || { x: 250, y: 240 };
+  const m = landmarks?.menton || { x: 250, y: 350 };
+
+  const cx = (v.x + m.x) / 2;
+  const cy = (v.y + m.y) / 2;
+  
+  const headWidth = 120 * bpdScale;
+  const headHeight = Math.abs(m.y - v.y);
+  
+  // Bezier points for a realistic profile silhouette
+  const foreheadX = v.x - 20 * bpdScale;
+  const backHeadX = v.x + 130 * bpdScale;
+  
+  return (
+    <svg viewBox="0 0 500 500" className="absolute inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
+      <defs>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        <linearGradient id="headGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="rgba(37, 99, 235, 0.1)" />
+          <stop offset="100%" stopColor="rgba(37, 99, 235, 0.02)" />
+        </linearGradient>
+      </defs>
+
+      {/* Silhouette Path */}
+      <path
+        d={`
+          M ${v.x} ${v.y}
+          C ${v.x + headWidth * 1.2} ${v.y}, ${m.x + headWidth * 1.2} ${m.y - headHeight * 0.3}, ${m.x} ${m.y}
+          C ${m.x - headWidth * 0.5} ${m.y + 20}, ${s.x - 40} ${s.y + 20}, ${s.x} ${s.y}
+          C ${s.x + 20} ${s.y - (s.y-n.y)/2}, ${n.x + 20} ${n.y + (s.y-n.y)/2}, ${n.x} ${n.y}
+          C ${n.x - 40} ${n.y - 20}, ${v.x - 40} ${v.y + 20}, ${v.x} ${v.y}
+          Z
+        `}
+        fill="url(#headGrad)"
+        stroke="#2563eb"
+        strokeWidth="2"
+        strokeDasharray="4 2"
+        filter="url(#glow)"
+        className="transition-all duration-300 ease-out"
+      />
+
+      {/* Structural Lines */}
+      <line x1={v.x} y1={v.y} x2={m.x} y2={m.y} stroke="rgba(37, 99, 235, 0.2)" strokeWidth="1" />
+      <line x1={n.x} y1={n.y} x2={s.x} y2={s.y} stroke="rgba(37, 99, 235, 0.2)" strokeWidth="1" />
+
+      {/* Landmarks */}
+      {[v, n, s, m].map((p, i) => (
+        <circle key={i} cx={p.x} cy={p.y} r="3" fill="#2563eb" />
+      ))}
+    </svg>
+  );
+};
+
 // ============= Ana Bileşen =============
 const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialMeasurements }) => {
   const [measurements, setMeasurements] = useState<Partial<Measurements>>(initialMeasurements || {});
   const [image, setImage] = useState<string | null>(null);
+  const [landmarks, setLandmarks] = useState<Record<string, {x: number, y: number}>>({});
+  const [activeLandmark, setActiveLandmark] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [baseFetalImage, setBaseFetalImage] = useState<string | null>(null);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  const landmarkTypes = [
+    { id: 'vertex', label: 'Alın/Tepe', color: 'bg-red-500' },
+    { id: 'nasion', label: 'Burun Kökü', color: 'bg-blue-500' },
+    { id: 'subnasale', label: 'Burun Altı', color: 'bg-green-500' },
+    { id: 'menton', label: 'Çene Ucu', color: 'bg-yellow-500' },
+  ];
+
+  const handleImageClick = (e: React.MouseEvent) => {
+    if (!activeLandmark || !imageContainerRef.current) return;
+    
+    const rect = imageContainerRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    setLandmarks(prev => ({
+      ...prev,
+      [activeLandmark]: { x, y }
+    }));
+    
+    // Auto-advance to next landmark
+    const currentIndex = landmarkTypes.findIndex(l => l.id === activeLandmark);
+    if (currentIndex < landmarkTypes.length - 1) {
+      setActiveLandmark(landmarkTypes[currentIndex + 1].id);
+    } else {
+      setActiveLandmark(null);
+    }
+  };
 
   const handleInputChange = useCallback((field: keyof Measurements, value: string) => {
     if (field === 'gebelikHaftasi') {
@@ -398,63 +570,114 @@ const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialM
         {/* Sol Taraf */}
         <div className="lg:col-span-5 space-y-6">
           <SoftCard className="p-0 overflow-hidden">
-            <div className="p-6 border-b border-border-subtle bg-slate-50/50">
+            <div className="p-6 border-b border-border-subtle bg-slate-50/50 flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <Upload className="w-5 h-5 text-primary" />
                 <span className="text-xs font-medium text-text-primary uppercase tracking-widest">
-                  Ultrason Görüntüsü
+                  1. Ultrason & Landmark İşaretleme
                 </span>
               </div>
+              {image && (
+                <button 
+                  onClick={() => setActiveLandmark(landmarkTypes[0].id)}
+                  className="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline"
+                >
+                  Yeniden İşaretle
+                </button>
+              )}
             </div>
-            <div className="p-8">
+            <div className="p-6 space-y-4">
               <div
-                onClick={() => fileInputRef.current?.click()}
-                className="aspect-video rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-[#2563eb]/50 hover:bg-[#2563eb]/5 transition-all group overflow-hidden"
+                ref={imageContainerRef}
+                onClick={handleImageClick}
+                className={`aspect-video rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-[#2563eb]/50 transition-all group overflow-hidden relative ${activeLandmark ? 'cursor-crosshair' : ''}`}
               >
                 {image ? (
-                  <img src={image} className="w-full h-full object-cover" alt="Ultrasound" />
-                ) : (
                   <>
+                    <img src={image} className="w-full h-full object-cover grayscale contrast-125" alt="Ultrasound" />
+                    {/* Landmark Dots */}
+                    {Object.entries(landmarks).map(([id, pos]) => {
+                      const type = landmarkTypes.find(l => l.id === id);
+                      return (
+                        <div 
+                          key={id}
+                          className={`absolute w-3 h-3 rounded-full border-2 border-white shadow-lg -translate-x-1/2 -translate-y-1/2 ${type?.color}`}
+                          style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+                        >
+                          <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1 text-[8px] font-bold text-white bg-black/50 px-1 rounded whitespace-nowrap">
+                            {type?.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                    {activeLandmark && (
+                      <div className="absolute inset-0 bg-primary/5 flex items-start justify-center pt-4 pointer-events-none">
+                        <span className="px-4 py-2 bg-primary text-white rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg animate-pulse">
+                          Lütfen İşaretleyin: {landmarkTypes.find(l => l.id === activeLandmark)?.label}
+                        </span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center gap-4">
                     <Upload className="w-8 h-8 text-slate-400" />
                     <div className="text-center">
                       <p className="text-sm font-medium text-text-primary">Görüntü Yükle</p>
                       <p className="text-[10px] text-text-secondary">JPG, PNG, DICOM</p>
                     </div>
-                  </>
+                  </div>
                 )}
                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
               </div>
+
+              {image && !activeLandmark && Object.keys(landmarks).length < 4 && (
+                <button 
+                  onClick={() => setActiveLandmark(landmarkTypes[0].id)}
+                  className="w-full py-3 bg-primary/10 text-primary rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary/20 transition-all"
+                >
+                  Anatomik Noktaları İşaretle (Zorunlu)
+                </button>
+              )}
             </div>
           </SoftCard>
 
-          <SoftCard className="p-0 overflow-hidden">
-            <div className="p-6 border-b border-border-subtle bg-slate-50/50">
-              <div className="flex items-center gap-3">
-                <Microscope className="w-5 h-5 text-primary" />
-                <span className="text-xs font-medium text-text-primary uppercase tracking-widest">
-                  Referans Nomogram
+          {image && Object.keys(landmarks).length === 4 && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <SoftCard className="p-0 overflow-hidden border-primary/20 bg-primary/5">
+                <div className="p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                      <Microscope className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="text-[11px] font-bold text-primary uppercase tracking-widest">2. Fetal Taslak Oluşturma</h4>
+                      <p className="text-[10px] text-primary/60 font-medium">İşaretlenen noktalara göre baz model üretilecek.</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      // In a real app, this would call generateFetalImage
+                      // For now, we'll simulate it or just proceed
+                      setBaseFetalImage(image); // Placeholder
+                    }}
+                    className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20"
+                  >
+                    Baz Fetal Taslağı Üret
+                  </button>
+                </div>
+              </SoftCard>
+            </motion.div>
+          )}
+
+          <div className={image && Object.keys(landmarks).length === 4 ? 'opacity-100' : 'opacity-30 pointer-events-none'}>
+            <SoftCard className="p-0 overflow-hidden">
+              <div className="p-6 border-b border-border-subtle bg-slate-50/50">
+                <span className="text-xs font-medium text-text-primary uppercase tracking-widest flex items-center gap-2">
+                  <Microscope className="w-5 h-5 text-primary" />
+                  3. Doktor Ölçümleri (Biyometrik Veri)
                 </span>
               </div>
-            </div>
-            <div className="p-6 bg-emerald-50 border-t border-emerald-100">
-              <div className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                <div className="text-xs space-y-1">
-                  <p className="font-medium text-text-primary">{STANDARD_NOMOGRAM.label}</p>
-                  <p className="text-text-secondary">✓ Otomatik • {gaWeeks ? gaWeeks.toFixed(1) : '--'} hafta</p>
-                </div>
-              </div>
-            </div>
-          </SoftCard>
-
-          <SoftCard className="p-0 overflow-hidden">
-            <div className="p-6 border-b border-border-subtle bg-slate-50/50">
-              <span className="text-xs font-medium text-text-primary uppercase tracking-widest flex items-center gap-2">
-                <Microscope className="w-5 h-5 text-primary" />
-                Doktor Ölçümleri
-              </span>
-            </div>
-            <div className="p-8 space-y-6">
+              <div className="p-8 space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[9px] font-medium text-slate-600 uppercase">GA (HAFTA/GÜN)</label>
@@ -506,9 +729,10 @@ const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialM
             </div>
           </SoftCard>
         </div>
+      </div>
 
-        {/* Sağ Taraf - 3D Base Model + Overlay */}
-        <div className="lg:col-span-7">
+      {/* Sağ Taraf - 3D Base Model + Overlay */}
+      <div className="lg:col-span-7">
           <div className="sticky top-8">
             <SoftCard className="aspect-square flex items-center justify-center bg-slate-100 relative overflow-hidden">
               {/* Base 3D Model (PNG) */}
@@ -517,14 +741,18 @@ const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialM
                 <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#4f46e5 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }}></div>
               </div>
 
-              {/* Dynamic Overlay SVG */}
-              {(measurements.goz || measurements.burun || measurements.agizCapi || measurements.cene || measurements.goztepe || measurements.fromen || measurements.bpd || measurements.hc) && (
-                <DynamicOverlay
-                  measurements={measurements}
-                  isOutOfRange={isOutOfRange || false}
-                  bpdRef={bpdRef}
-                  hcRef={hcRef}
-                />
+              {/* Morph Preview */}
+              {(image || Object.keys(landmarks).length > 0) && (
+                <div className="absolute inset-0 w-full h-full">
+                  {image && <img src={image} className="w-full h-full object-cover opacity-30 grayscale" alt="Ultrasound BG" />}
+                  <FetalHeadMorphPreview
+                    measurements={measurements}
+                    isOutOfRange={isOutOfRange || false}
+                    bpdRef={bpdRef}
+                    hcRef={hcRef}
+                    landmarks={landmarks}
+                  />
+                </div>
               )}
             </SoftCard>
           </div>
@@ -533,11 +761,14 @@ const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialM
 
       <div className="flex justify-center">
         <button
-          onClick={() => onProceedToStudio(measurements)}
-          disabled={!measurements.bpd || !measurements.hc || validationErrors.some(e => e.severity === 'error')}
+          onClick={() => {
+            const guide = createGuideImage(landmarks, measurements);
+            onProceedToStudio(measurements, landmarks, guide);
+          }}
+          disabled={!measurements.bpd || !measurements.hc || Object.keys(landmarks).length < 4 || validationErrors.some(e => e.severity === 'error')}
           className="px-16 py-5 bg-[#2563eb] text-white rounded-full text-sm font-medium uppercase tracking-widest hover:scale-105 active:scale-95 transition disabled:opacity-50 shadow-xl shadow-primary/20"
         >
-          Devam Et <ArrowRight className="w-5 h-5 ml-2 inline" />
+          Sentezi Başlat <ArrowRight className="w-5 h-5 ml-2 inline" />
         </button>
       </div>
     </div>
