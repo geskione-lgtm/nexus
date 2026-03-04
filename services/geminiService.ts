@@ -247,30 +247,44 @@ export async function generateBabyFace(
 export async function generateFetalImage(
   weeks: number,
   measurements: any | null,
-  ultrasoundBase64: string | null
+  ultrasoundBase64: string | null,
+  view: 'front' | 'profile' | 'top' = 'front'
 ): Promise<string> {
+  const viewPrompts = {
+    front: "FULL FRONTAL view, facing the camera directly, showing symmetrical facial features.",
+    profile: "90-DEGREE SIDE PROFILE view, showing the silhouette of the nose, forehead, and chin clearly.",
+    top: "SUPERIOR TOP-DOWN view, showing the oval shape of the cranium and the top of the head."
+  };
+
   const prompt = `
-    You are a world-class medical illustrator specialized in embryology. 
-    Create a highly realistic, cinematic 3D medical render of a fetus at exactly ${weeks} weeks of gestation.
+    You are a world-class medical illustrator specialized in craniofacial embryology. 
+    Create a highly realistic, cinematic 3D medical render of a fetal HEAD and FACE prototype at exactly ${weeks} weeks of gestation.
     
-    STYLE AND COMPOSITION:
-    - The fetus MUST be shown in a natural fetal position with ANATOMICALLY CORRECT PROPORTIONS.
-    - BELLY/TORSO: The belly must be realistic and proportional to the gestational age. ABSOLUTELY NO bloated, swollen, or unnaturally large bellies. The torso should be slender and natural.
-    - Include a clear, thin, translucent UMBILICAL CORD connected to the navel.
-    - Surround the fetus with a very thin, delicate, and highly translucent AMNIOTIC SAC membrane. It should look like a faint bubble, not a thick glowing mass.
-    - SKIN TEXTURE: Soft, matte, biological texture. Translucent skin with very subtle visible veins. No plastic or glossy reflections.
-    - Lighting: Soft, high-key, diffused studio lighting. Clean and professional.
-    - Background: Pure white or a very soft, clean neutral gradient.
-    - Quality: High-end medical 3D illustration, photorealistic, clean, and professional.
+    CRITICAL MEDICAL CONSTRAINTS (MANDATORY):
+    The following measurements are from a clinical ultrasound and MUST be reflected in the 3D model's anatomy:
+    - BPD (Biparietal Diameter): ${measurements.bpd || 'Standard'}mm
+    - HC (Head Circumference): ${measurements.hc || 'Standard'}mm
+    - Fromen (Frontal-Occipital): ${measurements.fromen || 'Standard'}mm
+    - Nose Length (Burun): ${measurements.burun || 'Standard'}mm
+    - Chin Size (Çene): ${measurements.cene || 'Standard'}mm
     
-    Anatomical Accuracy for ${weeks} weeks:
-    ${measurements ? `- Use these biometric constraints: ${JSON.stringify(measurements)}` : ''}
-    - Ensure the development stage (limbs, facial features, size) matches exactly ${weeks} weeks.
+    SPECIFIC ANATOMICAL SCULPTING:
+    - If the Nose (Burun) is small (e.g., < 2mm), the model MUST show a significantly recessed or hypoplastic nose.
+    - If the Fromen is large, the head MUST appear elongated in the anterior-posterior axis.
+    - If BPD is wide, the head MUST appear broader from the front.
+    - The model MUST be a unique medical representation of THESE SPECIFIC numbers, not a generic baby.
+    
+    VIEW ANGLE:
+    You MUST show the head from the ${viewPrompts[view]}
+    
+    STYLE:
+    - High-end 3D medical modeling (AutoCAD/ZBrush style), clean, clinical, and professional. 
+    - Pure white background, soft biological matte texture.
+    - No body, no background elements. Just the head as a medical specimen.
     
     TASK:
-    Write a 3-sentence master prompt for an AI image generator to create this specific, high-end medical visualization. 
-    The prompt should describe the fetus, the umbilical cord, the translucent sac, and the cinematic lighting. 
-    DO NOT use medical jargon in the final prompt; describe it as a masterpiece of 3D digital art.
+    Write a 3-sentence master prompt for an AI image generator to create this specific 3D head prototype from the ${view.toUpperCase()} angle. 
+    Describe the specific anatomical landmarks visible from this angle and the clinical 3D aesthetic.
   `;
 
   const parts: any[] = [{ text: prompt }];
@@ -304,7 +318,7 @@ export async function generateFetalImage(
       });
     }
 
-    const imageResponse = await ai.models.generateContent({
+    const imageResponse = await generateWithRetry({
       model: "gemini-2.5-flash-image",
       contents: [{ parts: genParts }],
       config: {

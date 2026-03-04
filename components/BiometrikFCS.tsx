@@ -1,8 +1,10 @@
-import React, { useMemo, useRef, useState, useCallback } from 'react';
+import React, { useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Upload, Microscope, ArrowRight, Info, AlertCircle, CheckCircle, RotateCcw } from 'lucide-react';
+import { Upload, Microscope, ArrowRight, Info, AlertCircle, CheckCircle, RotateCcw, Zap, Activity } from 'lucide-react';
 import { SoftCard } from './ui/SoftCard';
 import { parseGA, formatGA } from '../constants';
+import { generateFetalImage } from '../services/geminiService';
+import { biometrikFcsPythonService, MorphWeights } from '../services/biometrikFcsPythonService';
 
 interface Measurements {
   gebelikHaftasi: number;
@@ -118,6 +120,7 @@ interface OverlayProps {
   bpdRef: number;
   hcRef: number;
   landmarks?: Record<string, {x: number, y: number}>;
+  morphWeights?: MorphWeights;
 }
 
 const DynamicOverlay: React.FC<OverlayProps> = ({ measurements, isOutOfRange, bpdRef, hcRef, landmarks }) => {
@@ -396,25 +399,40 @@ const createGuideImage = (landmarks: Record<string, {x: number, y: number}>, mea
   return canvas.toDataURL('image/png');
 };
 
-const FetalHeadMorphPreview: React.FC<OverlayProps> = ({ measurements, isOutOfRange, bpdRef, hcRef, landmarks }) => {
+const FetalHeadMorphPreview: React.FC<OverlayProps> = ({ measurements, isOutOfRange, bpdRef, hcRef, landmarks, morphWeights }) => {
   const bpdScale = measurements.bpd ? (measurements.bpd / bpdRef) : 1;
   const hcScale = measurements.hc ? (measurements.hc / hcRef) : 1;
 
-  const v = landmarks?.vertex || { x: 250, y: 70 };
-  const n = landmarks?.nasion || { x: 250, y: 185 };
-  const s = landmarks?.subnasale || { x: 250, y: 240 };
-  const m = landmarks?.menton || { x: 250, y: 350 };
+  // Apply morph weights if available
+  const headRoundness = morphWeights?.head_roundness ?? 0.5;
+  const chinProjection = morphWeights?.chin_projection ?? 0.5;
+  const noseLength = morphWeights?.nose_length ?? 0.5;
+
+  // Scale percentage landmarks (0-100) to SVG coordinates (0-500)
+  const scale = (p: {x: number, y: number} | undefined, def: {x: number, y: number}) => {
+    if (!p) return def;
+    return { x: (p.x / 100) * 500, y: (p.y / 100) * 500 };
+  };
+
+  const v = scale(landmarks?.vertex, { x: 250, y: 70 });
+  const n = scale(landmarks?.nasion, { x: 250, y: 185 });
+  const s = scale(landmarks?.subnasale, { x: 250, y: 240 });
+  const m = scale(landmarks?.menton, { x: 250, y: 350 });
 
   const cx = (v.x + m.x) / 2;
   const cy = (v.y + m.y) / 2;
   
-  const headWidth = 120 * bpdScale;
+  const headWidth = 120 * bpdScale * (0.8 + headRoundness * 0.4);
   const headHeight = Math.abs(m.y - v.y);
   
   // Bezier points for a realistic profile silhouette
   const foreheadX = v.x - 20 * bpdScale;
   const backHeadX = v.x + 130 * bpdScale;
   
+  // Adjust chin and nose based on weights
+  const adjustedMentonX = m.x + (chinProjection - 0.5) * 40;
+  const adjustedSubnasaleX = s.x + (noseLength - 0.5) * 30;
+
   return (
     <svg viewBox="0 0 500 500" className="absolute inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
       <defs>
@@ -434,9 +452,9 @@ const FetalHeadMorphPreview: React.FC<OverlayProps> = ({ measurements, isOutOfRa
       <path
         d={`
           M ${v.x} ${v.y}
-          C ${v.x + headWidth * 1.2} ${v.y}, ${m.x + headWidth * 1.2} ${m.y - headHeight * 0.3}, ${m.x} ${m.y}
-          C ${m.x - headWidth * 0.5} ${m.y + 20}, ${s.x - 40} ${s.y + 20}, ${s.x} ${s.y}
-          C ${s.x + 20} ${s.y - (s.y-n.y)/2}, ${n.x + 20} ${n.y + (s.y-n.y)/2}, ${n.x} ${n.y}
+          C ${v.x + headWidth * 1.2} ${v.y}, ${adjustedMentonX + headWidth * 1.2} ${m.y - headHeight * 0.3}, ${adjustedMentonX} ${m.y}
+          C ${adjustedMentonX - headWidth * 0.5} ${m.y + 20}, ${adjustedSubnasaleX - 40} ${s.y + 20}, ${adjustedSubnasaleX} ${s.y}
+          C ${adjustedSubnasaleX + 20} ${s.y - (s.y-n.y)/2}, ${n.x + 20} ${n.y + (s.y-n.y)/2}, ${n.x} ${n.y}
           C ${n.x - 40} ${n.y - 20}, ${v.x - 40} ${v.y + 20}, ${v.x} ${v.y}
           Z
         `}
@@ -449,11 +467,11 @@ const FetalHeadMorphPreview: React.FC<OverlayProps> = ({ measurements, isOutOfRa
       />
 
       {/* Structural Lines */}
-      <line x1={v.x} y1={v.y} x2={m.x} y2={m.y} stroke="rgba(37, 99, 235, 0.2)" strokeWidth="1" />
-      <line x1={n.x} y1={n.y} x2={s.x} y2={s.y} stroke="rgba(37, 99, 235, 0.2)" strokeWidth="1" />
+      <line x1={v.x} y1={v.y} x2={adjustedMentonX} y2={m.y} stroke="rgba(37, 99, 235, 0.2)" strokeWidth="1" />
+      <line x1={n.x} y1={n.y} x2={adjustedSubnasaleX} y2={s.y} stroke="rgba(37, 99, 235, 0.2)" strokeWidth="1" />
 
       {/* Landmarks */}
-      {[v, n, s, m].map((p, i) => (
+      {[v, n, {x: adjustedSubnasaleX, y: s.y}, {x: adjustedMentonX, y: m.y}].map((p, i) => (
         <circle key={i} cx={p.x} cy={p.y} r="3" fill="#2563eb" />
       ))}
     </svg>
@@ -467,7 +485,11 @@ const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialM
   const [landmarks, setLandmarks] = useState<Record<string, {x: number, y: number}>>({});
   const [activeLandmark, setActiveLandmark] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [baseFetalImage, setBaseFetalImage] = useState<string | null>(null);
+  const [baseFetalImages, setBaseFetalImages] = useState<Record<string, string>>({});
+  const [activeView, setActiveView] = useState<'front' | 'profile' | 'top'>('front');
+  const [isGeneratingPrototype, setIsGeneratingPrototype] = useState(false);
+  const [morphWeights, setMorphWeights] = useState<MorphWeights | undefined>(undefined);
+  const [isCalculatingWeights, setIsCalculatingWeights] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
@@ -522,7 +544,79 @@ const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialM
   const handleReset = useCallback(() => {
     setMeasurements({});
     setImage(null);
+    setLandmarks({});
+    setBaseFetalImages({});
+    setActiveView('front');
+    setMorphWeights(undefined);
   }, []);
+
+  // Fetch morph weights from Python service when measurements change
+  useEffect(() => {
+    const fetchWeights = async () => {
+      if (!gaWeeks) return;
+      
+      setIsCalculatingWeights(true);
+      try {
+        const response = await biometrikFcsPythonService.getWeights({
+          ga_weeks: gaWeeks,
+          bpd_mm: measurements.bpd,
+          hc_mm: measurements.hc,
+          nb_mm: measurements.burun,
+          chin_mm: measurements.cene,
+          jaw_mm: measurements.bioccap,
+          seed: 12345, // Fixed seed for determinism
+          template: 'default'
+        });
+        setMorphWeights(response.weights);
+      } catch (err) {
+        console.error('Failed to fetch morph weights:', err);
+      } finally {
+        setIsCalculatingWeights(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(fetchWeights, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [gaWeeks, measurements.bpd, measurements.hc, measurements.burun, measurements.cene, measurements.bioccap]);
+
+  const handleGeneratePrototype = async () => {
+    if (!image) return;
+    setIsGeneratingPrototype(true);
+    try {
+      const views: ('front' | 'profile' | 'top')[] = ['front', 'profile', 'top'];
+      
+      const results = await Promise.all(
+        views.map(view => 
+          generateFetalImage(
+            gaWeeks || 20,
+            measurements,
+            image,
+            view
+          ).catch(err => {
+            console.error(`Failed to generate ${view} view:`, err);
+            return null;
+          })
+        )
+      );
+
+      const newImages: Record<string, string> = {};
+      views.forEach((view, index) => {
+        if (results[index]) {
+          newImages[view] = results[index] as string;
+        }
+      });
+
+      setBaseFetalImages(prev => ({ ...prev, ...newImages }));
+    } catch (err) {
+      console.error("Fetal prototype generation failed:", err);
+    } finally {
+      setIsGeneratingPrototype(false);
+    }
+  };
+
+  const switchView = (view: 'front' | 'profile' | 'top') => {
+    setActiveView(view);
+  };
 
   const gaWeeks = useMemo(() => {
     const ga = measurements.gebelikHaftasi;
@@ -643,26 +737,43 @@ const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialM
 
           {image && Object.keys(landmarks).length === 4 && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-              <SoftCard className="p-0 overflow-hidden border-primary/20 bg-primary/5">
+              <SoftCard className={`p-0 overflow-hidden border-primary/20 ${baseFetalImages[activeView] ? 'bg-emerald-50/30' : 'bg-primary/5'}`}>
                 <div className="p-6 space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                      <Microscope className="w-4 h-4 text-primary" />
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${baseFetalImages[activeView] ? 'bg-emerald-100' : 'bg-primary/20'}`}>
+                      {baseFetalImages[activeView] ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Microscope className="w-4 h-4 text-primary" />}
                     </div>
                     <div>
-                      <h4 className="text-[11px] font-bold text-primary uppercase tracking-widest">2. Fetal Taslak Oluşturma</h4>
-                      <p className="text-[10px] text-primary/60 font-medium">İşaretlenen noktalara göre baz model üretilecek.</p>
+                      <h4 className={`text-[11px] font-bold uppercase tracking-widest ${baseFetalImages[activeView] ? 'text-emerald-700' : 'text-primary'}`}>
+                        2. 3D Kafa/Yüz Taslağı Oluşturma
+                      </h4>
+                      <p className={`text-[10px] font-medium ${baseFetalImages[activeView] ? 'text-emerald-600/60' : 'text-primary/60'}`}>
+                        {baseFetalImages[activeView] ? '3D Kafa Prototipi başarıyla üretildi.' : 'İşaretlenen noktalara göre kafa yapısı üretilecek.'}
+                      </p>
                     </div>
                   </div>
                   <button 
-                    onClick={() => {
-                      // In a real app, this would call generateFetalImage
-                      // For now, we'll simulate it or just proceed
-                      setBaseFetalImage(image); // Placeholder
-                    }}
-                    className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20"
+                    onClick={handleGeneratePrototype}
+                    disabled={isGeneratingPrototype}
+                    className={`w-full py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 ${
+                      isGeneratingPrototype 
+                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                        : Object.keys(baseFetalImages).length > 0
+                          ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-200' 
+                          : 'bg-primary text-white hover:bg-primary-dark shadow-primary/20'
+                    }`}
                   >
-                    Baz Fetal Taslağı Üret
+                    {isGeneratingPrototype ? (
+                      <>
+                        <div className="w-3 h-3 border-2 border-slate-300 border-t-primary rounded-full animate-spin"></div>
+                        3 Açı Üretiliyor...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-3 h-3" />
+                        {Object.keys(baseFetalImages).length > 0 ? 'Tüm Görünümleri Güncelle' : '3D Kafa Taslağı Üret (3 Açı)'}
+                      </>
+                    )}
                   </button>
                 </div>
               </SoftCard>
@@ -737,23 +848,70 @@ const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialM
             <SoftCard className="aspect-square flex items-center justify-center bg-slate-100 relative overflow-hidden">
               {/* Base 3D Model (PNG) */}
               <div className="absolute inset-0 w-full h-full bg-[#f8f9fa] flex items-center justify-center">
-                {/* Background subtle pattern or gradient */}
-                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#4f46e5 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }}></div>
+                {baseFetalImages[activeView] ? (
+                  <div className="relative w-full h-full">
+                    <img src={baseFetalImages[activeView]} className="w-full h-full object-contain" alt="3D Head Prototype" />
+                    
+                    {/* 3D View Controls (AutoCAD Style) */}
+                    <div className="absolute top-6 right-6 flex flex-col gap-2 z-50">
+                      {[
+                        { id: 'top', label: 'ÜST' },
+                        { id: 'front', label: 'ÖN' },
+                        { id: 'profile', label: 'YAN' }
+                      ].map(v => (
+                        <button
+                          key={v.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            switchView(v.id as any);
+                          }}
+                          className={`w-12 h-12 rounded-lg border flex items-center justify-center text-[10px] font-black transition-all shadow-soft pointer-events-auto ${
+                            activeView === v.id 
+                              ? 'bg-primary text-white border-primary scale-110 z-10' 
+                              : 'bg-white text-slate-400 border-slate-200 hover:border-primary/50'
+                          }`}
+                        >
+                          {v.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="absolute top-6 left-6 px-4 py-2 bg-white/80 backdrop-blur rounded-full border border-border-subtle shadow-soft">
+                      <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
+                        3D KAFA PROTOTİPİ: {activeView === 'front' ? 'ÖN' : activeView === 'profile' ? 'YAN' : 'ÜST'} GÖRÜNÜM
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#4f46e5 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }}></div>
+                )}
               </div>
 
-              {/* Morph Preview */}
-              {(image || Object.keys(landmarks).length > 0) && (
-                <div className="absolute inset-0 w-full h-full">
-                  {image && <img src={image} className="w-full h-full object-cover opacity-30 grayscale" alt="Ultrasound BG" />}
+                  {/* Morph Preview - Removed the confusing SVG overlay as requested */}
+                  {image && !baseFetalImages[activeView] && (
+                    <div className="absolute inset-0 w-full h-full pointer-events-none">
+                      <img src={image} className="w-full h-full object-cover opacity-30 grayscale" alt="Ultrasound BG" />
+                    </div>
+                  )}
+
+                  {/* Dynamic Morph Overlay using Python-calculated weights */}
                   <FetalHeadMorphPreview
                     measurements={measurements}
                     isOutOfRange={isOutOfRange || false}
                     bpdRef={bpdRef}
                     hcRef={hcRef}
                     landmarks={landmarks}
+                    morphWeights={morphWeights}
                   />
-                </div>
-              )}
+
+                  {/* Intelligence Status Indicator */}
+                  <div className="absolute bottom-6 left-6 flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur rounded-full border border-primary/20 shadow-sm z-50">
+                    <div className={`w-2 h-2 rounded-full ${isCalculatingWeights ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+                    <span className="text-[9px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
+                      <Activity className="w-3 h-3" />
+                      {isCalculatingWeights ? 'Zeka Hesaplıyor...' : 'Deformasyon Zekası Aktif'}
+                    </span>
+                  </div>
             </SoftCard>
           </div>
         </div>
@@ -762,8 +920,7 @@ const BiometrikFCS: React.FC<BiometrikFCSProps> = ({ onProceedToStudio, initialM
       <div className="flex justify-center">
         <button
           onClick={() => {
-            const guide = createGuideImage(landmarks, measurements);
-            onProceedToStudio(measurements, landmarks, guide);
+            onProceedToStudio(measurements, landmarks, baseFetalImages.front || baseFetalImages.profile || undefined);
           }}
           disabled={!measurements.bpd || !measurements.hc || Object.keys(landmarks).length < 4 || validationErrors.some(e => e.severity === 'error')}
           className="px-16 py-5 bg-[#2563eb] text-white rounded-full text-sm font-medium uppercase tracking-widest hover:scale-105 active:scale-95 transition disabled:opacity-50 shadow-xl shadow-primary/20"
